@@ -57,10 +57,6 @@ def create_uvsphere(self, context):
 # ------------------------------------------------------------------------------
 def shape_uvsphere_mesh(myuvsphere, tmp_mesh, update=False):
     usp = myuvsphere.ArchLabUvSphereGenerator[0]  # "usp" means "uvsphere properties".
-    mybase = None
-    myfloor = None
-    myceiling = None
-    myshell = None
     # Create uvsphere mesh data
     update_uvsphere_mesh_data(tmp_mesh, usp.uvsphere_radius, usp.uvsphere_segments, usp.uvsphere_rings)
     myuvsphere.data = tmp_mesh

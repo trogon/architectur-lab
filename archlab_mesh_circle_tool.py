@@ -57,10 +57,6 @@ def create_circle(self, context):
 # ------------------------------------------------------------------------------
 def shape_circle_mesh(mycircle, tmp_mesh, update=False):
     pp = mycircle.ArchLabCircleGenerator[0]  # "pp" means "circle properties".
-    mybase = None
-    myfloor = None
-    myceiling = None
-    myshell = None
     # Create circle mesh data
     update_circle_mesh_data(tmp_mesh, pp.circle_radius, pp.circle_quality)
     mycircle.data = tmp_mesh

@@ -57,10 +57,6 @@ def create_cube(self, context):
 # ------------------------------------------------------------------------------
 def shape_cube_mesh(mycube, tmp_mesh, update=False):
     cp = mycube.ArchLabCubeGenerator[0]  # "cp" means "cube properties".
-    mybase = None
-    myfloor = None
-    myceiling = None
-    myshell = None
     # Create cube mesh data
     update_cube_mesh_data(tmp_mesh, cp.cube_width, cp.cube_height, cp.cube_depth)
     mycube.data = tmp_mesh

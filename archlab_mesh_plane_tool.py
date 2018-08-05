@@ -57,10 +57,6 @@ def create_plane(self, context):
 # ------------------------------------------------------------------------------
 def shape_plane_mesh(myplane, tmp_mesh, update=False):
     pp = myplane.ArchLabPlaneGenerator[0]  # "pp" means "plane properties".
-    mybase = None
-    myfloor = None
-    myceiling = None
-    myshell = None
     # Create plane mesh data
     update_plane_mesh_data(tmp_mesh, pp.plane_width, pp.plane_height)
     myplane.data = tmp_mesh
