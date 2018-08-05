@@ -27,124 +27,168 @@
 # ----------------------------------------------------------
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import IntProperty, FloatProperty, CollectionProperty
+from bpy.props import FloatProperty, CollectionProperty
 from .archlab_utils import *
-from .archlab_utils_material_data import *
-from .archlab_utils_mesh_data import *
 
 # ------------------------------------------------------------------------------
-# Create main object for the plate.
+# Create main object for the wall.
 # ------------------------------------------------------------------------------
-def create_plate(self, context):
+def create_wall(self, context):
     # deselect all objects
     for o in bpy.data.objects:
         o.select = False
 
-    # we create main object and mesh
-    platemesh = bpy.data.meshes.new("Plate")
-    plateobject = bpy.data.objects.new("Plate", platemesh)
-    plateobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(plateobject)
-    plateobject.ArchLabPlateGenerator.add()
+    # we create main object and mesh for wall
+    wallmesh = bpy.data.meshes.new("Wall")
+    wallobject = bpy.data.objects.new("Wall", wallmesh)
+    wallobject.location = bpy.context.scene.cursor_location
+    bpy.context.scene.objects.link(wallobject)
+    wallobject.ArchLabWallGenerator.add()
 
     # we shape the mesh.
-    shape_plate_mesh(plateobject, platemesh)
-    set_smooth(plateobject)
-    # TODO Make those modifiers optional or disable them by default!
-    # set_modifier_subsurf(plateobject)
-    # set_modifier_array(plateobject, relativeoffset=(0.0, 0.0, 0.4), count=5)
+    shape_wall_mesh(wallobject, wallmesh)
 
-    # assign a material
-    mat = meshlib_ceramic_material()
-    set_material(plateobject, mat.name)
-
-    # we select, and activate, main object for the plate.
-    plateobject.select = True
-    bpy.context.scene.objects.active = plateobject
+    # we select, and activate, main object for the wall.
+    wallobject.select = True
+    bpy.context.scene.objects.active = wallobject
 
 # ------------------------------------------------------------------------------
-# Shapes mesh the plate mesh
+# Shapes mesh and creates modifier solidify (the modifier, only the first time).
 # ------------------------------------------------------------------------------
-def shape_plate_mesh(myplate, tmp_mesh, update=False):
-    usp = myplate.ArchLabPlateGenerator[0]  # "usp" means "plate properties".
-    # Create plate mesh data
-    update_plate_mesh_data(tmp_mesh, usp.plate_radius, usp.plate_height, usp.plate_segments)
-    myplate.data = tmp_mesh
+def shape_wall_mesh(mywall, tmp_mesh, update=False):
+    pp = mywall.ArchLabWallGenerator[0]  # "pp" means "wall properties".
+    # Create wall mesh data
+    update_wall_mesh_data(tmp_mesh, pp.wall_width, pp.wall_height)
+    mywall.data = tmp_mesh
 
-    remove_doubles(myplate)
-    set_normals(myplate)
+    remove_doubles(mywall)
+    set_normals(mywall)
+
+    if pp.wall_depth > 0.0:
+        if update is False or is_solidify(mywall) is False:
+            set_modifier_solidify(mywall, pp.wall_depth)
+        else:
+            for mod in mywall.modifiers:
+                if mod.type == 'SOLIDIFY':
+                    mod.thickness = pp.wall_depth
+        # Move to Top SOLIDIFY
+        movetotopsolidify(mywall)
+
+    else:  # clear not used SOLIDIFY
+        for mod in mywall.modifiers:
+            if mod.type == 'SOLIDIFY':
+                mywall.modifiers.remove(mod)
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != myplate.name:
+        if o.select is True and o.name != mywall.name:
             o.select = False
 
 # ------------------------------------------------------------------------------
-# Creates plate mesh data.
+# Creates wall mesh data.
 # ------------------------------------------------------------------------------
-def update_plate_mesh_data(mymesh, radius, height, segments):
-    myvertex = meshlib_deep_plate_vertices()
-    myfaces = meshlib_deep_plate_faces()
+def update_wall_mesh_data(mymesh, width, height):
+    sizew = width
+    sizez = height
+    posw = width
+    posz = height
+
+    myvertex = [(0.0, 0.0, 0.0), (0.0, 0.0, posz),]
+    myvertex.extend([(posw, 0.0, 0.0), (posw, 0.0, posz)])
+    myfaces = [(0, 1, 3, 2)]
 
     mymesh.from_pydata(myvertex, [], myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------
-# Update plate mesh.
+# Update wall mesh.
 # ------------------------------------------------------------------------------
-def update_plate(self, context):
-    # When we update, the active object is the main object of the plate.
+def update_wall(self, context):
+    # When we update, the active object is the main object of the wall.
     o = bpy.context.active_object
     oldmesh = o.data
     oldname = o.data.name
-    # Now we deselect that plate object to not delete it.
+    # Now we deselect that wall object to not delete it.
     o.select = False
-    # and we create a new mesh for the plate:
+    # and we create a new mesh for the wall:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
         obj.select = False
     # Finally we shape the main mesh again,
-    shape_plate_mesh(o, tmp_mesh, True)
+    shape_wall_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
     # Remove data (mesh of active object),
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
-    # and select, and activate, the main object of the plate.
+    # and select, and activate, the main object of the wall.
     o.select = True
     bpy.context.scene.objects.active = o
 
+# -----------------------------------------------------
+# Verify if solidify exist
+# -----------------------------------------------------
+def is_solidify(myobject):
+    flag = False
+    try:
+        if myobject.modifiers is None:
+            return False
+
+        for mod in myobject.modifiers:
+            if mod.type == 'SOLIDIFY':
+                flag = True
+                break
+        return flag
+    except AttributeError:
+        return False
+
+# -----------------------------------------------------
+# Move Solidify to Top
+# -----------------------------------------------------
+def movetotopsolidify(myobject):
+    mymod = None
+    try:
+        if myobject.modifiers is not None:
+            for mod in myobject.modifiers:
+                if mod.type == 'SOLIDIFY':
+                    mymod = mod
+
+            if mymod is not None:
+                while myobject.modifiers[0] != mymod:
+                    bpy.ops.object.modifier_move_up(modifier=mymod.name)
+    except AttributeError:
+        return
+
 
 # ------------------------------------------------------------------
-# Define property group class to create or modify a plates.
+# Define property group class to create or modify a walls.
 # ------------------------------------------------------------------
-class ArchLabPlateProperties(PropertyGroup):
-    plate_radius = FloatProperty(
-            name='Radius',
-            default=0.21, precision=3, unit = 'LENGTH',
-            description='Plate radius', update=update_plate,
-            )
-    plate_height = FloatProperty(
+class ArchLabWallProperties(PropertyGroup):
+    wall_height = FloatProperty(
             name='Height',
-            default=0.03, precision=3, unit = 'LENGTH',
-            description='Plate height', update=update_plate,
+            default=2.5, precision=3, unit = 'LENGTH',
+            description='Wall height', update=update_wall,
             )
-    plate_segments = IntProperty(
-            name='Segments',
-            min=3, max=1000,
-            default=16,
-            description='Plate segments amount', update=update_plate,
+    wall_width = FloatProperty(
+            name='Width',
+            default=1.0, precision=3, unit = 'LENGTH',
+            description='Wall width', update=update_wall,
+            )
+    wall_depth = FloatProperty(
+            name='Thickness',
+            default=0.025, precision=4, unit = 'LENGTH',
+            description='Thickness of the wall', update=update_wall,
             )
 
-bpy.utils.register_class(ArchLabPlateProperties)
-Object.ArchLabPlateGenerator = CollectionProperty(type=ArchLabPlateProperties)
+bpy.utils.register_class(ArchLabWallProperties)
+Object.ArchLabWallGenerator = CollectionProperty(type=ArchLabWallProperties)
 
 # ------------------------------------------------------------------
-# Define panel class to modify plates.
+# Define panel class to modify walls.
 # ------------------------------------------------------------------
-class ArchLabPlateGeneratorPanel(Panel):
-    bl_idname = "OBJECT_PT_plate_generator"
-    bl_label = "Plate"
+class ArchLabWallGeneratorPanel(Panel):
+    bl_idname = "OBJECT_PT_wall_generator"
+    bl_label = "Wall"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'ArchLab'
@@ -157,7 +201,7 @@ class ArchLabPlateGeneratorPanel(Panel):
         o = context.object
         if o is None:
             return False
-        if 'ArchLabPlateGenerator' not in o:
+        if 'ArchLabWallGenerator' not in o:
             return False
         else:
             return True
@@ -167,9 +211,9 @@ class ArchLabPlateGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabPlateGenerator', this panel is not created.
+        # If the selected object didn't be created with the group 'ArchLabWallGenerator', this panel is not created.
         try:
-            if 'ArchLabPlateGenerator' not in o:
+            if 'ArchLabWallGenerator' not in o:
                 return
         except:
             return
@@ -178,21 +222,21 @@ class ArchLabPlateGeneratorPanel(Panel):
         if bpy.context.mode == 'EDIT_MESH':
             layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
-            plate = o.ArchLabPlateGenerator[0]
-            # row = layout.row()
-            # row.prop(plate, 'plate_radius')
-            # row = layout.row()
-            # row.prop(plate, 'plate_height')
-            # row = layout.row()
-            # row.prop(plate, 'plate_segments')
+            wall = o.ArchLabWallGenerator[0]
+            row = layout.row()
+            row.prop(wall, 'wall_width')
+            row = layout.row()
+            row.prop(wall, 'wall_height')
+            row = layout.row()
+            row.prop(wall, 'wall_depth')
 
 # ------------------------------------------------------------------
-# Define operator class to create plates
+# Define operator class to create walls
 # ------------------------------------------------------------------
-class ArchLabPlate(Operator):
-    bl_idname = "mesh.archlab_plate"
-    bl_label = "Plate"
-    bl_description = "Generate plate decoration"
+class ArchLabWall(Operator):
+    bl_idname = "mesh.archlab_wall"
+    bl_label = "Wall"
+    bl_description = "Generate wall mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -209,7 +253,7 @@ class ArchLabPlate(Operator):
     # -----------------------------------------------------
     def execute(self, context):
         if bpy.context.mode == "OBJECT":
-            create_plate(self, context)
+            create_wall(self, context)
             return {'FINISHED'}
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")
