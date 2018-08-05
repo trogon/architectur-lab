@@ -31,75 +31,69 @@ from bpy.props import IntProperty, FloatProperty, CollectionProperty
 from .archlab_utils import *
 
 # ------------------------------------------------------------------------------
-# Create main object for the circle.
+# Create main object for the uvsphere.
 # ------------------------------------------------------------------------------
-def create_circle(self, context):
+def create_uvsphere(self, context):
     # deselect all objects
     for o in bpy.data.objects:
         o.select = False
 
     # we create main object and mesh for walls
-    circlemesh = bpy.data.meshes.new("Circle")
-    circleobject = bpy.data.objects.new("Circle", circlemesh)
-    circleobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(circleobject)
-    circleobject.ArchLabCircleGenerator.add()
+    uvspheremesh = bpy.data.meshes.new("UvSphere")
+    uvsphereobject = bpy.data.objects.new("UvSphere", uvspheremesh)
+    uvsphereobject.location = bpy.context.scene.cursor_location
+    bpy.context.scene.objects.link(uvsphereobject)
+    uvsphereobject.ArchLabUvSphereGenerator.add()
 
-    # we shape the walls and create other objects as children of 'CircleObject'.
-    shape_circle_mesh(circleobject, circlemesh)
+    # we shape the walls and create other objects as children of 'UvSphereObject'.
+    shape_uvsphere_mesh(uvsphereobject, uvspheremesh)
 
-    # we select, and activate, main object for the circle.
-    circleobject.select = True
-    bpy.context.scene.objects.active = circleobject
+    # we select, and activate, main object for the uvsphere.
+    uvsphereobject.select = True
+    bpy.context.scene.objects.active = uvsphereobject
 
 # ------------------------------------------------------------------------------
-# Shapes mesh and creates modifier solidify (the modifier, only the first time).
+# Shapes mesh the uvsphere mesh
 # ------------------------------------------------------------------------------
-def shape_circle_mesh(mycircle, tmp_mesh, update=False):
-    pp = mycircle.ArchLabCircleGenerator[0]  # "pp" means "circle properties".
+def shape_uvsphere_mesh(myuvsphere, tmp_mesh, update=False):
+    usp = myuvsphere.ArchLabUvSphereGenerator[0]  # "usp" means "uvsphere properties".
     mybase = None
     myfloor = None
     myceiling = None
     myshell = None
-    # Create circle mesh data
-    update_circle_mesh_data(tmp_mesh, pp.circle_radius, pp.circle_quality)
-    mycircle.data = tmp_mesh
+    # Create uvsphere mesh data
+    update_uvsphere_mesh_data(tmp_mesh, usp.uvsphere_radius, usp.uvsphere_segments, usp.uvsphere_rings)
+    myuvsphere.data = tmp_mesh
 
-    remove_doubles(mycircle)
-    set_normals(mycircle)
-
-    if pp.circle_depth > 0.0:
-        if update is False or is_solidify(mycircle) is False:
-            set_modifier_solidify(mycircle, pp.circle_depth)
-        else:
-            for mod in mycircle.modifiers:
-                if mod.type == 'SOLIDIFY':
-                    mod.thickness = pp.circle_depth
-        # Move to Top SOLIDIFY
-        movetotopsolidify(mycircle)
-
-    else:  # clear not used SOLIDIFY
-        for mod in mycircle.modifiers:
-            if mod.type == 'SOLIDIFY':
-                mycircle.modifiers.remove(mod)
+    remove_doubles(myuvsphere)
+    set_normals(myuvsphere)
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mycircle.name:
+        if o.select is True and o.name != myuvsphere.name:
             o.select = False
 
 # ------------------------------------------------------------------------------
-# Creates circle mesh data.
+# Creates uvsphere mesh data.
 # ------------------------------------------------------------------------------
-def update_circle_mesh_data(mymesh, radius, vertices):
-    deltaAngle = 360 / vertices
+def update_uvsphere_mesh_data(mymesh, radius, segments, rings):
+    sDeltaAngle = 360 /segments
+    rDeltaAngle = 180 /rings
 
     myvertex = []
-    myfaces = [list(range(vertices))]
-
-    for t in range(vertices):
-        v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
-        myvertex.append((v1[0], v1[1], 0.0))
+    myfaces = []
+    
+    for tr in range(rings +1):
+        v1 = rotate_point2d(0.0, radius, tr * rDeltaAngle)
+        for ts in range(segments):
+            v2 = rotate_point2d(v1[0], 0.0, ts * sDeltaAngle)
+            p = (v2[0], v2[1], v1[1])
+            myvertex.append(p)
+            if tr > 0:
+                myfaces.append([(tr -1) * segments + ts,
+                                (tr -1) * segments + ((ts +1) % segments),
+                                tr * segments + ((ts +1) % segments),
+                                tr * segments + ts])
 
     mymesh.from_pydata(myvertex, [], myfaces)
     mymesh.update(calc_edges=True)
@@ -107,93 +101,60 @@ def update_circle_mesh_data(mymesh, radius, vertices):
 # ------------------------------------------------------------------------------
 # Update wall mesh and children objects (baseboard, floor and ceiling).
 # ------------------------------------------------------------------------------
-def update_circle(self, context):
-    # When we update, the active object is the main object of the circle.
+def update_uvsphere(self, context):
+    # When we update, the active object is the main object of the uvsphere.
     o = bpy.context.active_object
     oldmesh = o.data
     oldname = o.data.name
-    # Now we deselect that circle object to not delete it.
+    # Now we deselect that uvsphere object to not delete it.
     o.select = False
-    # and we create a new mesh for the circle:
+    # and we create a new mesh for the uvsphere:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
         obj.select = False
     # Finally we shape the main mesh again,
-    shape_circle_mesh(o, tmp_mesh, True)
+    shape_uvsphere_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
     # Remove data (mesh of active object),
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
-    # and select, and activate, the main object of the circle.
+    # and select, and activate, the main object of the uvsphere.
     o.select = True
     bpy.context.scene.objects.active = o
 
-# -----------------------------------------------------
-# Verify if solidify exist
-# -----------------------------------------------------
-def is_solidify(myobject):
-    flag = False
-    try:
-        if myobject.modifiers is None:
-            return False
-
-        for mod in myobject.modifiers:
-            if mod.type == 'SOLIDIFY':
-                flag = True
-                break
-        return flag
-    except AttributeError:
-        return False
-
-# -----------------------------------------------------
-# Move Solidify to Top
-# -----------------------------------------------------
-def movetotopsolidify(myobject):
-    mymod = None
-    try:
-        if myobject.modifiers is not None:
-            for mod in myobject.modifiers:
-                if mod.type == 'SOLIDIFY':
-                    mymod = mod
-
-            if mymod is not None:
-                while myobject.modifiers[0] != mymod:
-                    bpy.ops.object.modifier_move_up(modifier=mymod.name)
-    except AttributeError:
-        return
-
 
 # ------------------------------------------------------------------
-# Define property group class to create or modify a circles.
+# Define property group class to create or modify a uvspheres.
 # ------------------------------------------------------------------
-class ArchLabCircleProperties(PropertyGroup):
-    circle_radius = FloatProperty(
-            name='Height',
+class ArchLabUvSphereProperties(PropertyGroup):
+    uvsphere_radius = FloatProperty(
+            name='Radius',
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Circle height', update=update_circle,
+            description='UV Sphere radius', update=update_uvsphere,
             )
-    circle_quality = IntProperty(
-            name='Vertices',
-            min=2, max=1000,
+    uvsphere_segments = IntProperty(
+            name='Segments',
+            min=3, max=1000,
             default=32,
-            description='Circle vertices', update=update_circle,
+            description='UV Sphere segments amount', update=update_uvsphere,
             )
-    circle_depth = FloatProperty(
-            name='Thickness',
-            default=0.0, precision=4, unit = 'LENGTH',
-            description='Thickness of the circle', update=update_circle,
+    uvsphere_rings = IntProperty(
+            name='Rings',
+            min=2, max=1000,
+            default=16,
+            description='UV Sphere rings amount', update=update_uvsphere,
             )
 
-bpy.utils.register_class(ArchLabCircleProperties)
-Object.ArchLabCircleGenerator = CollectionProperty(type=ArchLabCircleProperties)
+bpy.utils.register_class(ArchLabUvSphereProperties)
+Object.ArchLabUvSphereGenerator = CollectionProperty(type=ArchLabUvSphereProperties)
 
 # ------------------------------------------------------------------
-# Define panel class to modify circles.
+# Define panel class to modify uvspheres.
 # ------------------------------------------------------------------
-class ArchLabCircleGeneratorPanel(Panel):
-    bl_idname = "OBJECT_PT_circle_generator"
-    bl_label = "Circle"
+class ArchLabUvSphereGeneratorPanel(Panel):
+    bl_idname = "OBJECT_PT_uvsphere_generator"
+    bl_label = "UvSphere"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'ArchLab'
@@ -206,7 +167,7 @@ class ArchLabCircleGeneratorPanel(Panel):
         o = context.object
         if o is None:
             return False
-        if 'ArchLabCircleGenerator' not in o:
+        if 'ArchLabUvSphereGenerator' not in o:
             return False
         else:
             return True
@@ -216,9 +177,9 @@ class ArchLabCircleGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabCircleGenerator', this panel is not created.
+        # If the selected object didn't be created with the group 'ArchLabUvSphereGenerator', this panel is not created.
         try:
-            if 'ArchLabCircleGenerator' not in o:
+            if 'ArchLabUvSphereGenerator' not in o:
                 return
         except:
             return
@@ -227,21 +188,21 @@ class ArchLabCircleGeneratorPanel(Panel):
         if bpy.context.mode == 'EDIT_MESH':
             layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
-            circle = o.ArchLabCircleGenerator[0]
+            uvsphere = o.ArchLabUvSphereGenerator[0]
             row = layout.row()
-            row.prop(circle, 'circle_radius')
+            row.prop(uvsphere, 'uvsphere_radius')
             row = layout.row()
-            row.prop(circle, 'circle_quality')
+            row.prop(uvsphere, 'uvsphere_segments')
             row = layout.row()
-            row.prop(circle, 'circle_depth')
+            row.prop(uvsphere, 'uvsphere_rings')
 
 # ------------------------------------------------------------------
-# Define operator class to create circles
+# Define operator class to create uvspheres
 # ------------------------------------------------------------------
-class ArchLabCircle(Operator):
-    bl_idname = "mesh.archlab_circle"
-    bl_label = "Circle"
-    bl_description = "Generate circle with walls, baseboard, floor and ceiling"
+class ArchLabUvSphere(Operator):
+    bl_idname = "mesh.archlab_uv_sphere"
+    bl_label = "UvSphere"
+    bl_description = "Generate uvsphere with walls, baseboard, floor and ceiling"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -258,7 +219,7 @@ class ArchLabCircle(Operator):
     # -----------------------------------------------------
     def execute(self, context):
         if bpy.context.mode == "OBJECT":
-            create_circle(self, context)
+            create_uvsphere(self, context)
             return {'FINISHED'}
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")
