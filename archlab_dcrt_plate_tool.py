@@ -29,6 +29,7 @@ import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import IntProperty, FloatProperty, CollectionProperty
 from .archlab_utils import *
+from .archlab_utils_material_data import *
 from .archlab_utils_mesh_data import *
 
 # ------------------------------------------------------------------------------
@@ -48,6 +49,12 @@ def create_plate(self, context):
 
     # we shape the mesh.
     shape_plate_mesh(plateobject, platemesh)
+    set_smooth(plateobject)
+    set_modifier_subsurf(plateobject)
+
+    # assign a material
+    mat = meshlib_ceramic_material()
+    set_material(plateobject, mat.name)
 
     # we select, and activate, main object for the plate.
     plateobject.select = True
@@ -205,7 +212,3 @@ class ArchLabPlate(Operator):
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")
             return {'CANCELLED'}
-
-
-
-
