@@ -170,17 +170,17 @@ def movetotopsolidify(myobject):
 class ArchLabPlaneProperties(PropertyGroup):
     plane_height = FloatProperty(
             name='Height',
-            default=1.0, precision=3,
+            default=1.0, precision=3, unit = 'LENGTH',
             description='Plane height', update=update_plane,
             )
     plane_width = FloatProperty(
             name='Width',
-            default=1.0, precision=3,
+            default=1.0, precision=3, unit = 'LENGTH',
             description='Plane width', update=update_plane,
             )
     plane_depth = FloatProperty(
             name='Thickness',
-            default=0.0, precision=4,
+            default=0.0, precision=4, unit = 'LENGTH',
             description='Thickness of the plane', update=update_plane,
             )
 

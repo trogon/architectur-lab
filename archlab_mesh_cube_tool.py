@@ -132,16 +132,19 @@ class ArchLabCubeProperties(PropertyGroup):
             name='Height',
             default=1.0, precision=3,
             description='Cube height', update=update_cube,
+            unit = 'LENGTH'
             )
     cube_width = FloatProperty(
             name='Width',
             default=1.0, precision=3,
             description='Cube width', update=update_cube,
+            unit = 'LENGTH'
             )
     cube_depth = FloatProperty(
             name='Depth',
             default=1.0, precision=3,
             description='Cube depth', update=update_cube,
+            unit = 'LENGTH'
             )
 
 bpy.utils.register_class(ArchLabCubeProperties)
