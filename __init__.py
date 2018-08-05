@@ -31,7 +31,7 @@
 # ----------------------------------------------
 bl_info = {
     "name": "Architecture Lab",
-    "author": "Maciej Klemarczyk (mklemarczyk)",
+    "author": "Insma Software - Maciej Klemarczyk (mklemarczyk)",
     "location": "View3D > Add > Mesh > ArchLab",
     "version": (1, 0, 0),
     "blender": (2, 7, 9),
