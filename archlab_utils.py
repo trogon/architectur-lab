@@ -31,15 +31,6 @@ from math import sin, cos, radians
 from mathutils import Vector, Matrix
 
 # --------------------------------------------------------------------
-# Get length Blender units
-# --------------------------------------------------------------------
-def get_blendunits(units):
-    if bpy.context.scene.unit_settings.system == "IMPERIAL":
-        return units * 0.3048
-    else:
-        return units
-
-# --------------------------------------------------------------------
 # Set normals
 # True = faces to inside
 # --------------------------------------------------------------------
