@@ -31,75 +31,69 @@ from bpy.props import FloatProperty, CollectionProperty
 from .archlab_utils import *
 
 # ------------------------------------------------------------------------------
-# Create main object for the plane.
+# Create main object for the cube.
 # ------------------------------------------------------------------------------
-def create_plane(self, context):
+def create_cube(self, context):
     # deselect all objects
     for o in bpy.data.objects:
         o.select = False
 
     # we create main object and mesh for walls
-    planemesh = bpy.data.meshes.new("Plane")
-    planeobject = bpy.data.objects.new("Plane", planemesh)
-    planeobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(planeobject)
-    planeobject.ArchLabPlaneGenerator.add()
+    cubemesh = bpy.data.meshes.new("Cube")
+    cubeobject = bpy.data.objects.new("Cube", cubemesh)
+    cubeobject.location = bpy.context.scene.cursor_location
+    bpy.context.scene.objects.link(cubeobject)
+    cubeobject.ArchLabCubeGenerator.add()
 
-    # we shape the walls and create other objects as children of 'PlaneObject'.
-    shape_plane_mesh(planeobject, planemesh)
+    # we shape the walls and create other objects as children of 'CubeObject'.
+    shape_cube_mesh(cubeobject, cubemesh)
 
-    # we select, and activate, main object for the plane.
-    planeobject.select = True
-    bpy.context.scene.objects.active = planeobject
+    # we select, and activate, main object for the cube.
+    cubeobject.select = True
+    bpy.context.scene.objects.active = cubeobject
 
 # ------------------------------------------------------------------------------
-# Shapes mesh and creates modifier solidify (the modifier, only the first time).
+# Shapes mesh the cube mesh
 # ------------------------------------------------------------------------------
-def shape_plane_mesh(myplane, tmp_mesh, update=False):
-    pp = myplane.ArchLabPlaneGenerator[0]  # "pp" means "plane properties".
+def shape_cube_mesh(mycube, tmp_mesh, update=False):
+    cp = mycube.ArchLabCubeGenerator[0]  # "cp" means "cube properties".
     mybase = None
     myfloor = None
     myceiling = None
     myshell = None
-    # Create plane mesh data
-    update_plane_mesh_data(tmp_mesh, get_blendunits(pp.plane_width), get_blendunits(pp.plane_height))
-    myplane.data = tmp_mesh
+    # Create cube mesh data
+    update_cube_mesh_data(tmp_mesh, get_blendunits(cp.cube_width), get_blendunits(cp.cube_height), get_blendunits(cp.cube_depth))
+    mycube.data = tmp_mesh
 
-    remove_doubles(myplane)
-    set_normals(myplane)
-
-    if pp.plane_depth > 0.0:
-        if update is False or is_solidify(myplane) is False:
-            set_modifier_solidify(myplane, get_blendunits(pp.plane_depth))
-        else:
-            for mod in myplane.modifiers:
-                if mod.type == 'SOLIDIFY':
-                    mod.thickness = pp.plane_depth
-        # Move to Top SOLIDIFY
-        movetotopsolidify(myplane)
-
-    else:  # clear not used SOLIDIFY
-        for mod in myplane.modifiers:
-            if mod.type == 'SOLIDIFY':
-                myplane.modifiers.remove(mod)
+    remove_doubles(mycube)
+    set_normals(mycube)
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != myplane.name:
+        if o.select is True and o.name != mycube.name:
             o.select = False
 
 # ------------------------------------------------------------------------------
-# Creates plane mesh data.
+# Creates cube mesh data.
 # ------------------------------------------------------------------------------
-def update_plane_mesh_data(mymesh, width, height):
+def update_cube_mesh_data(mymesh, width, height, depth):
     sizex = width
-    sizey = height
+    sizey = depth
+    sizez = height
     posx = width /2
-    posy = height /2
+    posy = depth /2
+    posz = height /2
 
-    myvertex = [(-posx, -posy, 0.0), (posx, -posy, 0.0),
-                (-posx, posy, 0.0), (posx, posy, 0.0)]
-    myfaces = [(0, 1, 3, 2)]
+    myvertex = [(-posx, -posy, -posz), (posx, -posy, -posz),
+                (-posx, posy, -posz), (posx, posy, -posz),
+                (-posx, -posy, posz), (posx, -posy, posz),
+                (-posx, posy, posz), (posx, posy, posz)]
+    myfaces = [(0, 1, 3, 2),
+                (0, 1, 5, 4),
+                (0, 4, 6, 2),
+                (1, 5, 7, 3),
+                (2, 3, 7, 6),
+                (4, 5, 7, 6)]
 
     mymesh.from_pydata(myvertex, [], myfaces)
     mymesh.update(calc_edges=True)
@@ -107,92 +101,58 @@ def update_plane_mesh_data(mymesh, width, height):
 # ------------------------------------------------------------------------------
 # Update wall mesh and children objects (baseboard, floor and ceiling).
 # ------------------------------------------------------------------------------
-def update_plane(self, context):
-    # When we update, the active object is the main object of the plane.
+def update_cube(self, context):
+    # When we update, the active object is the main object of the cube.
     o = bpy.context.active_object
     oldmesh = o.data
     oldname = o.data.name
-    # Now we deselect that plane object to not delete it.
+    # Now we deselect that cube object to not delete it.
     o.select = False
-    # and we create a new mesh for the plane:
+    # and we create a new mesh for the cube:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
         obj.select = False
     # Finally we shape the main mesh again,
-    shape_plane_mesh(o, tmp_mesh, True)
+    shape_cube_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
     # Remove data (mesh of active object),
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
-    # and select, and activate, the main object of the plane.
+    # and select, and activate, the main object of the cube.
     o.select = True
     bpy.context.scene.objects.active = o
 
-# -----------------------------------------------------
-# Verify if solidify exist
-# -----------------------------------------------------
-def is_solidify(myobject):
-    flag = False
-    try:
-        if myobject.modifiers is None:
-            return False
-
-        for mod in myobject.modifiers:
-            if mod.type == 'SOLIDIFY':
-                flag = True
-                break
-        return flag
-    except AttributeError:
-        return False
-
-# -----------------------------------------------------
-# Move Solidify to Top
-# -----------------------------------------------------
-def movetotopsolidify(myobject):
-    mymod = None
-    try:
-        if myobject.modifiers is not None:
-            for mod in myobject.modifiers:
-                if mod.type == 'SOLIDIFY':
-                    mymod = mod
-
-            if mymod is not None:
-                while myobject.modifiers[0] != mymod:
-                    bpy.ops.object.modifier_move_up(modifier=mymod.name)
-    except AttributeError:
-        return
-
 
 # ------------------------------------------------------------------
-# Define property group class to create or modify a planes.
+# Define property group class to create or modify a cubes.
 # ------------------------------------------------------------------
-class ArchLabPlaneProperties(PropertyGroup):
-    plane_height = FloatProperty(
+class ArchLabCubeProperties(PropertyGroup):
+    cube_height = FloatProperty(
             name='Height',
             default=1.0, precision=3,
-            description='Plane height', update=update_plane,
+            description='Cube height', update=update_cube,
             )
-    plane_width = FloatProperty(
+    cube_width = FloatProperty(
             name='Width',
             default=1.0, precision=3,
-            description='Plane width', update=update_plane,
+            description='Cube width', update=update_cube,
             )
-    plane_depth = FloatProperty(
-            name='Thickness',
-            default=0.0, precision=4,
-            description='Thickness of the plane', update=update_plane,
+    cube_depth = FloatProperty(
+            name='Depth',
+            default=1.0, precision=3,
+            description='Cube depth', update=update_cube,
             )
 
-bpy.utils.register_class(ArchLabPlaneProperties)
-Object.ArchLabPlaneGenerator = CollectionProperty(type=ArchLabPlaneProperties)
+bpy.utils.register_class(ArchLabCubeProperties)
+Object.ArchLabCubeGenerator = CollectionProperty(type=ArchLabCubeProperties)
 
 # ------------------------------------------------------------------
-# Define panel class to modify planes.
+# Define panel class to modify cubes.
 # ------------------------------------------------------------------
-class ArchLabPlaneGeneratorPanel(Panel):
-    bl_idname = "OBJECT_PT_plane_generator"
-    bl_label = "Plane"
+class ArchLabCubeGeneratorPanel(Panel):
+    bl_idname = "OBJECT_PT_cube_generator"
+    bl_label = "Cube"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'ArchLab'
@@ -205,7 +165,7 @@ class ArchLabPlaneGeneratorPanel(Panel):
         o = context.object
         if o is None:
             return False
-        if 'ArchLabPlaneGenerator' not in o:
+        if 'ArchLabCubeGenerator' not in o:
             return False
         else:
             return True
@@ -215,9 +175,9 @@ class ArchLabPlaneGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabPlaneGenerator', this panel is not created.
+        # If the selected object didn't be created with the group 'ArchLabCubeGenerator', this panel is not created.
         try:
-            if 'ArchLabPlaneGenerator' not in o:
+            if 'ArchLabCubeGenerator' not in o:
                 return
         except:
             return
@@ -226,21 +186,21 @@ class ArchLabPlaneGeneratorPanel(Panel):
         if bpy.context.mode == 'EDIT_MESH':
             layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
-            plane = o.ArchLabPlaneGenerator[0]
+            cube = o.ArchLabCubeGenerator[0]
             row = layout.row()
-            row.prop(plane, 'plane_width')
+            row.prop(cube, 'cube_width')
             row = layout.row()
-            row.prop(plane, 'plane_height')
+            row.prop(cube, 'cube_height')
             row = layout.row()
-            row.prop(plane, 'plane_depth')
+            row.prop(cube, 'cube_depth')
 
 # ------------------------------------------------------------------
-# Define operator class to create planes
+# Define operator class to create cubes
 # ------------------------------------------------------------------
-class ArchLabPlane(Operator):
-    bl_idname = "mesh.archlab_plane"
-    bl_label = "Plane"
-    bl_description = "Generate plane with walls, baseboard, floor and ceiling"
+class ArchLabCube(Operator):
+    bl_idname = "mesh.archlab_cube"
+    bl_label = "Cube"
+    bl_description = "Generate cube with walls, baseboard, floor and ceiling"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -257,7 +217,7 @@ class ArchLabPlane(Operator):
     # -----------------------------------------------------
     def execute(self, context):
         if bpy.context.mode == "OBJECT":
-            create_plane(self, context)
+            create_cube(self, context)
             return {'FINISHED'}
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")

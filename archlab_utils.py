@@ -27,6 +27,8 @@
 # ----------------------------------------------------------
 
 import bpy
+from math import sin, cos, radians
+from mathutils import Vector, Matrix
 
 # --------------------------------------------------------------------
 # Get length Blender units
@@ -80,3 +82,16 @@ def set_modifier_solidify(myobject, width):
                 mod.use_even_offset = True
                 mod.use_quality_normals = True
                 break
+
+# --------------------------------------------------------------------
+# Rotates a point in 2D space with specified angle
+# --------------------------------------------------------------------
+def rotate_point2d(posx, posy, angle):
+    v1 = Vector([posx, posy])
+    rada1 = radians(angle)
+    cosa1 = cos(rada1)
+    sina1 = sin(rada1)
+    mat1 = Matrix([[cosa1, -sina1],
+                    [sina1, cosa1]])
+    v2 = mat1 * v1
+    return v2
