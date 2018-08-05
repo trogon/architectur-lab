@@ -33,7 +33,7 @@ bl_info = {
     "name": "Architecture Lab",
     "author": "Insma Software - Maciej Klemarczyk (mklemarczyk)",
     "location": "View3D > Add > Mesh > ArchLab",
-    "version": (1, 0, 1),
+    "version": (1, 0, 2),
     "blender": (2, 7, 9),
     "description": "Creates rooms, doors, windows, and other architecture objects",
     "wiki_url": "https://github.com/insma/ArchitectureLab/wiki",
@@ -48,16 +48,20 @@ bl_info = {
 if "bpy" in locals():
     import importlib
     importlib.reload(archlab_mesh_cube_tool)
+    importlib.reload(archlab_mesh_cube_tool)
     importlib.reload(archlab_mesh_plane_tool)
 
     print("archlab: Reloaded multifiles")
 else:
+    from . import archlab_mesh_circle_tool
     from . import archlab_mesh_cube_tool
     from . import archlab_mesh_plane_tool
 
     print("archlab: Imported multifiles")
 
 modules = [
+    archlab_mesh_circle_tool.ArchLabCircle,
+    archlab_mesh_circle_tool.ArchLabCircleGeneratorPanel,
     archlab_mesh_cube_tool.ArchLabCube,
     archlab_mesh_cube_tool.ArchLabCubeGeneratorPanel,
     archlab_mesh_plane_tool.ArchLabPlane,
@@ -97,6 +101,7 @@ class ArchLabMeshPrimitivesAdd(Menu):
     def draw(self, context):
         self.layout.operator("mesh.archlab_plane", text="Add Plane")
         self.layout.operator("mesh.archlab_cube", text="Add Cube")
+        self.layout.operator("mesh.archlab_circle", text="Add Circle")
 
 # ----------------------------------------------------------
 # ArchLab menu

@@ -27,73 +27,81 @@
 # ----------------------------------------------------------
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import FloatProperty, CollectionProperty
+from bpy.props import IntProperty, FloatProperty, CollectionProperty
 from .archlab_utils import *
 
 # ------------------------------------------------------------------------------
-# Create main object for the cube.
+# Create main object for the circle.
 # ------------------------------------------------------------------------------
-def create_cube(self, context):
+def create_circle(self, context):
     # deselect all objects
     for o in bpy.data.objects:
         o.select = False
 
     # we create main object and mesh for walls
-    cubemesh = bpy.data.meshes.new("Cube")
-    cubeobject = bpy.data.objects.new("Cube", cubemesh)
-    cubeobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(cubeobject)
-    cubeobject.ArchLabCubeGenerator.add()
+    circlemesh = bpy.data.meshes.new("Circle")
+    circleobject = bpy.data.objects.new("Circle", circlemesh)
+    circleobject.location = bpy.context.scene.cursor_location
+    bpy.context.scene.objects.link(circleobject)
+    circleobject.ArchLabCircleGenerator.add()
 
-    # we shape the walls and create other objects as children of 'CubeObject'.
-    shape_cube_mesh(cubeobject, cubemesh)
+    # we shape the walls and create other objects as children of 'CircleObject'.
+    shape_circle_mesh(circleobject, circlemesh)
 
-    # we select, and activate, main object for the cube.
-    cubeobject.select = True
-    bpy.context.scene.objects.active = cubeobject
+    # we select, and activate, main object for the circle.
+    circleobject.select = True
+    bpy.context.scene.objects.active = circleobject
 
 # ------------------------------------------------------------------------------
-# Shapes mesh the cube mesh
+# Shapes mesh and creates modifier solidify (the modifier, only the first time).
 # ------------------------------------------------------------------------------
-def shape_cube_mesh(mycube, tmp_mesh, update=False):
-    cp = mycube.ArchLabCubeGenerator[0]  # "cp" means "cube properties".
+def shape_circle_mesh(mycircle, tmp_mesh, update=False):
+    pp = mycircle.ArchLabCircleGenerator[0]  # "pp" means "circle properties".
     mybase = None
     myfloor = None
     myceiling = None
     myshell = None
-    # Create cube mesh data
-    update_cube_mesh_data(tmp_mesh, cp.cube_width, cp.cube_height, cp.cube_depth)
-    mycube.data = tmp_mesh
+    # Create circle mesh data
+    update_circle_mesh_data(tmp_mesh, pp.circle_radius, pp.circle_quality)
+    mycircle.data = tmp_mesh
 
-    remove_doubles(mycube)
-    set_normals(mycube)
+    remove_doubles(mycircle)
+    set_normals(mycircle)
+
+    if pp.circle_depth > 0.0:
+        if update is False or is_solidify(mycircle) is False:
+            set_modifier_solidify(mycircle, pp.circle_depth)
+        else:
+            for mod in mycircle.modifiers:
+                if mod.type == 'SOLIDIFY':
+                    mod.thickness = pp.circle_depth
+        # Move to Top SOLIDIFY
+        movetotopsolidify(mycircle)
+
+    else:  # clear not used SOLIDIFY
+        for mod in mycircle.modifiers:
+            if mod.type == 'SOLIDIFY':
+                mycircle.modifiers.remove(mod)
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mycube.name:
+        if o.select is True and o.name != mycircle.name:
             o.select = False
 
 # ------------------------------------------------------------------------------
-# Creates cube mesh data.
+# Creates circle mesh data.
 # ------------------------------------------------------------------------------
-def update_cube_mesh_data(mymesh, width, height, depth):
-    sizex = width
-    sizey = depth
-    sizez = height
-    posx = width /2
-    posy = depth /2
-    posz = height /2
+def update_circle_mesh_data(mymesh, radius, vertices):
+    posx = radius
+    posy = 0.0
+    deltaAngle = 360 / vertices
 
-    myvertex = [(-posx, -posy, -posz), (posx, -posy, -posz),
-                (-posx, posy, -posz), (posx, posy, -posz),
-                (-posx, -posy, posz), (posx, -posy, posz),
-                (-posx, posy, posz), (posx, posy, posz)]
-    myfaces = [(0, 1, 3, 2),
-                (0, 1, 5, 4),
-                (0, 4, 6, 2),
-                (1, 5, 7, 3),
-                (2, 3, 7, 6),
-                (4, 5, 7, 6)]
+    myvertex = []
+    myfaces = [list(range(vertices))]
+
+    for t in range(vertices):
+        v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
+        myvertex.append((v1[0], v1[1], 0.0))
 
     mymesh.from_pydata(myvertex, [], myfaces)
     mymesh.update(calc_edges=True)
@@ -101,58 +109,93 @@ def update_cube_mesh_data(mymesh, width, height, depth):
 # ------------------------------------------------------------------------------
 # Update wall mesh and children objects (baseboard, floor and ceiling).
 # ------------------------------------------------------------------------------
-def update_cube(self, context):
-    # When we update, the active object is the main object of the cube.
+def update_circle(self, context):
+    # When we update, the active object is the main object of the circle.
     o = bpy.context.active_object
     oldmesh = o.data
     oldname = o.data.name
-    # Now we deselect that cube object to not delete it.
+    # Now we deselect that circle object to not delete it.
     o.select = False
-    # and we create a new mesh for the cube:
+    # and we create a new mesh for the circle:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
         obj.select = False
     # Finally we shape the main mesh again,
-    shape_cube_mesh(o, tmp_mesh, True)
+    shape_circle_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
     # Remove data (mesh of active object),
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
-    # and select, and activate, the main object of the cube.
+    # and select, and activate, the main object of the circle.
     o.select = True
     bpy.context.scene.objects.active = o
 
+# -----------------------------------------------------
+# Verify if solidify exist
+# -----------------------------------------------------
+def is_solidify(myobject):
+    flag = False
+    try:
+        if myobject.modifiers is None:
+            return False
+
+        for mod in myobject.modifiers:
+            if mod.type == 'SOLIDIFY':
+                flag = True
+                break
+        return flag
+    except AttributeError:
+        return False
+
+# -----------------------------------------------------
+# Move Solidify to Top
+# -----------------------------------------------------
+def movetotopsolidify(myobject):
+    mymod = None
+    try:
+        if myobject.modifiers is not None:
+            for mod in myobject.modifiers:
+                if mod.type == 'SOLIDIFY':
+                    mymod = mod
+
+            if mymod is not None:
+                while myobject.modifiers[0] != mymod:
+                    bpy.ops.object.modifier_move_up(modifier=mymod.name)
+    except AttributeError:
+        return
+
 
 # ------------------------------------------------------------------
-# Define property group class to create or modify a cubes.
+# Define property group class to create or modify a circles.
 # ------------------------------------------------------------------
-class ArchLabCubeProperties(PropertyGroup):
-    cube_height = FloatProperty(
+class ArchLabCircleProperties(PropertyGroup):
+    circle_radius = FloatProperty(
             name='Height',
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Cube height', update=update_cube,
+            description='Circle height', update=update_circle,
             )
-    cube_width = FloatProperty(
-            name='Width',
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Cube width', update=update_cube,
+    circle_quality = IntProperty(
+            name='Vertices',
+            min=2, max=1000,
+            default=32,
+            description='Circle vertices', update=update_circle,
             )
-    cube_depth = FloatProperty(
-            name='Depth',
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Cube depth', update=update_cube,
+    circle_depth = FloatProperty(
+            name='Thickness',
+            default=0.0, precision=4, unit = 'LENGTH',
+            description='Thickness of the circle', update=update_circle,
             )
 
-bpy.utils.register_class(ArchLabCubeProperties)
-Object.ArchLabCubeGenerator = CollectionProperty(type=ArchLabCubeProperties)
+bpy.utils.register_class(ArchLabCircleProperties)
+Object.ArchLabCircleGenerator = CollectionProperty(type=ArchLabCircleProperties)
 
 # ------------------------------------------------------------------
-# Define panel class to modify cubes.
+# Define panel class to modify circles.
 # ------------------------------------------------------------------
-class ArchLabCubeGeneratorPanel(Panel):
-    bl_idname = "OBJECT_PT_cube_generator"
-    bl_label = "Cube"
+class ArchLabCircleGeneratorPanel(Panel):
+    bl_idname = "OBJECT_PT_circle_generator"
+    bl_label = "Circle"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'ArchLab'
@@ -165,7 +208,7 @@ class ArchLabCubeGeneratorPanel(Panel):
         o = context.object
         if o is None:
             return False
-        if 'ArchLabCubeGenerator' not in o:
+        if 'ArchLabCircleGenerator' not in o:
             return False
         else:
             return True
@@ -175,9 +218,9 @@ class ArchLabCubeGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabCubeGenerator', this panel is not created.
+        # If the selected object didn't be created with the group 'ArchLabCircleGenerator', this panel is not created.
         try:
-            if 'ArchLabCubeGenerator' not in o:
+            if 'ArchLabCircleGenerator' not in o:
                 return
         except:
             return
@@ -186,21 +229,21 @@ class ArchLabCubeGeneratorPanel(Panel):
         if bpy.context.mode == 'EDIT_MESH':
             layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
-            cube = o.ArchLabCubeGenerator[0]
+            circle = o.ArchLabCircleGenerator[0]
             row = layout.row()
-            row.prop(cube, 'cube_width')
+            row.prop(circle, 'circle_radius')
             row = layout.row()
-            row.prop(cube, 'cube_height')
+            row.prop(circle, 'circle_quality')
             row = layout.row()
-            row.prop(cube, 'cube_depth')
+            row.prop(circle, 'circle_depth')
 
 # ------------------------------------------------------------------
-# Define operator class to create cubes
+# Define operator class to create circles
 # ------------------------------------------------------------------
-class ArchLabCube(Operator):
-    bl_idname = "mesh.archlab_cube"
-    bl_label = "Cube"
-    bl_description = "Generate cube with walls, baseboard, floor and ceiling"
+class ArchLabCircle(Operator):
+    bl_idname = "mesh.archlab_circle"
+    bl_label = "Circle"
+    bl_description = "Generate circle with walls, baseboard, floor and ceiling"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -217,7 +260,7 @@ class ArchLabCube(Operator):
     # -----------------------------------------------------
     def execute(self, context):
         if bpy.context.mode == "OBJECT":
-            create_cube(self, context)
+            create_circle(self, context)
             return {'FINISHED'}
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")
