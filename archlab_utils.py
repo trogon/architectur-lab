@@ -46,6 +46,20 @@ def set_normals(myobject, direction=False):
     bpy.ops.object.editmode_toggle()
 
 # --------------------------------------------------------------------
+# Set shade smooth
+# --------------------------------------------------------------------
+def set_smooth(myobject):
+    # deactivate others
+    for o in bpy.data.objects:
+        if o.select is True:
+            o.select = False
+
+    myobject.select = True
+    bpy.context.scene.objects.active = myobject
+    if bpy.context.scene.objects.active.name == myobject.name:
+        bpy.ops.object.shade_smooth()
+
+# --------------------------------------------------------------------
 # Remove doubles
 # --------------------------------------------------------------------
 def remove_doubles(myobject):
@@ -60,19 +74,48 @@ def remove_doubles(myobject):
     bpy.ops.object.editmode_toggle()
 
 # --------------------------------------------------------------------
-# Add modifier (solidify)
+# Adds material, creates new if material not exists
 # --------------------------------------------------------------------
-def set_modifier_solidify(myobject, width):
-    bpy.context.scene.objects.active = myobject
-    if bpy.context.scene.objects.active.name == myobject.name:
-        bpy.ops.object.modifier_add(type='SOLIDIFY')
-        for mod in myobject.modifiers:
-            if mod.type == 'SOLIDIFY':
-                mod.thickness = width
-                mod.offset = 0
-                mod.use_even_offset = True
-                mod.use_quality_normals = True
-                break
+def set_material(ob, matname, index = 0):
+    # Get material
+    mat = bpy.data.materials.get(matname)
+    if mat is None:
+        # create material
+        mat = bpy.data.materials.new(name=matname)
+    # Assign it to object
+    if ob.data.materials:
+        # assign to (index) material slot
+        ob.data.materials[index] = mat
+    else:
+        # no slots
+        ob.data.materials.append(mat)
+    return mat
+
+# --------------------------------------------------------------------
+# Adds solidify modifier
+# --------------------------------------------------------------------
+def set_modifier_solidify(myobject, width, modname = "Solidify ArchLib"):
+    modid = myobject.modifiers.find(modname)
+    if (modid == -1):
+        mod = myobject.modifiers.new(name=modname, type="SOLIDIFY")
+    else:
+        mod = myobject.modifiers[modname]
+    mod.thickness = width
+    mod.offset = 0
+    mod.use_even_offset = True
+    mod.use_quality_normals = True
+
+# --------------------------------------------------------------------
+# Adds subdivision modifier
+# --------------------------------------------------------------------
+def set_modifier_subsurf(myobject, modname = "Subsurf ArchLib"):
+    modid = myobject.modifiers.find(modname)
+    if (modid == -1):
+        mod = myobject.modifiers.new(name=modname, type="SUBSURF")
+    else:
+        mod = myobject.modifiers[modname]
+    mod.levels = 1
+    mod.render_levels = 2
 
 # --------------------------------------------------------------------
 # Rotates a point in 2D space with specified angle
@@ -86,6 +129,7 @@ def rotate_point2d(posx, posy, angle):
                     [sina1, cosa1]])
     v2 = mat1 * v1
     return v2
+
 
 # --------------------------------------------------------------------
 # Extracts vertices from selected object
