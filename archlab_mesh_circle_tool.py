@@ -92,8 +92,6 @@ def shape_circle_mesh(mycircle, tmp_mesh, update=False):
 # Creates circle mesh data.
 # ------------------------------------------------------------------------------
 def update_circle_mesh_data(mymesh, radius, vertices):
-    posx = radius
-    posy = 0.0
     deltaAngle = 360 / vertices
 
     myvertex = []
