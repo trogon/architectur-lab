@@ -38,14 +38,14 @@ def create_circle(self, context):
     for o in bpy.data.objects:
         o.select = False
 
-    # we create main object and mesh for walls
+    # we create main object and mesh for circle
     circlemesh = bpy.data.meshes.new("Circle")
     circleobject = bpy.data.objects.new("Circle", circlemesh)
     circleobject.location = bpy.context.scene.cursor_location
     bpy.context.scene.objects.link(circleobject)
     circleobject.ArchLabCircleGenerator.add()
 
-    # we shape the walls and create other objects as children of 'CircleObject'.
+    # we shape the mesh.
     shape_circle_mesh(circleobject, circlemesh)
 
     # we select, and activate, main object for the circle.
@@ -105,7 +105,7 @@ def update_circle_mesh_data(mymesh, radius, vertices):
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------
-# Update wall mesh and children objects (baseboard, floor and ceiling).
+# Update circle mesh.
 # ------------------------------------------------------------------------------
 def update_circle(self, context):
     # When we update, the active object is the main object of the circle.
@@ -241,7 +241,7 @@ class ArchLabCircleGeneratorPanel(Panel):
 class ArchLabCircle(Operator):
     bl_idname = "mesh.archlab_circle"
     bl_label = "Circle"
-    bl_description = "Generate circle with walls, baseboard, floor and ceiling"
+    bl_description = "Generate circle primitive mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 

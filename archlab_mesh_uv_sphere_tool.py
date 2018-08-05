@@ -38,14 +38,14 @@ def create_uvsphere(self, context):
     for o in bpy.data.objects:
         o.select = False
 
-    # we create main object and mesh for walls
+    # we create main object and mesh for uvsphere
     uvspheremesh = bpy.data.meshes.new("UvSphere")
     uvsphereobject = bpy.data.objects.new("UvSphere", uvspheremesh)
     uvsphereobject.location = bpy.context.scene.cursor_location
     bpy.context.scene.objects.link(uvsphereobject)
     uvsphereobject.ArchLabUvSphereGenerator.add()
 
-    # we shape the walls and create other objects as children of 'UvSphereObject'.
+    # we shape the mesh.
     shape_uvsphere_mesh(uvsphereobject, uvspheremesh)
 
     # we select, and activate, main object for the uvsphere.
@@ -99,7 +99,7 @@ def update_uvsphere_mesh_data(mymesh, radius, segments, rings):
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------
-# Update wall mesh and children objects (baseboard, floor and ceiling).
+# Update uvsphere mesh.
 # ------------------------------------------------------------------------------
 def update_uvsphere(self, context):
     # When we update, the active object is the main object of the uvsphere.
@@ -202,7 +202,7 @@ class ArchLabUvSphereGeneratorPanel(Panel):
 class ArchLabUvSphere(Operator):
     bl_idname = "mesh.archlab_uv_sphere"
     bl_label = "UvSphere"
-    bl_description = "Generate uvsphere with walls, baseboard, floor and ceiling"
+    bl_description = "Generate uvsphere primitive mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 

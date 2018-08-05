@@ -38,14 +38,14 @@ def create_plane(self, context):
     for o in bpy.data.objects:
         o.select = False
 
-    # we create main object and mesh for walls
+    # we create main object and mesh for plane
     planemesh = bpy.data.meshes.new("Plane")
     planeobject = bpy.data.objects.new("Plane", planemesh)
     planeobject.location = bpy.context.scene.cursor_location
     bpy.context.scene.objects.link(planeobject)
     planeobject.ArchLabPlaneGenerator.add()
 
-    # we shape the walls and create other objects as children of 'PlaneObject'.
+    # we shape the mesh.
     shape_plane_mesh(planeobject, planemesh)
 
     # we select, and activate, main object for the plane.
@@ -105,7 +105,7 @@ def update_plane_mesh_data(mymesh, width, height):
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------
-# Update wall mesh and children objects (baseboard, floor and ceiling).
+# Update plane mesh.
 # ------------------------------------------------------------------------------
 def update_plane(self, context):
     # When we update, the active object is the main object of the plane.
@@ -240,7 +240,7 @@ class ArchLabPlaneGeneratorPanel(Panel):
 class ArchLabPlane(Operator):
     bl_idname = "mesh.archlab_plane"
     bl_label = "Plane"
-    bl_description = "Generate plane with walls, baseboard, floor and ceiling"
+    bl_description = "Generate plane primitive mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
