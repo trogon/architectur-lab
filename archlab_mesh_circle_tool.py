@@ -62,7 +62,7 @@ def shape_circle_mesh(mycircle, tmp_mesh, update=False):
     myceiling = None
     myshell = None
     # Create circle mesh data
-    update_circle_mesh_data(tmp_mesh, get_blendunits(pp.circle_radius), pp.circle_quality)
+    update_circle_mesh_data(tmp_mesh, pp.circle_radius, pp.circle_quality)
     mycircle.data = tmp_mesh
 
     remove_doubles(mycircle)
@@ -70,7 +70,7 @@ def shape_circle_mesh(mycircle, tmp_mesh, update=False):
 
     if pp.circle_depth > 0.0:
         if update is False or is_solidify(mycircle) is False:
-            set_modifier_solidify(mycircle, get_blendunits(pp.circle_depth))
+            set_modifier_solidify(mycircle, pp.circle_depth)
         else:
             for mod in mycircle.modifiers:
                 if mod.type == 'SOLIDIFY':

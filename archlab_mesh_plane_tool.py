@@ -62,7 +62,7 @@ def shape_plane_mesh(myplane, tmp_mesh, update=False):
     myceiling = None
     myshell = None
     # Create plane mesh data
-    update_plane_mesh_data(tmp_mesh, get_blendunits(pp.plane_width), get_blendunits(pp.plane_height))
+    update_plane_mesh_data(tmp_mesh, pp.plane_width, pp.plane_height)
     myplane.data = tmp_mesh
 
     remove_doubles(myplane)
@@ -70,7 +70,7 @@ def shape_plane_mesh(myplane, tmp_mesh, update=False):
 
     if pp.plane_depth > 0.0:
         if update is False or is_solidify(myplane) is False:
-            set_modifier_solidify(myplane, get_blendunits(pp.plane_depth))
+            set_modifier_solidify(myplane, pp.plane_depth)
         else:
             for mod in myplane.modifiers:
                 if mod.type == 'SOLIDIFY':

@@ -62,7 +62,7 @@ def shape_cube_mesh(mycube, tmp_mesh, update=False):
     myceiling = None
     myshell = None
     # Create cube mesh data
-    update_cube_mesh_data(tmp_mesh, get_blendunits(cp.cube_width), get_blendunits(cp.cube_height), get_blendunits(cp.cube_depth))
+    update_cube_mesh_data(tmp_mesh, cp.cube_width, cp.cube_height, cp.cube_depth)
     mycube.data = tmp_mesh
 
     remove_doubles(mycube)
@@ -130,21 +130,18 @@ def update_cube(self, context):
 class ArchLabCubeProperties(PropertyGroup):
     cube_height = FloatProperty(
             name='Height',
-            default=1.0, precision=3,
+            default=1.0, precision=3, unit = 'LENGTH',
             description='Cube height', update=update_cube,
-            unit = 'LENGTH'
             )
     cube_width = FloatProperty(
             name='Width',
-            default=1.0, precision=3,
+            default=1.0, precision=3, unit = 'LENGTH',
             description='Cube width', update=update_cube,
-            unit = 'LENGTH'
             )
     cube_depth = FloatProperty(
             name='Depth',
-            default=1.0, precision=3,
+            default=1.0, precision=3, unit = 'LENGTH',
             description='Cube depth', update=update_cube,
-            unit = 'LENGTH'
             )
 
 bpy.utils.register_class(ArchLabCubeProperties)
