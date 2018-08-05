@@ -92,9 +92,21 @@ def set_material(ob, matname, index = 0):
     return mat
 
 # --------------------------------------------------------------------
+# Adds array modifier
+# --------------------------------------------------------------------
+def set_modifier_array(myobject, relativeoffset = (1.0, 0.0, 0.0), count = 2, modname = "Array ArchLib"):
+    modid = myobject.modifiers.find(modname)
+    if (modid == -1):
+        mod = myobject.modifiers.new(name=modname, type="ARRAY")
+    else:
+        mod = myobject.modifiers[modname]
+    mod.relative_offset_displace = relativeoffset
+    mod.count = count
+
+# --------------------------------------------------------------------
 # Adds solidify modifier
 # --------------------------------------------------------------------
-def set_modifier_solidify(myobject, width, modname = "Solidify ArchLib"):
+def set_modifier_solidify(myobject, width = 0.01, modname = "Solidify ArchLib"):
     modid = myobject.modifiers.find(modname)
     if (modid == -1):
         mod = myobject.modifiers.new(name=modname, type="SOLIDIFY")
@@ -108,14 +120,14 @@ def set_modifier_solidify(myobject, width, modname = "Solidify ArchLib"):
 # --------------------------------------------------------------------
 # Adds subdivision modifier
 # --------------------------------------------------------------------
-def set_modifier_subsurf(myobject, modname = "Subsurf ArchLib"):
+def set_modifier_subsurf(myobject, levels = 1, renderlevels = 2, modname = "Subsurf ArchLib"):
     modid = myobject.modifiers.find(modname)
     if (modid == -1):
         mod = myobject.modifiers.new(name=modname, type="SUBSURF")
     else:
         mod = myobject.modifiers[modname]
-    mod.levels = 1
-    mod.render_levels = 2
+    mod.levels = levels
+    mod.render_levels = renderlevels
 
 # --------------------------------------------------------------------
 # Rotates a point in 2D space with specified angle
@@ -136,6 +148,12 @@ def rotate_point2d(posx, posy, angle):
 # --------------------------------------------------------------------
 def extract_vertices():
     print("".join(["[", ",".join(str(v.co).replace("<Vector ", "").replace(">", "") for v in bpy.context.object.data.vertices), "]"]))
+
+# --------------------------------------------------------------------
+# Extracts edges from selected object
+# --------------------------------------------------------------------
+def extract_vertices():
+    print("".join(["[(", "),(".join(",".join(str(v) for v in e.vertices) for e in bpy.context.object.data.edges), ")]"]))
 
 # --------------------------------------------------------------------
 # Extracts faces from selected object
