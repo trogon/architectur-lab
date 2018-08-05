@@ -33,7 +33,7 @@ bl_info = {
     "name": "Architecture Lab",
     "author": "Insma Software - Maciej Klemarczyk (mklemarczyk)",
     "location": "View3D > Add > Mesh > ArchLab",
-    "version": (1, 0, 2),
+    "version": (1, 0, 3),
     "blender": (2, 7, 9),
     "description": "Creates rooms, doors, windows, and other architecture objects",
     "wiki_url": "https://github.com/insma/ArchitectureLab/wiki",
@@ -50,12 +50,14 @@ if "bpy" in locals():
     importlib.reload(archlab_mesh_cube_tool)
     importlib.reload(archlab_mesh_cube_tool)
     importlib.reload(archlab_mesh_plane_tool)
+    importlib.reload(archlab_mesh_uv_sphere_tool)
 
     print("archlab: Reloaded multifiles")
 else:
     from . import archlab_mesh_circle_tool
     from . import archlab_mesh_cube_tool
     from . import archlab_mesh_plane_tool
+    from . import archlab_mesh_uv_sphere_tool
 
     print("archlab: Imported multifiles")
 
@@ -65,7 +67,9 @@ modules = [
     archlab_mesh_cube_tool.ArchLabCube,
     archlab_mesh_cube_tool.ArchLabCubeGeneratorPanel,
     archlab_mesh_plane_tool.ArchLabPlane,
-    archlab_mesh_plane_tool.ArchLabPlaneGeneratorPanel
+    archlab_mesh_plane_tool.ArchLabPlaneGeneratorPanel,
+    archlab_mesh_uv_sphere_tool.ArchLabUvSphere,
+    archlab_mesh_uv_sphere_tool.ArchLabUvSphereGeneratorPanel,
 ]
 
 
@@ -99,9 +103,10 @@ class ArchLabMeshPrimitivesAdd(Menu):
     bl_label = "Primitives"
 
     def draw(self, context):
-        self.layout.operator("mesh.archlab_plane", text="Add Plane")
-        self.layout.operator("mesh.archlab_cube", text="Add Cube")
-        self.layout.operator("mesh.archlab_circle", text="Add Circle")
+        self.layout.operator("mesh.archlab_plane", text="Add Plane", icon="MESH_PLANE")
+        self.layout.operator("mesh.archlab_cube", text="Add Cube", icon="MESH_CUBE")
+        self.layout.operator("mesh.archlab_circle", text="Add Circle", icon="MESH_CIRCLE")
+        self.layout.operator("mesh.archlab_uv_sphere", text="Add UV Sphere", icon="MESH_UVSPHERE")
 
 # ----------------------------------------------------------
 # ArchLab menu
