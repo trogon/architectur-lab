@@ -29,167 +29,113 @@ import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import IntProperty, FloatProperty, CollectionProperty
 from .archlab_utils import *
+from .archlab_utils_mesh_data import *
 
 # ------------------------------------------------------------------------------
-# Create main object for the circle.
+# Create main object for the plate.
 # ------------------------------------------------------------------------------
-def create_circle(self, context):
+def create_plate(self, context):
     # deselect all objects
     for o in bpy.data.objects:
         o.select = False
 
-    # we create main object and mesh for circle
-    circlemesh = bpy.data.meshes.new("Circle")
-    circleobject = bpy.data.objects.new("Circle", circlemesh)
-    circleobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(circleobject)
-    circleobject.ArchLabCircleGenerator.add()
+    # we create main object and mesh
+    platemesh = bpy.data.meshes.new("Plate")
+    plateobject = bpy.data.objects.new("Plate", platemesh)
+    plateobject.location = bpy.context.scene.cursor_location
+    bpy.context.scene.objects.link(plateobject)
+    plateobject.ArchLabPlateGenerator.add()
 
     # we shape the mesh.
-    shape_circle_mesh(circleobject, circlemesh)
+    shape_plate_mesh(plateobject, platemesh)
 
-    # we select, and activate, main object for the circle.
-    circleobject.select = True
-    bpy.context.scene.objects.active = circleobject
+    # we select, and activate, main object for the plate.
+    plateobject.select = True
+    bpy.context.scene.objects.active = plateobject
 
 # ------------------------------------------------------------------------------
-# Shapes mesh and creates modifier solidify (the modifier, only the first time).
+# Shapes mesh the plate mesh
 # ------------------------------------------------------------------------------
-def shape_circle_mesh(mycircle, tmp_mesh, update=False):
-    pp = mycircle.ArchLabCircleGenerator[0]  # "pp" means "circle properties".
-    # Create circle mesh data
-    update_circle_mesh_data(tmp_mesh, pp.circle_radius, pp.circle_quality)
-    mycircle.data = tmp_mesh
+def shape_plate_mesh(myplate, tmp_mesh, update=False):
+    usp = myplate.ArchLabPlateGenerator[0]  # "usp" means "plate properties".
+    # Create plate mesh data
+    update_plate_mesh_data(tmp_mesh, usp.plate_radius, usp.plate_height, usp.plate_segments)
+    myplate.data = tmp_mesh
 
-    remove_doubles(mycircle)
-    set_normals(mycircle)
-
-    if pp.circle_depth > 0.0:
-        if update is False or is_solidify(mycircle) is False:
-            set_modifier_solidify(mycircle, pp.circle_depth)
-        else:
-            for mod in mycircle.modifiers:
-                if mod.type == 'SOLIDIFY':
-                    mod.thickness = pp.circle_depth
-        # Move to Top SOLIDIFY
-        movetotopsolidify(mycircle)
-
-    else:  # clear not used SOLIDIFY
-        for mod in mycircle.modifiers:
-            if mod.type == 'SOLIDIFY':
-                mycircle.modifiers.remove(mod)
+    remove_doubles(myplate)
+    set_normals(myplate)
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mycircle.name:
+        if o.select is True and o.name != myplate.name:
             o.select = False
 
 # ------------------------------------------------------------------------------
-# Creates circle mesh data.
+# Creates plate mesh data.
 # ------------------------------------------------------------------------------
-def update_circle_mesh_data(mymesh, radius, vertices):
-    deltaAngle = 360 / vertices
-
-    myvertex = []
-    myfaces = [list(range(vertices))]
-
-    for t in range(vertices):
-        v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
-        myvertex.append((v1[0], v1[1], 0.0))
+def update_plate_mesh_data(mymesh, radius, height, segments):
+    myvertex = meshlib_deep_plate_vertices()
+    myfaces = meshlib_deep_plate_faces()
 
     mymesh.from_pydata(myvertex, [], myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------
-# Update circle mesh.
+# Update plate mesh.
 # ------------------------------------------------------------------------------
-def update_circle(self, context):
-    # When we update, the active object is the main object of the circle.
+def update_plate(self, context):
+    # When we update, the active object is the main object of the plate.
     o = bpy.context.active_object
     oldmesh = o.data
     oldname = o.data.name
-    # Now we deselect that circle object to not delete it.
+    # Now we deselect that plate object to not delete it.
     o.select = False
-    # and we create a new mesh for the circle:
+    # and we create a new mesh for the plate:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
         obj.select = False
     # Finally we shape the main mesh again,
-    shape_circle_mesh(o, tmp_mesh, True)
+    shape_plate_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
     # Remove data (mesh of active object),
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
-    # and select, and activate, the main object of the circle.
+    # and select, and activate, the main object of the plate.
     o.select = True
     bpy.context.scene.objects.active = o
 
-# -----------------------------------------------------
-# Verify if solidify exist
-# -----------------------------------------------------
-def is_solidify(myobject):
-    flag = False
-    try:
-        if myobject.modifiers is None:
-            return False
-
-        for mod in myobject.modifiers:
-            if mod.type == 'SOLIDIFY':
-                flag = True
-                break
-        return flag
-    except AttributeError:
-        return False
-
-# -----------------------------------------------------
-# Move Solidify to Top
-# -----------------------------------------------------
-def movetotopsolidify(myobject):
-    mymod = None
-    try:
-        if myobject.modifiers is not None:
-            for mod in myobject.modifiers:
-                if mod.type == 'SOLIDIFY':
-                    mymod = mod
-
-            if mymod is not None:
-                while myobject.modifiers[0] != mymod:
-                    bpy.ops.object.modifier_move_up(modifier=mymod.name)
-    except AttributeError:
-        return
-
 
 # ------------------------------------------------------------------
-# Define property group class to create or modify a circles.
+# Define property group class to create or modify a plates.
 # ------------------------------------------------------------------
-class ArchLabCircleProperties(PropertyGroup):
-    circle_radius = FloatProperty(
+class ArchLabPlateProperties(PropertyGroup):
+    plate_radius = FloatProperty(
+            name='Radius',
+            default=0.21, precision=3, unit = 'LENGTH',
+            description='Plate radius', update=update_plate,
+            )
+    plate_height = FloatProperty(
             name='Height',
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Circle height', update=update_circle,
+            default=0.03, precision=3, unit = 'LENGTH',
+            description='Plate height', update=update_plate,
             )
-    circle_quality = IntProperty(
-            name='Vertices',
-            min=2, max=1000,
-            default=32,
-            description='Circle vertices', update=update_circle,
-            )
-    circle_depth = FloatProperty(
-            name='Thickness',
-            default=0.0, precision=4, unit = 'LENGTH',
-            description='Thickness of the circle', update=update_circle,
+    plate_segments = IntProperty(
+            name='Segments',
+            min=3, max=1000,
+            default=16,
+            description='Plate segments amount', update=update_plate,
             )
 
-bpy.utils.register_class(ArchLabCircleProperties)
-Object.ArchLabCircleGenerator = CollectionProperty(type=ArchLabCircleProperties)
+bpy.utils.register_class(ArchLabPlateProperties)
+Object.ArchLabPlateGenerator = CollectionProperty(type=ArchLabPlateProperties)
 
 # ------------------------------------------------------------------
-# Define panel class to modify circles.
+# Define panel class to modify plates.
 # ------------------------------------------------------------------
-class ArchLabCircleGeneratorPanel(Panel):
-    bl_idname = "OBJECT_PT_circle_generator"
-    bl_label = "Circle"
+class ArchLabPlateGeneratorPanel(Panel):
+    bl_idname = "OBJECT_PT_plate_generator"
+    bl_label = "Plate"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'ArchLab'
@@ -202,7 +148,7 @@ class ArchLabCircleGeneratorPanel(Panel):
         o = context.object
         if o is None:
             return False
-        if 'ArchLabCircleGenerator' not in o:
+        if 'ArchLabPlateGenerator' not in o:
             return False
         else:
             return True
@@ -212,9 +158,9 @@ class ArchLabCircleGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabCircleGenerator', this panel is not created.
+        # If the selected object didn't be created with the group 'ArchLabPlateGenerator', this panel is not created.
         try:
-            if 'ArchLabCircleGenerator' not in o:
+            if 'ArchLabPlateGenerator' not in o:
                 return
         except:
             return
@@ -223,21 +169,21 @@ class ArchLabCircleGeneratorPanel(Panel):
         if bpy.context.mode == 'EDIT_MESH':
             layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
-            circle = o.ArchLabCircleGenerator[0]
-            row = layout.row()
-            row.prop(circle, 'circle_radius')
-            row = layout.row()
-            row.prop(circle, 'circle_quality')
-            row = layout.row()
-            row.prop(circle, 'circle_depth')
+            plate = o.ArchLabPlateGenerator[0]
+            # row = layout.row()
+            # row.prop(plate, 'plate_radius')
+            # row = layout.row()
+            # row.prop(plate, 'plate_height')
+            # row = layout.row()
+            # row.prop(plate, 'plate_segments')
 
 # ------------------------------------------------------------------
-# Define operator class to create circles
+# Define operator class to create plates
 # ------------------------------------------------------------------
-class ArchLabCircle(Operator):
-    bl_idname = "mesh.archlab_circle"
-    bl_label = "Circle"
-    bl_description = "Generate circle primitive mesh"
+class ArchLabPlate(Operator):
+    bl_idname = "mesh.archlab_plate"
+    bl_label = "Plate"
+    bl_description = "Generate plate decoration"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -254,8 +200,12 @@ class ArchLabCircle(Operator):
     # -----------------------------------------------------
     def execute(self, context):
         if bpy.context.mode == "OBJECT":
-            create_circle(self, context)
+            create_plate(self, context)
             return {'FINISHED'}
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")
             return {'CANCELLED'}
+
+
+
+

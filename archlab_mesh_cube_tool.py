@@ -38,14 +38,14 @@ def create_cube(self, context):
     for o in bpy.data.objects:
         o.select = False
 
-    # we create main object and mesh for walls
+    # we create main object and mesh for cube
     cubemesh = bpy.data.meshes.new("Cube")
     cubeobject = bpy.data.objects.new("Cube", cubemesh)
     cubeobject.location = bpy.context.scene.cursor_location
     bpy.context.scene.objects.link(cubeobject)
     cubeobject.ArchLabCubeGenerator.add()
 
-    # we shape the walls and create other objects as children of 'CubeObject'.
+    # we shape the mesh.
     shape_cube_mesh(cubeobject, cubemesh)
 
     # we select, and activate, main object for the cube.
@@ -57,10 +57,6 @@ def create_cube(self, context):
 # ------------------------------------------------------------------------------
 def shape_cube_mesh(mycube, tmp_mesh, update=False):
     cp = mycube.ArchLabCubeGenerator[0]  # "cp" means "cube properties".
-    mybase = None
-    myfloor = None
-    myceiling = None
-    myshell = None
     # Create cube mesh data
     update_cube_mesh_data(tmp_mesh, cp.cube_width, cp.cube_height, cp.cube_depth)
     mycube.data = tmp_mesh
@@ -99,7 +95,7 @@ def update_cube_mesh_data(mymesh, width, height, depth):
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------
-# Update wall mesh and children objects (baseboard, floor and ceiling).
+# Update cube mesh.
 # ------------------------------------------------------------------------------
 def update_cube(self, context):
     # When we update, the active object is the main object of the cube.
@@ -200,7 +196,7 @@ class ArchLabCubeGeneratorPanel(Panel):
 class ArchLabCube(Operator):
     bl_idname = "mesh.archlab_cube"
     bl_label = "Cube"
-    bl_description = "Generate cube with walls, baseboard, floor and ceiling"
+    bl_description = "Generate cube primitive mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 

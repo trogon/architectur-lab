@@ -33,7 +33,7 @@ bl_info = {
     "name": "Architecture Lab",
     "author": "Insma Software - Maciej Klemarczyk (mklemarczyk)",
     "location": "View3D > Add > Mesh > ArchLab",
-    "version": (1, 0, 3),
+    "version": (1, 0, 4),
     "blender": (2, 7, 9),
     "description": "Creates rooms, doors, windows, and other architecture objects",
     "wiki_url": "https://github.com/insma/ArchitectureLab/wiki",
@@ -47,6 +47,7 @@ bl_info = {
 # ----------------------------------------------
 if "bpy" in locals():
     import importlib
+    importlib.reload(archlab_dcrt_plate_tool)
     importlib.reload(archlab_mesh_cube_tool)
     importlib.reload(archlab_mesh_cube_tool)
     importlib.reload(archlab_mesh_plane_tool)
@@ -54,6 +55,7 @@ if "bpy" in locals():
 
     print("archlab: Reloaded multifiles")
 else:
+    from . import archlab_dcrt_plate_tool
     from . import archlab_mesh_circle_tool
     from . import archlab_mesh_cube_tool
     from . import archlab_mesh_plane_tool
@@ -62,6 +64,8 @@ else:
     print("archlab: Imported multifiles")
 
 modules = [
+    archlab_dcrt_plate_tool.ArchLabPlate,
+    archlab_dcrt_plate_tool.ArchLabPlateGeneratorPanel,
     archlab_mesh_circle_tool.ArchLabCircle,
     archlab_mesh_circle_tool.ArchLabCircleGeneratorPanel,
     archlab_mesh_cube_tool.ArchLabCube,
@@ -96,6 +100,16 @@ from bpy.types import (
 
 
 # ----------------------------------------------------------
+# Decorations menu
+# ----------------------------------------------------------
+class ArchLabMeshDecorationsAdd(Menu):
+    bl_idname = "INFO_MT_archlab_mesh_decorations_add"
+    bl_label = "Decorations"
+
+    def draw(self, context):
+        self.layout.operator("mesh.archlab_plate", text="Add Plate")
+
+# ----------------------------------------------------------
 # Primitives menu
 # ----------------------------------------------------------
 class ArchLabMeshPrimitivesAdd(Menu):
@@ -118,9 +132,11 @@ class ArchLabMeshCustomMenuAdd(Menu):
     def draw(self, context):
         self.layout.operator_context = 'INVOKE_REGION_WIN'
         self.layout.menu("INFO_MT_archlab_mesh_primitives_add", text="Primitives", icon="GROUP")
+        self.layout.menu("INFO_MT_archlab_mesh_decorations_add", text="Decorations", icon="GROUP")
 
 modules.extend([
     ArchLabMeshCustomMenuAdd,
+    ArchLabMeshDecorationsAdd,
     ArchLabMeshPrimitivesAdd
 ])
 
