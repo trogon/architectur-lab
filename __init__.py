@@ -33,7 +33,7 @@ bl_info = {
     "name": "Architecture Lab",
     "author": "Insma Software - Maciej Klemarczyk (mklemarczyk)",
     "location": "View3D > Add > Mesh > ArchLab",
-    "version": (1, 0, 5),
+    "version": (1, 0, 6),
     "blender": (2, 7, 9),
     "description": "Creates rooms, doors, windows, and other architecture objects",
     "wiki_url": "https://github.com/insma/ArchitectureLab/wiki",
@@ -52,6 +52,7 @@ if "bpy" in locals():
     importlib.reload(archlab_mesh_cube_tool)
     importlib.reload(archlab_mesh_plane_tool)
     importlib.reload(archlab_mesh_uv_sphere_tool)
+    importlib.reload(archlab_room_wall_tool)
 
     print("archlab: Reloaded multifiles")
 else:
@@ -60,6 +61,7 @@ else:
     from . import archlab_mesh_cube_tool
     from . import archlab_mesh_plane_tool
     from . import archlab_mesh_uv_sphere_tool
+    from . import archlab_room_wall_tool
 
     print("archlab: Imported multifiles")
 
@@ -74,6 +76,8 @@ modules = [
     archlab_mesh_plane_tool.ArchLabPlaneGeneratorPanel,
     archlab_mesh_uv_sphere_tool.ArchLabUvSphere,
     archlab_mesh_uv_sphere_tool.ArchLabUvSphereGeneratorPanel,
+    archlab_room_wall_tool.ArchLabWall,
+    archlab_room_wall_tool.ArchLabWallGeneratorPanel,
 ]
 
 
@@ -131,6 +135,8 @@ class ArchLabMeshCustomMenuAdd(Menu):
 
     def draw(self, context):
         self.layout.operator_context = 'INVOKE_REGION_WIN'
+        self.layout.operator("mesh.archlab_wall", text="Add Wall")
+        self.layout.separator()
         self.layout.menu("INFO_MT_archlab_mesh_primitives_add", text="Primitives", icon="GROUP")
         self.layout.menu("INFO_MT_archlab_mesh_decorations_add", text="Decorations", icon="GROUP")
 
