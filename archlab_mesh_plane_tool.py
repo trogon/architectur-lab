@@ -92,19 +92,14 @@ def shape_plane_mesh(myplane, tmp_mesh, update=False):
 # Creates plane mesh data.
 # ------------------------------------------------------------------------------
 def update_plane_mesh_data(mymesh, width, height):
-    lastx = -width /2
-    lasty = -height /2
     sizex = width
     sizey = height
+    posx = width /2
+    posy = height /2
 
-    myvertex = [(lastx, lasty, 0.0), (-lastx, lasty, 0.0)]
-    myfaces = []
-    lastface = 0
-
-    myvertex.extend([(lastx, lasty + sizey, 0.0),
-                    (lastx + sizex, lasty + sizey, 0.0)])
-
-    myfaces.extend([(lastface, lastface + 1, lastface + 3, lastface + 2)])
+    myvertex = [(-posx, -posy, 0.0), (posx, -posy, 0.0),
+                (-posx, posy, 0.0), (posx, posy, 0.0)]
+    myfaces = [(0, 1, 3, 2)]
 
     mymesh.from_pydata(myvertex, [], myfaces)
     mymesh.update(calc_edges=True)
@@ -124,7 +119,7 @@ def update_plane(self, context):
     # deselect all objects
     for obj in bpy.data.objects:
         obj.select = False
-    # Finally we shape the main mesh again\,
+    # Finally we shape the main mesh again,
     shape_plane_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
     # Remove data (mesh of active object),
