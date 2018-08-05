@@ -86,3 +86,15 @@ def rotate_point2d(posx, posy, angle):
                     [sina1, cosa1]])
     v2 = mat1 * v1
     return v2
+
+# --------------------------------------------------------------------
+# Extracts vertices from selected object
+# --------------------------------------------------------------------
+def extract_vertices():
+    print("".join(["[", ",".join(str(v.co).replace("<Vector ", "").replace(">", "") for v in bpy.context.object.data.vertices), "]"]))
+
+# --------------------------------------------------------------------
+# Extracts faces from selected object
+# --------------------------------------------------------------------
+def extract_faces():
+    print("".join(["[(", "),(".join(",".join(str(v) for v in p.vertices) for p in bpy.context.object.data.polygons), ")]"]))
