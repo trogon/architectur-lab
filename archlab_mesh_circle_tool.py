@@ -27,7 +27,7 @@
 # ----------------------------------------------------------
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import IntProperty, FloatProperty, CollectionProperty
+from bpy.props import EnumProperty, IntProperty, FloatProperty, CollectionProperty
 from .archlab_utils import *
 
 # ------------------------------------------------------------------------------
@@ -47,6 +47,7 @@ def create_circle(self, context):
 
     circleobject.ArchLabCircleGenerator[0].circle_radius = self.circle_radius
     circleobject.ArchLabCircleGenerator[0].circle_quality = self.circle_quality
+    circleobject.ArchLabCircleGenerator[0].circle_fill_type = self.circle_fill_type
     circleobject.ArchLabCircleGenerator[0].circle_depth = self.circle_depth
 
     # we shape the mesh.
@@ -62,7 +63,7 @@ def create_circle(self, context):
 def shape_circle_mesh(mycircle, tmp_mesh, update=False):
     pp = mycircle.ArchLabCircleGenerator[0]  # "pp" means "circle properties".
     # Create circle mesh data
-    update_circle_mesh_data(tmp_mesh, pp.circle_radius, pp.circle_quality)
+    update_circle_mesh_data(tmp_mesh, pp.circle_radius, pp.circle_quality, pp.circle_fill_type)
     mycircle.data = tmp_mesh
 
     remove_doubles(mycircle)
@@ -91,15 +92,32 @@ def shape_circle_mesh(mycircle, tmp_mesh, update=False):
 # ------------------------------------------------------------------------------
 # Creates circle mesh data.
 # ------------------------------------------------------------------------------
-def update_circle_mesh_data(mymesh, radius, vertices):
+def update_circle_mesh_data(mymesh, radius, vertices, fill_type):
     deltaAngle = 360 / vertices
 
     myvertex = []
-    myfaces = [list(range(vertices))]
-
-    for t in range(vertices):
-        v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
-        myvertex.append((v1[0], v1[1], 0.0))
+    if fill_type == 'NONE':
+        myedges = []
+        for t in range(vertices):
+            v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
+            myvertex.append((v1[0], v1[1], 0.0))
+            myedges.append((t, ((t+1) % vertices)))
+        mymesh.from_pydata(myvertex, myedges, [])
+        mymesh.update(calc_edges=True)
+        return None
+    
+    myfaces = []
+    if fill_type == 'NGON':
+        myfaces = [list(range(vertices))]
+        for t in range(vertices):
+            v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
+            myvertex.append((v1[0], v1[1], 0.0))
+    if fill_type == 'TRIF':
+        myvertex.append((0.0, 0.0, 0.0))
+        for t in range(vertices):
+            v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
+            myvertex.append((v1[0], v1[1], 0.0))
+            myfaces.append((0, t+1, ((t+1) % vertices) +1))
 
     mymesh.from_pydata(myvertex, [], myfaces)
     mymesh.update(calc_edges=True)
@@ -189,12 +207,24 @@ def circle_depth_property():
             description='Thickness of the circle', update=update_circle,
             )
 
+def circle_fill_type_property():
+    return EnumProperty(
+            items=(
+                ('TRIF', 'Triangle Fan', ''),
+                ('NGON', 'Ngon', ''),
+                ('NONE', 'Nothing', ''),
+                ),
+            name='Fill type',
+            description='Topology of circle face', update=update_circle,
+            )
+
 # ------------------------------------------------------------------
 # Define property group class to create or modify a circles.
 # ------------------------------------------------------------------
 class ArchLabCircleProperties(PropertyGroup):
     circle_radius = circle_radius_property()
     circle_quality = circle_quality_property()
+    circle_fill_type = circle_fill_type_property()
     circle_depth = circle_depth_property()
 
 bpy.utils.register_class(ArchLabCircleProperties)
@@ -244,9 +274,11 @@ class ArchLabCircleGeneratorPanel(Panel):
         else:
             circle = o.ArchLabCircleGenerator[0]
             row = layout.row()
+            row.prop(circle, 'circle_quality')
+            row = layout.row()
             row.prop(circle, 'circle_radius')
             row = layout.row()
-            row.prop(circle, 'circle_quality')
+            row.prop(circle, 'circle_fill_type')
             row = layout.row()
             row.prop(circle, 'circle_depth')
 
@@ -263,6 +295,7 @@ class ArchLabCircle(Operator):
     # preset
     circle_radius = circle_radius_property()
     circle_quality = circle_quality_property()
+    circle_fill_type = circle_fill_type_property()
     circle_depth = circle_depth_property()
 
     # -----------------------------------------------------
@@ -276,6 +309,8 @@ class ArchLabCircle(Operator):
             row.prop(self, 'circle_quality')
             row = layout.row()
             row.prop(self, 'circle_radius')
+            row = layout.row()
+            row.prop(self, 'circle_fill_type')
             row = layout.row()
             row.prop(self, 'circle_depth')
         else:
