@@ -216,9 +216,12 @@ class ArchLabCircleGeneratorPanel(Panel):
     @classmethod
     def poll(cls, context):
         o = context.object
+        act_op = context.active_operator
         if o is None:
             return False
         if 'ArchLabCircleGenerator' not in o:
+            return False
+        if act_op is not None and act_op.bl_idname.endswith('archlab_circle'):
             return False
         else:
             return True
