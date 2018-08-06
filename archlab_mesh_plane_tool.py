@@ -45,6 +45,10 @@ def create_plane(self, context):
     bpy.context.scene.objects.link(planeobject)
     planeobject.ArchLabPlaneGenerator.add()
 
+    planeobject.ArchLabPlaneGenerator[0].plane_height = self.plane_height
+    planeobject.ArchLabPlaneGenerator[0].plane_width = self.plane_width
+    planeobject.ArchLabPlaneGenerator[0].plane_depth = self.plane_depth
+
     # we shape the mesh.
     shape_plane_mesh(planeobject, planemesh)
 
@@ -159,26 +163,37 @@ def movetotopsolidify(myobject):
     except AttributeError:
         return
 
+# -----------------------------------------------------
+# Property definition creator
+# -----------------------------------------------------
+def plane_height_property():
+    return FloatProperty(
+            name='Height',
+            default=1.0, precision=3, unit = 'LENGTH',
+            description='Plane height', update=update_plane,
+            )
+
+def plane_width_property():
+    return FloatProperty(
+            name='Width',
+            default=1.0, precision=3, unit = 'LENGTH',
+            description='Plane width', update=update_plane,
+            )
+
+def plane_depth_property():
+    return FloatProperty(
+            name='Thickness',
+            default=0.0, precision=4, unit = 'LENGTH',
+            description='Thickness of the plane', update=update_plane,
+            )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a planes.
 # ------------------------------------------------------------------
 class ArchLabPlaneProperties(PropertyGroup):
-    plane_height = FloatProperty(
-            name='Height',
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Plane height', update=update_plane,
-            )
-    plane_width = FloatProperty(
-            name='Width',
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Plane width', update=update_plane,
-            )
-    plane_depth = FloatProperty(
-            name='Thickness',
-            default=0.0, precision=4, unit = 'LENGTH',
-            description='Thickness of the plane', update=update_plane,
-            )
+    plane_height = plane_height_property()
+    plane_width = plane_width_property()
+    plane_depth = plane_depth_property()
 
 bpy.utils.register_class(ArchLabPlaneProperties)
 Object.ArchLabPlaneGenerator = CollectionProperty(type=ArchLabPlaneProperties)
@@ -199,9 +214,12 @@ class ArchLabPlaneGeneratorPanel(Panel):
     @classmethod
     def poll(cls, context):
         o = context.object
+        act_op = context.active_operator
         if o is None:
             return False
         if 'ArchLabPlaneGenerator' not in o:
+            return False
+        if act_op is not None and act_op.bl_idname.endswith('archlab_plane'):
             return False
         else:
             return True
@@ -240,21 +258,40 @@ class ArchLabPlane(Operator):
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
+    # preset
+    plane_height = plane_height_property()
+    plane_width = plane_width_property()
+    plane_depth = plane_depth_property()
+
     # -----------------------------------------------------
     # Draw (create UI interface)
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
-        row.label("Use Properties panel (N) to define parms", icon='INFO')
+        space = bpy.context.space_data
+        if not space.local_view:
+            row = layout.row()
+            row.prop(self, 'plane_height')
+            row = layout.row()
+            row.prop(self, 'plane_width')
+            row = layout.row()
+            row.prop(self, 'plane_depth')
+        else:
+            row = layout.row()
+            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
         if bpy.context.mode == "OBJECT":
-            create_plane(self, context)
-            return {'FINISHED'}
+            space = bpy.context.space_data
+            if not space.local_view:
+                create_plane(self, context)
+                return {'FINISHED'}
+            else:
+                self.report({'WARNING'}, "ArchLab: Option only valid in global view mode")
+                return {'CANCELLED'}
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")
             return {'CANCELLED'}

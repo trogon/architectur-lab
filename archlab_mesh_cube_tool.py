@@ -45,6 +45,10 @@ def create_cube(self, context):
     bpy.context.scene.objects.link(cubeobject)
     cubeobject.ArchLabCubeGenerator.add()
 
+    cubeobject.ArchLabCubeGenerator[0].cube_height = self.cube_height
+    cubeobject.ArchLabCubeGenerator[0].cube_width = self.cube_width
+    cubeobject.ArchLabCubeGenerator[0].cube_depth = self.cube_depth
+
     # we shape the mesh.
     shape_cube_mesh(cubeobject, cubemesh)
 
@@ -119,26 +123,37 @@ def update_cube(self, context):
     o.select = True
     bpy.context.scene.objects.active = o
 
+# -----------------------------------------------------
+# Property definition creator
+# -----------------------------------------------------
+def cube_height_property():
+    return FloatProperty(
+            name='Height',
+            default=1.0, precision=3, unit = 'LENGTH',
+            description='Cube height', update=update_cube,
+            )
+
+def cube_width_property():
+    return FloatProperty(
+            name='Width',
+            default=1.0, precision=3, unit = 'LENGTH',
+            description='Cube width', update=update_cube,
+            )
+
+def cube_depth_property():
+    return FloatProperty(
+            name='Depth',
+            default=1.0, precision=3, unit = 'LENGTH',
+            description='Cube depth', update=update_cube,
+            )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a cubes.
 # ------------------------------------------------------------------
 class ArchLabCubeProperties(PropertyGroup):
-    cube_height = FloatProperty(
-            name='Height',
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Cube height', update=update_cube,
-            )
-    cube_width = FloatProperty(
-            name='Width',
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Cube width', update=update_cube,
-            )
-    cube_depth = FloatProperty(
-            name='Depth',
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Cube depth', update=update_cube,
-            )
+    cube_height = cube_height_property()
+    cube_width = cube_width_property()
+    cube_depth = cube_depth_property()
 
 bpy.utils.register_class(ArchLabCubeProperties)
 Object.ArchLabCubeGenerator = CollectionProperty(type=ArchLabCubeProperties)
@@ -159,9 +174,12 @@ class ArchLabCubeGeneratorPanel(Panel):
     @classmethod
     def poll(cls, context):
         o = context.object
+        act_op = context.active_operator
         if o is None:
             return False
         if 'ArchLabCubeGenerator' not in o:
+            return False
+        if act_op is not None and act_op.bl_idname.endswith('archlab_cube'):
             return False
         else:
             return True
@@ -195,26 +213,45 @@ class ArchLabCubeGeneratorPanel(Panel):
 # ------------------------------------------------------------------
 class ArchLabCube(Operator):
     bl_idname = "mesh.archlab_cube"
-    bl_label = "Cube"
+    bl_label = "Add Cube"
     bl_description = "Generate cube primitive mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
+
+    # preset
+    cube_height = cube_height_property()
+    cube_width = cube_width_property()
+    cube_depth = cube_depth_property()
 
     # -----------------------------------------------------
     # Draw (create UI interface)
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
-        row.label("Use Properties panel (N) to define parms", icon='INFO')
+        space = bpy.context.space_data
+        if not space.local_view:
+            row = layout.row()
+            row.prop(self, 'cube_height')
+            row = layout.row()
+            row.prop(self, 'cube_width')
+            row = layout.row()
+            row.prop(self, 'cube_depth')
+        else:
+            row = layout.row()
+            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
         if bpy.context.mode == "OBJECT":
-            create_cube(self, context)
-            return {'FINISHED'}
+            space = bpy.context.space_data
+            if not space.local_view:
+                create_cube(self, context)
+                return {'FINISHED'}
+            else:
+                self.report({'WARNING'}, "ArchLab: Option only valid in global view mode")
+                return {'CANCELLED'}
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")
             return {'CANCELLED'}

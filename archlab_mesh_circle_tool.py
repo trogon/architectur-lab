@@ -27,7 +27,7 @@
 # ----------------------------------------------------------
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import IntProperty, FloatProperty, CollectionProperty
+from bpy.props import EnumProperty, IntProperty, FloatProperty, CollectionProperty
 from .archlab_utils import *
 
 # ------------------------------------------------------------------------------
@@ -45,6 +45,12 @@ def create_circle(self, context):
     bpy.context.scene.objects.link(circleobject)
     circleobject.ArchLabCircleGenerator.add()
 
+    circleobject.ArchLabCircleGenerator[0].circle_radius = self.circle_radius
+    circleobject.ArchLabCircleGenerator[0].circle_quality = self.circle_quality
+    circleobject.ArchLabCircleGenerator[0].circle_fill_type = self.circle_fill_type
+    circleobject.ArchLabCircleGenerator[0].circle_depth = self.circle_depth
+    circleobject.ArchLabCircleGenerator[0].circle_truncation = self.circle_truncation
+
     # we shape the mesh.
     shape_circle_mesh(circleobject, circlemesh)
 
@@ -58,7 +64,7 @@ def create_circle(self, context):
 def shape_circle_mesh(mycircle, tmp_mesh, update=False):
     pp = mycircle.ArchLabCircleGenerator[0]  # "pp" means "circle properties".
     # Create circle mesh data
-    update_circle_mesh_data(tmp_mesh, pp.circle_radius, pp.circle_quality)
+    update_circle_mesh_data(tmp_mesh, pp.circle_radius, pp.circle_quality, pp.circle_fill_type, pp.circle_truncation)
     mycircle.data = tmp_mesh
 
     remove_doubles(mycircle)
@@ -87,15 +93,34 @@ def shape_circle_mesh(mycircle, tmp_mesh, update=False):
 # ------------------------------------------------------------------------------
 # Creates circle mesh data.
 # ------------------------------------------------------------------------------
-def update_circle_mesh_data(mymesh, radius, vertices):
+def update_circle_mesh_data(mymesh, radius, vertices, fill_type, trunc_val):
     deltaAngle = 360 / vertices
 
     myvertex = []
-    myfaces = [list(range(vertices))]
-
-    for t in range(vertices):
-        v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
-        myvertex.append((v1[0], v1[1], 0.0))
+    if fill_type == 'NONE':
+        myedges = []
+        for t in range(vertices):
+            v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
+            myvertex.append((v1[0], v1[1], 0.0))
+            myedges.append((t, ((t+1) % vertices)))
+        mymesh.from_pydata(myvertex, myedges, [])
+        mymesh.update(calc_edges=True)
+        return None
+    
+    myfaces = []
+    if fill_type == 'NGON':
+        myfaces = [list(range(vertices))]
+        for t in range(vertices):
+            v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
+            myvertex.append((v1[0], v1[1], 0.0))
+        if trunc_val > 0.0:
+            (myvertex, myfaces) = truncate_mesh(myvertex, myfaces, trunc_val)
+    if fill_type == 'TRIF':
+        myvertex.append((0.0, 0.0, 0.0))
+        for t in range(vertices):
+            v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
+            myvertex.append((v1[0], v1[1], 0.0))
+            myfaces.append((0, t+1, ((t+1) % vertices) +1))
 
     mymesh.from_pydata(myvertex, [], myfaces)
     mymesh.update(calc_edges=True)
@@ -159,27 +184,78 @@ def movetotopsolidify(myobject):
     except AttributeError:
         return
 
+# -----------------------------------------------------
+# Truncate circle ngon mesh
+# -----------------------------------------------------
+def truncate_mesh(verts, faces, trunc_val):
+    myverts = []
+    vertnum = len(verts)
+    tscal = 0.5 * trunc_val
+    for t in range(vertnum):
+        pprev = verts[(t+vertnum-1) % vertnum]
+        p1 = verts[t]
+        pnext = verts[(t+1) % vertnum]
+        v1 = slide_point3d(pprev, p1, tscal)
+        v2 = slide_point3d(pnext, p1, tscal)
+        myverts.append((v1))
+        myverts.append((v2))
+    myfaces = [list(range(len(myverts)))]
+    return myverts, myfaces
+
+
+# -----------------------------------------------------
+# Property definition creator
+# -----------------------------------------------------
+def circle_radius_property():
+    return FloatProperty(
+            name='Radius',
+            default=1.0, precision=3, unit='LENGTH',
+            description='Circle radius', update=update_circle,
+            )
+
+def circle_quality_property():
+    return IntProperty(
+            name='Vertices',
+            min=3, max=1000,
+            default=32,
+            description='Circle vertices', update=update_circle,
+            )
+
+def circle_depth_property():
+    return FloatProperty(
+            name='Thickness',
+            default=0.0, precision=4, unit='LENGTH',
+            description='Thickness of the circle', update=update_circle,
+            )
+
+def circle_fill_type_property():
+    return EnumProperty(
+            items=(
+                ('TRIF', 'Triangle Fan', ''),
+                ('NGON', 'Ngon', ''),
+                ('NONE', 'Nothing', ''),
+                ),
+            name='Fill type',
+            description='Topology of circle face', update=update_circle,
+            )
+
+def circle_truncation_property():
+    return FloatProperty(
+            name='Truncation',
+            min=0.0, max=1.0,
+            default=0.0, precision=4,
+            description='Truncation of the circle', update=update_circle,
+            )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a circles.
 # ------------------------------------------------------------------
 class ArchLabCircleProperties(PropertyGroup):
-    circle_radius = FloatProperty(
-            name='Height',
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Circle height', update=update_circle,
-            )
-    circle_quality = IntProperty(
-            name='Vertices',
-            min=2, max=1000,
-            default=32,
-            description='Circle vertices', update=update_circle,
-            )
-    circle_depth = FloatProperty(
-            name='Thickness',
-            default=0.0, precision=4, unit = 'LENGTH',
-            description='Thickness of the circle', update=update_circle,
-            )
+    circle_radius = circle_radius_property()
+    circle_quality = circle_quality_property()
+    circle_fill_type = circle_fill_type_property()
+    circle_depth = circle_depth_property()
+    circle_truncation = circle_truncation_property()
 
 bpy.utils.register_class(ArchLabCircleProperties)
 Object.ArchLabCircleGenerator = CollectionProperty(type=ArchLabCircleProperties)
@@ -200,9 +276,12 @@ class ArchLabCircleGeneratorPanel(Panel):
     @classmethod
     def poll(cls, context):
         o = context.object
+        act_op = context.active_operator
         if o is None:
             return False
         if 'ArchLabCircleGenerator' not in o:
+            return False
+        if act_op is not None and act_op.bl_idname.endswith('archlab_circle'):
             return False
         else:
             return True
@@ -225,37 +304,68 @@ class ArchLabCircleGeneratorPanel(Panel):
         else:
             circle = o.ArchLabCircleGenerator[0]
             row = layout.row()
-            row.prop(circle, 'circle_radius')
-            row = layout.row()
             row.prop(circle, 'circle_quality')
             row = layout.row()
+            row.prop(circle, 'circle_radius')
+            row = layout.row()
+            row.prop(circle, 'circle_fill_type')
+            row = layout.row()
             row.prop(circle, 'circle_depth')
+            if circle.circle_fill_type == 'NGON':
+                row = layout.row()
+                row.prop(circle, 'circle_truncation')
 
 # ------------------------------------------------------------------
 # Define operator class to create circles
 # ------------------------------------------------------------------
 class ArchLabCircle(Operator):
     bl_idname = "mesh.archlab_circle"
-    bl_label = "Circle"
+    bl_label = "Add Circle"
     bl_description = "Generate circle primitive mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
+
+    # preset
+    circle_radius = circle_radius_property()
+    circle_quality = circle_quality_property()
+    circle_fill_type = circle_fill_type_property()
+    circle_depth = circle_depth_property()
+    circle_truncation = circle_truncation_property()
 
     # -----------------------------------------------------
     # Draw (create UI interface)
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
-        row.label("Use Properties panel (N) to define parms", icon='INFO')
+        space = bpy.context.space_data
+        if not space.local_view:
+            row = layout.row()
+            row.prop(self, 'circle_quality')
+            row = layout.row()
+            row.prop(self, 'circle_radius')
+            row = layout.row()
+            row.prop(self, 'circle_fill_type')
+            row = layout.row()
+            row.prop(self, 'circle_depth')
+            if self.circle_fill_type == 'NGON':
+                row = layout.row()
+                row.prop(self, 'circle_truncation')
+        else:
+            row = layout.row()
+            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
         if bpy.context.mode == "OBJECT":
-            create_circle(self, context)
-            return {'FINISHED'}
+            space = bpy.context.space_data
+            if not space.local_view:
+                create_circle(self, context)
+                return {'FINISHED'}
+            else:
+                self.report({'WARNING'}, "ArchLab: Option only valid in global view mode")
+                return {'CANCELLED'}
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")
             return {'CANCELLED'}

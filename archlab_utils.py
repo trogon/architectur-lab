@@ -29,6 +29,21 @@
 import bpy
 from math import sin, cos, radians
 from mathutils import Vector, Matrix
+from os import path
+import json
+
+debug_level = 3
+
+# --------------------------------------------------------------------
+# Writes text to the log
+# --------------------------------------------------------------------
+def log_write(level, text_to_write):
+    l = 0
+    levels = {"INFO":0, "DEBUG":1, "WARNING":2, "ERROR":3, "CRITICAL":4, }
+    if level in levels:
+        l = levels[level]        
+    if l >= debug_level:
+        print(level +": " + text_to_write)
 
 # --------------------------------------------------------------------
 # Set normals
@@ -141,6 +156,111 @@ def rotate_point2d(posx, posy, angle):
                     [sina1, cosa1]])
     v2 = mat1 * v1
     return v2
+
+# --------------------------------------------------------------------
+# Rotates a point in 3D space with specified angle
+# --------------------------------------------------------------------
+def rotate_point3d(pos, anglex = 0.0, angley = 0.0, anglez = 0.0):
+    v1 = Vector(pos)
+    mat1 = Matrix([
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ])
+    if anglez > 0.0:
+        rada1 = radians(anglez)
+        cosa1 = cos(rada1)
+        sina1 = sin(rada1)
+        mat2 = Matrix([
+            [cosa1, -sina1, 0],
+            [sina1, cosa1, 0],
+            [0, 0, 1]
+        ])
+        mat1 = mat1 * mat2
+    if angley > 0.0:
+        rada1 = radians(angley)
+        cosa1 = cos(rada1)
+        sina1 = sin(rada1)
+        mat2 = Matrix([
+            [cosa1, 0, -sina1],
+            [0, 1, 0],
+            [sina1, 0, cosa1]
+        ])
+        mat1 = mat1 * mat2
+    if anglex > 0.0:
+        rada1 = radians(anglex)
+        cosa1 = cos(rada1)
+        sina1 = sin(rada1)
+        mat2 = Matrix([
+            [1, 0, 0],
+            [0, cosa1, -sina1],
+            [0, sina1, cosa1]
+        ])
+        mat1 = mat1 * mat2
+    v2 = mat1 * v1
+    return v2
+
+# --------------------------------------------------------------------
+# Rotates a point in 2D space with specified angle
+# --------------------------------------------------------------------
+def slide_point3d(startpoint, endpoint, scale):
+    v1 = Vector(startpoint)
+    v2 = Vector(endpoint)
+    return v2 + (v1 - v2) * scale
+
+
+# --------------------------------------------------------------------
+# Gets mesh data from json file
+# --------------------------------------------------------------------
+def load_mesh_data(meshname):
+    meshlibrary = load_meshlibrary_data()
+    return meshlibrary['Meshes'][meshname]
+
+# --------------------------------------------------------------------
+# Loads meshes json file
+# --------------------------------------------------------------------
+def load_meshlibrary_data():
+    json_data = None
+    library_path = get_meshlibrary_path()
+    with open(library_path, 'r') as f:
+        json_data = json.load(f)
+    return json_data
+
+# --------------------------------------------------------------------
+# Gets mesh library file path
+# --------------------------------------------------------------------
+def get_meshlibrary_path():
+    data_path = get_data_path()
+    if data_path:
+        return path.join(data_path, "meshes.json")
+    else:
+        log_write("CRITICAL", "Mesh library not found. Please check your Blender addons directory.")
+        return None
+
+# --------------------------------------------------------------------
+# Gets addon data dir path
+# --------------------------------------------------------------------
+def get_data_path():
+    addon_directory = path.dirname(path.realpath(__file__))
+    data_dir = path.join(addon_directory, "data")
+    log_write("INFO", "Looking for the retarget data in the folder {0}...".format(reduce_path(data_dir)))
+    if path.isdir(data_dir):
+        return data_dir
+    else:
+        log_write("CRITICAL", "Tools data not found. Please check your Blender addons directory.")
+        return None
+
+# --------------------------------------------------------------------
+# Return the last part of long paths
+# --------------------------------------------------------------------
+def reduce_path(input_path, use_basename = True, max_len=50):
+    if use_basename == True:
+        return path.basename(input_path)
+    else:
+        if len(input_path) > max_len:
+            return("[Trunked].."+input_path[len(input_path)-max_len:])
+        else:
+            return input_path
 
 
 # --------------------------------------------------------------------
