@@ -213,7 +213,7 @@ class ArchLabCubeGeneratorPanel(Panel):
 # ------------------------------------------------------------------
 class ArchLabCube(Operator):
     bl_idname = "mesh.archlab_cube"
-    bl_label = "Cube"
+    bl_label = "Add Cube"
     bl_description = "Generate cube primitive mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}

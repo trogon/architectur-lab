@@ -320,7 +320,7 @@ class ArchLabCircleGeneratorPanel(Panel):
 # ------------------------------------------------------------------
 class ArchLabCircle(Operator):
     bl_idname = "mesh.archlab_circle"
-    bl_label = "Circle"
+    bl_label = "Add Circle"
     bl_description = "Generate circle primitive mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}

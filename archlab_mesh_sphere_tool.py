@@ -325,7 +325,7 @@ class ArchLabSphere(Operator):
 # ------------------------------------------------------------------
 class ArchLabUvSphere(ArchLabSphere):
     bl_idname = "mesh.archlab_uvsphere"
-    bl_label = "UV Sphere"
+    bl_label = "Add UV Sphere"
 
     # preset
     sphere_radius = sphere_radius_property()
@@ -340,7 +340,7 @@ class ArchLabUvSphere(ArchLabSphere):
 # ------------------------------------------------------------------
 class ArchLabIcoSphere(ArchLabSphere):
     bl_idname = "mesh.archlab_icosphere"
-    bl_label = "Ico Sphere"
+    bl_label = "Add Ico Sphere"
 
     # preset
     sphere_radius = sphere_radius_property()
