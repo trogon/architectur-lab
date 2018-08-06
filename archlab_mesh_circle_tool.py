@@ -177,7 +177,7 @@ def circle_radius_property():
 def circle_quality_property():
     return IntProperty(
             name='Vertices',
-            min=2, max=1000,
+            min=3, max=1000,
             default=32,
             description='Circle vertices', update=update_circle,
             )
