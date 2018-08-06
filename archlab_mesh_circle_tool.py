@@ -45,6 +45,10 @@ def create_circle(self, context):
     bpy.context.scene.objects.link(circleobject)
     circleobject.ArchLabCircleGenerator.add()
 
+    circleobject.ArchLabCircleGenerator[0].circle_radius = self.circle_radius
+    circleobject.ArchLabCircleGenerator[0].circle_quality = self.circle_quality
+    circleobject.ArchLabCircleGenerator[0].circle_depth = self.circle_depth
+
     # we shape the mesh.
     shape_circle_mesh(circleobject, circlemesh)
 
@@ -160,26 +164,38 @@ def movetotopsolidify(myobject):
         return
 
 
-# ------------------------------------------------------------------
-# Define property group class to create or modify a circles.
-# ------------------------------------------------------------------
-class ArchLabCircleProperties(PropertyGroup):
-    circle_radius = FloatProperty(
-            name='Height',
+# -----------------------------------------------------
+# Property definition creator
+# -----------------------------------------------------
+def circle_radius_property():
+    return FloatProperty(
+            name='Radius',
             default=1.0, precision=3, unit = 'LENGTH',
             description='Circle height', update=update_circle,
             )
-    circle_quality = IntProperty(
+
+def circle_quality_property():
+    return IntProperty(
             name='Vertices',
             min=2, max=1000,
             default=32,
             description='Circle vertices', update=update_circle,
             )
-    circle_depth = FloatProperty(
+
+def circle_depth_property():
+    return FloatProperty(
             name='Thickness',
             default=0.0, precision=4, unit = 'LENGTH',
             description='Thickness of the circle', update=update_circle,
             )
+
+# ------------------------------------------------------------------
+# Define property group class to create or modify a circles.
+# ------------------------------------------------------------------
+class ArchLabCircleProperties(PropertyGroup):
+    circle_radius = circle_radius_property()
+    circle_quality = circle_quality_property()
+    circle_depth = circle_depth_property()
 
 bpy.utils.register_class(ArchLabCircleProperties)
 Object.ArchLabCircleGenerator = CollectionProperty(type=ArchLabCircleProperties)
@@ -241,21 +257,40 @@ class ArchLabCircle(Operator):
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
+    # preset
+    circle_radius = circle_radius_property()
+    circle_quality = circle_quality_property()
+    circle_depth = circle_depth_property()
+
     # -----------------------------------------------------
     # Draw (create UI interface)
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
-        row.label("Use Properties panel (N) to define parms", icon='INFO')
+        space = bpy.context.space_data
+        if not space.local_view:
+            row = layout.row()
+            row.prop(self, 'circle_quality')
+            row = layout.row()
+            row.prop(self, 'circle_radius')
+            row = layout.row()
+            row.prop(self, 'circle_depth')
+        else:
+            row = layout.row()
+            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
         if bpy.context.mode == "OBJECT":
-            create_circle(self, context)
-            return {'FINISHED'}
+            space = bpy.context.space_data
+            if not space.local_view:
+                create_circle(self, context)
+                return {'FINISHED'}
+            else:
+                self.report({'WARNING'}, "ArchLab: Option only valid in global view mode")
+                return {'CANCELLED'}
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")
             return {'CANCELLED'}
