@@ -157,6 +157,14 @@ def rotate_point2d(posx, posy, angle):
     v2 = mat1 * v1
     return v2
 
+# --------------------------------------------------------------------
+# Rotates a point in 2D space with specified angle
+# --------------------------------------------------------------------
+def slide_point3d(startpoint, endpoint, scale):
+    v1 = Vector(startpoint)
+    v2 = Vector(endpoint)
+    return v2 + (v1 - v2) * scale
+
 
 # --------------------------------------------------------------------
 # Gets mesh data from json file
