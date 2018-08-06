@@ -22,6 +22,20 @@
             "Edges": [],
             "Faces": []
         },
+        "UvSphere": {
+            "Name": "UV Sphere",
+            "ConstructMethod": "SoR_D",
+            "Vertices": [[1.0, 0.0, 0.0]],
+            "Edges": [],
+            "Faces": []
+        },
+        "IcoSphere": {
+            "Name": "Ico Sphere - [use regular 5 plane]",
+            "ConstructMethod": "SoR_D",
+            "Vertices": [[0.0000, 0.0000, -1.0000],[0.7236, 0.5257, -0.4472],[0.2764, 0.8506, 0.4472],[0.0000, 0.0000, 1.0000]],
+            "Edges": [[0,1],[1,2],[2,3]],
+            "Faces": []
+        },
         "Cup01": {
             "Name": "Cup A",
             "ConstructMethod": "SoR_D",
