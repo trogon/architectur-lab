@@ -46,6 +46,10 @@ def create_plate(self, context):
     bpy.context.scene.objects.link(plateobject)
     plateobject.ArchLabPlateGenerator.add()
 
+    plateobject.ArchLabPlateGenerator[0].plate_radius = self.plate_radius
+    plateobject.ArchLabPlateGenerator[0].plate_height = self.plate_height
+    plateobject.ArchLabPlateGenerator[0].plate_segments = self.plate_segments
+
     # we shape the mesh.
     shape_plate_mesh(plateobject, platemesh)
     set_smooth(plateobject)
@@ -115,26 +119,38 @@ def update_plate(self, context):
     bpy.context.scene.objects.active = o
 
 
-# ------------------------------------------------------------------
-# Define property group class to create or modify a plates.
-# ------------------------------------------------------------------
-class ArchLabPlateProperties(PropertyGroup):
-    plate_radius = FloatProperty(
+# -----------------------------------------------------
+# Property definition creator
+# -----------------------------------------------------
+def plate_radius_property():
+    return FloatProperty(
             name='Radius',
             default=0.21, precision=3, unit = 'LENGTH',
             description='Plate radius', update=update_plate,
             )
-    plate_height = FloatProperty(
+
+def plate_quality_property():
+    return FloatProperty(
             name='Height',
             default=0.03, precision=3, unit = 'LENGTH',
             description='Plate height', update=update_plate,
             )
-    plate_segments = IntProperty(
+
+def plate_segments_property():
+    return IntProperty(
             name='Segments',
             min=3, max=1000,
             default=16,
             description='Plate segments amount', update=update_plate,
             )
+
+# ------------------------------------------------------------------
+# Define property group class to create or modify a plates.
+# ------------------------------------------------------------------
+class ArchLabPlateProperties(PropertyGroup):
+    plate_radius = plate_radius_property()
+    plate_height = plate_quality_property()
+    plate_segments = plate_segments_property()
 
 bpy.utils.register_class(ArchLabPlateProperties)
 Object.ArchLabPlateGenerator = CollectionProperty(type=ArchLabPlateProperties)
@@ -155,9 +171,12 @@ class ArchLabPlateGeneratorPanel(Panel):
     @classmethod
     def poll(cls, context):
         o = context.object
+        act_op = context.active_operator
         if o is None:
             return False
         if 'ArchLabPlateGenerator' not in o:
+            return False
+        if act_op is not None and act_op.bl_idname.endswith('archlab_plate'):
             return False
         else:
             return True
@@ -179,12 +198,12 @@ class ArchLabPlateGeneratorPanel(Panel):
             layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             plate = o.ArchLabPlateGenerator[0]
-            # row = layout.row()
-            # row.prop(plate, 'plate_radius')
-            # row = layout.row()
-            # row.prop(plate, 'plate_height')
-            # row = layout.row()
-            # row.prop(plate, 'plate_segments')
+            row = layout.row()
+            row.prop(plate, 'plate_radius')
+            row = layout.row()
+            row.prop(plate, 'plate_height')
+            row = layout.row()
+            row.prop(plate, 'plate_segments')
 
 # ------------------------------------------------------------------
 # Define operator class to create plates
@@ -196,21 +215,40 @@ class ArchLabPlate(Operator):
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
+    # preset
+    plate_radius = plate_radius_property()
+    plate_height = plate_quality_property()
+    plate_segments = plate_segments_property()
+
     # -----------------------------------------------------
     # Draw (create UI interface)
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
-        row.label("Use Properties panel (N) to define parms", icon='INFO')
+        space = bpy.context.space_data
+        if not space.local_view:
+            row = layout.row()
+            row.prop(self, 'plate_radius')
+            row = layout.row()
+            row.prop(self, 'plate_height')
+            row = layout.row()
+            row.prop(self, 'plate_segments')
+        else:
+            row = layout.row()
+            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
         if bpy.context.mode == "OBJECT":
-            create_plate(self, context)
-            return {'FINISHED'}
+            space = bpy.context.space_data
+            if not space.local_view:
+                create_plate(self, context)
+                return {'FINISHED'}
+            else:
+                self.report({'WARNING'}, "ArchLab: Option only valid in global view mode")
+                return {'CANCELLED'}
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")
             return {'CANCELLED'}
