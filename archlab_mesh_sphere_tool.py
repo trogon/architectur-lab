@@ -182,7 +182,7 @@ def sphere_type_property(defaultitem = 'UV'):
 def sphere_segments_property():
     return IntProperty(
             name='Segments',
-            min=3, max=1000,
+            min=3, max=1000, soft_max=200,
             default=32,
             description='UV Sphere segments amount', update=update_sphere,
             )
@@ -190,7 +190,7 @@ def sphere_segments_property():
 def sphere_rings_property():
     return IntProperty(
             name='Rings',
-            min=2, max=1000,
+            min=2, max=1000, soft_max=100,
             default=16,
             description='UV Sphere rings amount', update=update_sphere,
             )
@@ -198,7 +198,7 @@ def sphere_rings_property():
 def sphere_subdivisions_property():
     return IntProperty(
             name='Subdivisions',
-            min=1, max=8,
+            min=1, max=10, soft_max=8,
             default=2,
             description='Ico Sphere subdivisions amount', update=update_sphere,
             )
