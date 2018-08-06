@@ -45,6 +45,10 @@ def create_wall(self, context):
     bpy.context.scene.objects.link(wallobject)
     wallobject.ArchLabWallGenerator.add()
 
+    wallobject.ArchLabWallGenerator[0].wall_height = self.wall_height
+    wallobject.ArchLabWallGenerator[0].wall_width = self.wall_width
+    wallobject.ArchLabWallGenerator[0].wall_depth = self.wall_depth
+
     # we shape the mesh.
     shape_wall_mesh(wallobject, wallmesh)
 
@@ -159,26 +163,37 @@ def movetotopsolidify(myobject):
     except AttributeError:
         return
 
+# -----------------------------------------------------
+# Property definition creator
+# -----------------------------------------------------
+def wall_height_property():
+    return FloatProperty(
+            name='Height',
+            default=2.5, precision=3, unit = 'LENGTH',
+            description='Wall height', update=update_wall,
+            )
+
+def wall_width_property():
+    return FloatProperty(
+            name='Width',
+            default=1.0, precision=3, unit = 'LENGTH',
+            description='Wall width', update=update_wall,
+            )
+
+def wall_depth_property():
+    return FloatProperty(
+            name='Thickness',
+            default=0.025, precision=4, unit = 'LENGTH',
+            description='Thickness of the wall', update=update_wall,
+            )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a walls.
 # ------------------------------------------------------------------
 class ArchLabWallProperties(PropertyGroup):
-    wall_height = FloatProperty(
-            name='Height',
-            default=2.5, precision=3, unit = 'LENGTH',
-            description='Wall height', update=update_wall,
-            )
-    wall_width = FloatProperty(
-            name='Width',
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Wall width', update=update_wall,
-            )
-    wall_depth = FloatProperty(
-            name='Thickness',
-            default=0.025, precision=4, unit = 'LENGTH',
-            description='Thickness of the wall', update=update_wall,
-            )
+    wall_height = wall_height_property()
+    wall_width = wall_width_property()
+    wall_depth = wall_depth_property()
 
 bpy.utils.register_class(ArchLabWallProperties)
 Object.ArchLabWallGenerator = CollectionProperty(type=ArchLabWallProperties)
@@ -199,9 +214,12 @@ class ArchLabWallGeneratorPanel(Panel):
     @classmethod
     def poll(cls, context):
         o = context.object
+        act_op = context.active_operator
         if o is None:
             return False
         if 'ArchLabWallGenerator' not in o:
+            return False
+        if act_op is not None and act_op.bl_idname.endswith('archlab_wall'):
             return False
         else:
             return True
@@ -240,21 +258,40 @@ class ArchLabWall(Operator):
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
+    # preset
+    wall_height = wall_height_property()
+    wall_width = wall_width_property()
+    wall_depth = wall_depth_property()
+
     # -----------------------------------------------------
     # Draw (create UI interface)
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
-        row.label("Use Properties panel (N) to define parms", icon='INFO')
+        space = bpy.context.space_data
+        if not space.local_view:
+            row = layout.row()
+            row.prop(self, 'wall_height')
+            row = layout.row()
+            row.prop(self, 'wall_width')
+            row = layout.row()
+            row.prop(self, 'wall_depth')
+        else:
+            row = layout.row()
+            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
         if bpy.context.mode == "OBJECT":
-            create_wall(self, context)
-            return {'FINISHED'}
+            space = bpy.context.space_data
+            if not space.local_view:
+                create_wall(self, context)
+                return {'FINISHED'}
+            else:
+                self.report({'WARNING'}, "ArchLab: Option only valid in global view mode")
+                return {'CANCELLED'}
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")
             return {'CANCELLED'}
