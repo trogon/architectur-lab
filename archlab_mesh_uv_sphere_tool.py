@@ -45,6 +45,10 @@ def create_uvsphere(self, context):
     bpy.context.scene.objects.link(uvsphereobject)
     uvsphereobject.ArchLabUvSphereGenerator.add()
 
+    uvsphereobject.ArchLabUvSphereGenerator[0].uvsphere_radius = self.uvsphere_radius
+    uvsphereobject.ArchLabUvSphereGenerator[0].uvsphere_segments = self.uvsphere_segments
+    uvsphereobject.ArchLabUvSphereGenerator[0].uvsphere_rings = self.uvsphere_rings
+
     # we shape the mesh.
     shape_uvsphere_mesh(uvsphereobject, uvspheremesh)
 
@@ -119,28 +123,39 @@ def update_uvsphere(self, context):
     o.select = True
     bpy.context.scene.objects.active = o
 
-
-# ------------------------------------------------------------------
-# Define property group class to create or modify a uvspheres.
-# ------------------------------------------------------------------
-class ArchLabUvSphereProperties(PropertyGroup):
-    uvsphere_radius = FloatProperty(
+# -----------------------------------------------------
+# Property definition creator
+# -----------------------------------------------------
+def uvsphere_radius_property():
+    return FloatProperty(
             name='Radius',
             default=1.0, precision=3, unit = 'LENGTH',
             description='UV Sphere radius', update=update_uvsphere,
             )
-    uvsphere_segments = IntProperty(
+
+def uvsphere_segments_property():
+    return IntProperty(
             name='Segments',
             min=3, max=1000,
             default=32,
             description='UV Sphere segments amount', update=update_uvsphere,
             )
-    uvsphere_rings = IntProperty(
+
+def uvsphere_rings_property():
+    return IntProperty(
             name='Rings',
             min=2, max=1000,
             default=16,
             description='UV Sphere rings amount', update=update_uvsphere,
             )
+
+# ------------------------------------------------------------------
+# Define property group class to create or modify a uvspheres.
+# ------------------------------------------------------------------
+class ArchLabUvSphereProperties(PropertyGroup):
+    uvsphere_radius = uvsphere_radius_property()
+    uvsphere_segments = uvsphere_segments_property()
+    uvsphere_rings = uvsphere_rings_property()
 
 bpy.utils.register_class(ArchLabUvSphereProperties)
 Object.ArchLabUvSphereGenerator = CollectionProperty(type=ArchLabUvSphereProperties)
@@ -161,9 +176,12 @@ class ArchLabUvSphereGeneratorPanel(Panel):
     @classmethod
     def poll(cls, context):
         o = context.object
+        act_op = context.active_operator
         if o is None:
             return False
         if 'ArchLabUvSphereGenerator' not in o:
+            return False
+        if act_op is not None and act_op.bl_idname.endswith('archlab_uv_sphere'):
             return False
         else:
             return True
@@ -202,21 +220,40 @@ class ArchLabUvSphere(Operator):
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
+    # preset
+    uvsphere_radius = uvsphere_radius_property()
+    uvsphere_segments = uvsphere_segments_property()
+    uvsphere_rings = uvsphere_rings_property()
+
     # -----------------------------------------------------
     # Draw (create UI interface)
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
-        row.label("Use Properties panel (N) to define parms", icon='INFO')
+        space = bpy.context.space_data
+        if not space.local_view:
+            row = layout.row()
+            row.prop(self, 'uvsphere_radius')
+            row = layout.row()
+            row.prop(self, 'uvsphere_segments')
+            row = layout.row()
+            row.prop(self, 'uvsphere_rings')
+        else:
+            row = layout.row()
+            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
         if bpy.context.mode == "OBJECT":
-            create_uvsphere(self, context)
-            return {'FINISHED'}
+            space = bpy.context.space_data
+            if not space.local_view:
+                create_uvsphere(self, context)
+                return {'FINISHED'}
+            else:
+                self.report({'WARNING'}, "ArchLab: Option only valid in global view mode")
+                return {'CANCELLED'}
         else:
             self.report({'WARNING'}, "ArchLab: Option only valid in Object mode")
             return {'CANCELLED'}
