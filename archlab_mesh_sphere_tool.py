@@ -128,6 +128,8 @@ def update_sphere_mesh_data(mymesh, radius, type, segments, rings, subdivisions)
             myfaces.append((11, lastv, ts))
             lastv = ts
         myvertex.append((0.0000, 0.0000, -radius))
+        for ts in range(1, subdivisions):
+            (myvertex, myfaces) = subdivide_mesh(myvertex, myfaces)
 
 
     mymesh.from_pydata(myvertex, [], myfaces)
@@ -157,6 +159,29 @@ def update_sphere(self, context):
     # and select, and activate, the main object of the sphere.
     o.select = True
     bpy.context.scene.objects.active = o
+
+# -----------------------------------------------------
+# Subdivide circle mesh
+# -----------------------------------------------------
+def subdivide_mesh(verts, faces):
+    myverts = verts
+    myfaces = []
+    vertnum = len(faces)
+    for f in faces:
+        laste = f[-1]
+        newface = []
+        for ts in range(len(f)):
+            v1 = slide_point3d(verts[laste], verts[f[ts]], 0.5)
+            v1.normalize()
+            newface.append(len(myverts))
+            myverts.append(v1)
+            laste = f[ts]
+        myfaces.append((newface[0], newface[1], newface[2]))
+        myfaces.append((newface[0], newface[1], f[0]))
+        myfaces.append((newface[1], newface[2], f[1]))
+        myfaces.append((newface[2], newface[0], f[2]))
+    #myfaces.extend(faces)
+    return myverts, myfaces
 
 # -----------------------------------------------------
 # Property definition creator
