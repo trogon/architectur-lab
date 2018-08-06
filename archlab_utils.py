@@ -158,6 +158,49 @@ def rotate_point2d(posx, posy, angle):
     return v2
 
 # --------------------------------------------------------------------
+# Rotates a point in 3D space with specified angle
+# --------------------------------------------------------------------
+def rotate_point3d(pos, anglex = 0.0, angley = 0.0, anglez = 0.0):
+    v1 = Vector(pos)
+    mat1 = Matrix([
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ])
+    if anglez > 0.0:
+        rada1 = radians(anglez)
+        cosa1 = cos(rada1)
+        sina1 = sin(rada1)
+        mat2 = Matrix([
+            [cosa1, -sina1, 0],
+            [sina1, cosa1, 0],
+            [0, 0, 1]
+        ])
+        mat1 = mat1 * mat2
+    if angley > 0.0:
+        rada1 = radians(angley)
+        cosa1 = cos(rada1)
+        sina1 = sin(rada1)
+        mat2 = Matrix([
+            [cosa1, 0, -sina1],
+            [0, 1, 0],
+            [sina1, 0, cosa1]
+        ])
+        mat1 = mat1 * mat2
+    if anglex > 0.0:
+        rada1 = radians(anglex)
+        cosa1 = cos(rada1)
+        sina1 = sin(rada1)
+        mat2 = Matrix([
+            [1, 0, 0],
+            [0, cosa1, -sina1],
+            [0, sina1, cosa1]
+        ])
+        mat1 = mat1 * mat2
+    v2 = mat1 * v1
+    return v2
+
+# --------------------------------------------------------------------
 # Rotates a point in 2D space with specified angle
 # --------------------------------------------------------------------
 def slide_point3d(startpoint, endpoint, scale):

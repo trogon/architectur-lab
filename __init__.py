@@ -51,7 +51,7 @@ if "bpy" in locals():
     importlib.reload(archlab_mesh_cube_tool)
     importlib.reload(archlab_mesh_cube_tool)
     importlib.reload(archlab_mesh_plane_tool)
-    importlib.reload(archlab_mesh_uv_sphere_tool)
+    importlib.reload(archlab_mesh_sphere_tool)
     importlib.reload(archlab_room_wall_tool)
 
     print("archlab: Reloaded multifiles")
@@ -60,7 +60,7 @@ else:
     from . import archlab_mesh_circle_tool
     from . import archlab_mesh_cube_tool
     from . import archlab_mesh_plane_tool
-    from . import archlab_mesh_uv_sphere_tool
+    from . import archlab_mesh_sphere_tool
     from . import archlab_room_wall_tool
 
     print("archlab: Imported multifiles")
@@ -74,8 +74,9 @@ modules = [
     archlab_mesh_cube_tool.ArchLabCubeGeneratorPanel,
     archlab_mesh_plane_tool.ArchLabPlane,
     archlab_mesh_plane_tool.ArchLabPlaneGeneratorPanel,
-    archlab_mesh_uv_sphere_tool.ArchLabUvSphere,
-    archlab_mesh_uv_sphere_tool.ArchLabUvSphereGeneratorPanel,
+    archlab_mesh_sphere_tool.ArchLabIcoSphere,
+    archlab_mesh_sphere_tool.ArchLabUvSphere,
+    archlab_mesh_sphere_tool.ArchLabSphereGeneratorPanel,
     archlab_room_wall_tool.ArchLabWall,
     archlab_room_wall_tool.ArchLabWallGeneratorPanel,
 ]
@@ -124,7 +125,8 @@ class ArchLabMeshPrimitivesAdd(Menu):
         self.layout.operator("mesh.archlab_plane", text="Add Plane", icon="MESH_PLANE")
         self.layout.operator("mesh.archlab_cube", text="Add Cube", icon="MESH_CUBE")
         self.layout.operator("mesh.archlab_circle", text="Add Circle", icon="MESH_CIRCLE")
-        self.layout.operator("mesh.archlab_uv_sphere", text="Add UV Sphere", icon="MESH_UVSPHERE")
+        self.layout.operator("mesh.archlab_uvsphere", text="Add UV Sphere", icon="MESH_UVSPHERE")
+        self.layout.operator("mesh.archlab_icosphere", text="Add Ico Sphere", icon="MESH_ICOSPHERE")
 
 # ----------------------------------------------------------
 # ArchLab menu
