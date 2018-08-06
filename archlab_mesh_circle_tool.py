@@ -171,7 +171,7 @@ def circle_radius_property():
     return FloatProperty(
             name='Radius',
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Circle height', update=update_circle,
+            description='Circle radius', update=update_circle,
             )
 
 def circle_quality_property():
