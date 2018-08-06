@@ -30,7 +30,6 @@ from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import IntProperty, FloatProperty, CollectionProperty
 from .archlab_utils import *
 from .archlab_utils_material_data import *
-from .archlab_utils_mesh_data import *
 
 # ------------------------------------------------------------------------------
 # Create main object for the plate.
@@ -83,8 +82,9 @@ def shape_plate_mesh(myplate, tmp_mesh, update=False):
 # Creates plate mesh data.
 # ------------------------------------------------------------------------------
 def update_plate_mesh_data(mymesh, radius, height, segments):
-    myvertex = meshlib_deep_plate_vertices()
-    myfaces = meshlib_deep_plate_faces()
+    meshdata = load_mesh_data('Plate02')
+    myvertex = meshdata['Vertices']
+    myfaces = meshdata['Faces']
 
     mymesh.from_pydata(myvertex, [], myfaces)
     mymesh.update(calc_edges=True)

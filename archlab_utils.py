@@ -29,6 +29,21 @@
 import bpy
 from math import sin, cos, radians
 from mathutils import Vector, Matrix
+from os import path
+import json
+
+debug_level = 3
+
+# --------------------------------------------------------------------
+# Writes text to the log
+# --------------------------------------------------------------------
+def log_write(level, text_to_write):
+    l = 0
+    levels = {"INFO":0, "DEBUG":1, "WARNING":2, "ERROR":3, "CRITICAL":4, }
+    if level in levels:
+        l = levels[level]        
+    if l >= debug_level:
+        print(level +": " + text_to_write)
 
 # --------------------------------------------------------------------
 # Set normals
@@ -141,6 +156,60 @@ def rotate_point2d(posx, posy, angle):
                     [sina1, cosa1]])
     v2 = mat1 * v1
     return v2
+
+
+# --------------------------------------------------------------------
+# Gets mesh data from json file
+# --------------------------------------------------------------------
+def load_mesh_data(meshname):
+    meshlibrary = load_meshlibrary_data()
+    return meshlibrary['Meshes'][meshname]
+
+# --------------------------------------------------------------------
+# Loads meshes json file
+# --------------------------------------------------------------------
+def load_meshlibrary_data():
+    json_data = None
+    library_path = get_meshlibrary_path()
+    with open(library_path, 'r') as f:
+        json_data = json.load(f)
+    return json_data
+
+# --------------------------------------------------------------------
+# Gets mesh library file path
+# --------------------------------------------------------------------
+def get_meshlibrary_path():
+    data_path = get_data_path()
+    if data_path:
+        return path.join(data_path, "meshes.json")
+    else:
+        log_write("CRITICAL", "Mesh library not found. Please check your Blender addons directory.")
+        return None
+
+# --------------------------------------------------------------------
+# Gets addon data dir path
+# --------------------------------------------------------------------
+def get_data_path():
+    addon_directory = path.dirname(path.realpath(__file__))
+    data_dir = path.join(addon_directory, "data")
+    log_write("INFO", "Looking for the retarget data in the folder {0}...".format(reduce_path(data_dir)))
+    if path.isdir(data_dir):
+        return data_dir
+    else:
+        log_write("CRITICAL", "Tools data not found. Please check your Blender addons directory.")
+        return None
+
+# --------------------------------------------------------------------
+# Return the last part of long paths
+# --------------------------------------------------------------------
+def reduce_path(input_path, use_basename = True, max_len=50):
+    if use_basename == True:
+        return path.basename(input_path)
+    else:
+        if len(input_path) > max_len:
+            return("[Trunked].."+input_path[len(input_path)-max_len:])
+        else:
+            return input_path
 
 
 # --------------------------------------------------------------------
