@@ -123,35 +123,35 @@ def update_glass(self, context):
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
-def glass_diameter_property():
+def glass_diameter_property(callback=None):
     return FloatProperty(
             name='Diameter',
             default=0.05, precision=3, unit = 'LENGTH',
-            description='Glass diameter', update=update_glass,
+            description='Glass diameter', update=callback,
             )
 
-def glass_quality_property():
+def glass_quality_property(callback=None):
     return FloatProperty(
             name='Height',
             default=0.08, precision=3, unit = 'LENGTH',
-            description='Glass height', update=update_glass,
+            description='Glass height', update=callback,
             )
 
-def glass_segments_property():
+def glass_segments_property(callback=None):
     return IntProperty(
             name='Segments',
             min=3, max=1000,
             default=16,
-            description='Glass segments amount', update=update_glass,
+            description='Glass segments amount', update=callback,
             )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a glasss.
 # ------------------------------------------------------------------
 class ArchLabGlassProperties(PropertyGroup):
-    glass_diameter = glass_diameter_property()
-    glass_height = glass_quality_property()
-    glass_segments = glass_segments_property()
+    glass_diameter = glass_diameter_property(callback=update_glass)
+    glass_height = glass_quality_property(callback=update_glass)
+    glass_segments = glass_segments_property(callback=update_glass)
 
 bpy.utils.register_class(ArchLabGlassProperties)
 Object.ArchLabGlassGenerator = CollectionProperty(type=ArchLabGlassProperties)

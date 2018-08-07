@@ -160,34 +160,34 @@ def movetotopsolidify(myobject):
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
-def plane_height_property():
+def plane_height_property(callback=None):
     return FloatProperty(
             name='Height',
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Plane height', update=update_plane,
+            description='Plane height', update=callback,
             )
 
-def plane_width_property():
+def plane_width_property(callback=None):
     return FloatProperty(
             name='Width',
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Plane width', update=update_plane,
+            description='Plane width', update=callback,
             )
 
-def plane_depth_property():
+def plane_depth_property(callback=None):
     return FloatProperty(
             name='Thickness',
             default=0.0, precision=4, unit = 'LENGTH',
-            description='Thickness of the plane', update=update_plane,
+            description='Thickness of the plane', update=callback,
             )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a planes.
 # ------------------------------------------------------------------
 class ArchLabPlaneProperties(PropertyGroup):
-    plane_height = plane_height_property()
-    plane_width = plane_width_property()
-    plane_depth = plane_depth_property()
+    plane_height = plane_height_property(callback=update_plane)
+    plane_width = plane_width_property(callback=update_plane)
+    plane_depth = plane_depth_property(callback=update_plane)
 
 bpy.utils.register_class(ArchLabPlaneProperties)
 Object.ArchLabPlaneGenerator = CollectionProperty(type=ArchLabPlaneProperties)

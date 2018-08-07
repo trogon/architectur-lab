@@ -118,14 +118,14 @@ def update_sphere(self, context):
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
-def sphere_radius_property():
+def sphere_radius_property(callback=None):
     return FloatProperty(
             name='Radius',
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Sphere radius', update=update_sphere,
+            description='Sphere radius', update=callback,
             )
 
-def sphere_type_property(defaultitem = 'UV'):
+def sphere_type_property(defaultitem = 'UV', callback=None):
     return EnumProperty(
             items=(
                 ('UV', 'UV Sphere', ''),
@@ -133,42 +133,42 @@ def sphere_type_property(defaultitem = 'UV'):
                 ),
             name='Topology type',
             default=defaultitem,
-            description='Topology of sphere mesh', update=update_sphere,
+            description='Topology of sphere mesh', update=callback,
             )
 
-def sphere_segments_property():
+def sphere_segments_property(callback=None):
     return IntProperty(
             name='Segments',
             min=3, max=1000, soft_max=200,
             default=32,
-            description='UV Sphere segments amount', update=update_sphere,
+            description='UV Sphere segments amount', update=callback,
             )
 
-def sphere_rings_property():
+def sphere_rings_property(callback=None):
     return IntProperty(
             name='Rings',
             min=2, max=1000, soft_max=100,
             default=16,
-            description='UV Sphere rings amount', update=update_sphere,
+            description='UV Sphere rings amount', update=callback,
             )
 
-def sphere_subdivisions_property():
+def sphere_subdivisions_property(callback=None):
     return IntProperty(
             name='Subdivisions',
             min=1, max=10, soft_max=8,
             default=2,
-            description='Ico Sphere subdivisions amount', update=update_sphere,
+            description='Ico Sphere subdivisions amount', update=callback,
             )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a spheres.
 # ------------------------------------------------------------------
 class ArchLabSphereProperties(PropertyGroup):
-    sphere_radius = sphere_radius_property()
-    sphere_type = sphere_type_property()
-    sphere_segments = sphere_segments_property()
-    sphere_rings = sphere_rings_property()
-    sphere_subdivisions = sphere_subdivisions_property()
+    sphere_radius = sphere_radius_property(callback=update_sphere)
+    sphere_type = sphere_type_property(callback=update_sphere)
+    sphere_segments = sphere_segments_property(callback=update_sphere)
+    sphere_rings = sphere_rings_property(callback=update_sphere)
+    sphere_subdivisions = sphere_subdivisions_property(callback=update_sphere)
 
 bpy.utils.register_class(ArchLabSphereProperties)
 Object.ArchLabSphereGenerator = CollectionProperty(type=ArchLabSphereProperties)

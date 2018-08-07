@@ -123,35 +123,34 @@ def update_plate(self, context):
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
-def plate_diameter_property():
+def plate_diameter_property(callback=None):
     return FloatProperty(
             name='Diameter',
             default=0.21, precision=3, unit = 'LENGTH',
-            description='Plate diameter', update=update_plate,
+            description='Plate diameter', update=callback,
             )
 
-def plate_quality_property():
+def plate_height_property(callback=None):
     return FloatProperty(
             name='Height',
             default=0.03, precision=3, unit = 'LENGTH',
-            description='Plate height', update=update_plate,
+            description='Plate height', update=callback,
             )
 
-def plate_segments_property():
+def plate_segments_property(callback=None):
     return IntProperty(
             name='Segments',
             min=3, max=1000,
             default=16,
-            description='Plate segments amount', update=update_plate,
             )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a plates.
 # ------------------------------------------------------------------
 class ArchLabPlateProperties(PropertyGroup):
-    plate_diameter = plate_diameter_property()
-    plate_height = plate_quality_property()
-    plate_segments = plate_segments_property()
+    plate_diameter = plate_diameter_property(callback=update_plate)
+    plate_height = plate_height_property(callback=update_plate)
+    plate_segments = plate_segments_property(callback=update_plate)
 
 bpy.utils.register_class(ArchLabPlateProperties)
 Object.ArchLabPlateGenerator = CollectionProperty(type=ArchLabPlateProperties)
@@ -218,7 +217,7 @@ class ArchLabPlate(Operator):
 
     # preset
     plate_diameter = plate_diameter_property()
-    plate_height = plate_quality_property()
+    plate_height = plate_height_property()
     plate_segments = plate_segments_property()
 
     # -----------------------------------------------------

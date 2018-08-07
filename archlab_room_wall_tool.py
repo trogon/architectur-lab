@@ -166,34 +166,34 @@ def movetotopsolidify(myobject):
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
-def wall_height_property():
+def wall_height_property(callback=None):
     return FloatProperty(
             name='Height',
             default=2.5, precision=3, unit = 'LENGTH',
-            description='Wall height', update=update_wall,
+            description='Wall height', update=callback,
             )
 
-def wall_width_property():
+def wall_width_property(callback=None):
     return FloatProperty(
             name='Width',
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Wall width', update=update_wall,
+            description='Wall width', update=callback,
             )
 
-def wall_depth_property():
+def wall_depth_property(callback=None):
     return FloatProperty(
             name='Thickness',
             default=0.025, precision=4, unit = 'LENGTH',
-            description='Thickness of the wall', update=update_wall,
+            description='Thickness of the wall', update=callback,
             )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a walls.
 # ------------------------------------------------------------------
 class ArchLabWallProperties(PropertyGroup):
-    wall_height = wall_height_property()
-    wall_width = wall_width_property()
-    wall_depth = wall_depth_property()
+    wall_height = wall_height_property(callback=update_wall)
+    wall_width = wall_width_property(callback=update_wall)
+    wall_depth = wall_depth_property(callback=update_wall)
 
 bpy.utils.register_class(ArchLabWallProperties)
 Object.ArchLabWallGenerator = CollectionProperty(type=ArchLabWallProperties)
