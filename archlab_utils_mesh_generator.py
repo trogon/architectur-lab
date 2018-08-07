@@ -161,3 +161,26 @@ def generate_sphere_uv_mesh_data(radius, segments, rings):
                 lastv = ts
         lastr = tr
     return myvertex, [], myfaces
+
+# --------------------------------------------------------------------
+# Creates mesh based on meshes library data
+# size - vector defines size in 3 axes
+# segments - amount of segments to create circular mesh
+# --------------------------------------------------------------------
+def generate_mesh_from_library(meshname, size=(1.0, 1.0, 1.0), segments=32):
+    meshdata = load_mesh_data_from_library(meshname)
+    if meshdata is not None:
+        dvertex = meshdata['Vertices']
+        myedges = meshdata['Edges']
+        myfaces = meshdata['Faces']
+        myvertex = []
+        for v in dvertex:
+            myvertex.append((v[0] * size[0], v[1] * size[1], v[2] * size[2]))
+        if meshdata['ConstructMethod'] == 'SoR_D':
+            return [], [], []
+        if meshdata['ConstructMethod'] == 'SoR_C':
+            return [], [], []
+        if meshdata['ConstructMethod'] == 'Math':
+            return [], [], []
+        return myvertex, myedges, myfaces
+    return None

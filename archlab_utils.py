@@ -251,7 +251,7 @@ def subdivide_icosphere_mesh(verts, faces):
 # --------------------------------------------------------------------
 # Gets mesh data from json file
 # --------------------------------------------------------------------
-def load_mesh_data(meshname):
+def load_mesh_data_from_library(meshname):
     meshlibrary = load_meshlibrary_data()
     return meshlibrary['Meshes'][meshname]
 
