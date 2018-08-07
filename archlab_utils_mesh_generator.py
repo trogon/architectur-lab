@@ -190,3 +190,32 @@ def generate_mesh_from_library(meshname, size=(1.0, 1.0, 1.0), segments=32):
             return [], [], []
         return myvertices, myedges, myfaces
     return None
+
+# --------------------------------------------------------------------
+# Creates Solid of Revolution based on meshes library data
+# size - vector defines size in 3 axes
+# segments - amount of segments to create circular mesh
+# --------------------------------------------------------------------
+def generate_sord_mesh(sordvertices, sordedges):
+    myvertices = []
+    myfaces = []
+    segv = range(segments)
+    sDeltaAngle = 360 /segments
+    p = (0.0, 0.0, radius)
+    lastr = 0
+    for tr in range(rings +1):
+        lastv = segv[-1]
+        for ts in segv:
+            p1 = rotate_point3d(p, anglex=(tr * rDeltaAngle), anglez=(ts * sDeltaAngle))
+            myvertices.append(p1)
+            if tr > 0:
+                myfaces.append((
+                    lastr * segments + lastv,
+                    lastr * segments + ts,
+                    tr * segments + ts,
+                    tr * segments + lastv
+                ))
+                lastv = ts
+        lastr = tr
+    return myvertices, [], myfaces
+
