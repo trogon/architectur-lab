@@ -163,6 +163,7 @@ def update_plate_size(self, context):
 def plate_diameter_property(callback=None):
     return FloatProperty(
             name='Diameter',
+            soft_min=0.001,
             default=0.21, precision=3, unit = 'LENGTH',
             description='Plate diameter', update=callback,
             )
@@ -170,6 +171,7 @@ def plate_diameter_property(callback=None):
 def plate_height_property(callback=None):
     return FloatProperty(
             name='Height',
+            soft_min=0.001,
             default=0.03, precision=3, unit = 'LENGTH',
             description='Plate height', update=callback,
             )

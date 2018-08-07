@@ -121,6 +121,7 @@ def update_sphere(self, context):
 def sphere_radius_property(callback=None):
     return FloatProperty(
             name='Radius',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
             description='Sphere radius', update=callback,
             )

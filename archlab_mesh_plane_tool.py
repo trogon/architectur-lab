@@ -163,6 +163,7 @@ def movetotopsolidify(myobject):
 def plane_height_property(callback=None):
     return FloatProperty(
             name='Height',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
             description='Plane height', update=callback,
             )
@@ -170,6 +171,7 @@ def plane_height_property(callback=None):
 def plane_width_property(callback=None):
     return FloatProperty(
             name='Width',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
             description='Plane width', update=callback,
             )
@@ -177,6 +179,7 @@ def plane_width_property(callback=None):
 def plane_depth_property(callback=None):
     return FloatProperty(
             name='Thickness',
+            soft_min=0.0,
             default=0.0, precision=4, unit = 'LENGTH',
             description='Thickness of the plane', update=callback,
             )

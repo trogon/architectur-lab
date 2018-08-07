@@ -114,6 +114,7 @@ def update_cube(self, context):
 def cube_height_property(callback=None):
     return FloatProperty(
             name='Height',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
             description='Cube height', update=callback,
             )
@@ -121,6 +122,7 @@ def cube_height_property(callback=None):
 def cube_width_property(callback=None):
     return FloatProperty(
             name='Width',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
             description='Cube width', update=callback,
             )
@@ -128,6 +130,7 @@ def cube_width_property(callback=None):
 def cube_depth_property(callback=None):
     return FloatProperty(
             name='Depth',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
             description='Cube depth', update=callback,
             )

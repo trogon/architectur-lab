@@ -169,6 +169,7 @@ def movetotopsolidify(myobject):
 def wall_height_property(callback=None):
     return FloatProperty(
             name='Height',
+            soft_min=0.001,
             default=2.5, precision=3, unit = 'LENGTH',
             description='Wall height', update=callback,
             )
@@ -176,6 +177,7 @@ def wall_height_property(callback=None):
 def wall_width_property(callback=None):
     return FloatProperty(
             name='Width',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
             description='Wall width', update=callback,
             )
@@ -183,6 +185,7 @@ def wall_width_property(callback=None):
 def wall_depth_property(callback=None):
     return FloatProperty(
             name='Thickness',
+            soft_min=0.001,
             default=0.025, precision=4, unit = 'LENGTH',
             description='Thickness of the wall', update=callback,
             )

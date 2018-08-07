@@ -126,6 +126,7 @@ def update_glass(self, context):
 def glass_diameter_property(callback=None):
     return FloatProperty(
             name='Diameter',
+            soft_min=0.001,
             default=0.05, precision=3, unit = 'LENGTH',
             description='Glass diameter', update=callback,
             )
@@ -133,6 +134,7 @@ def glass_diameter_property(callback=None):
 def glass_quality_property(callback=None):
     return FloatProperty(
             name='Height',
+            soft_min=0.001,
             default=0.08, precision=3, unit = 'LENGTH',
             description='Glass height', update=callback,
             )

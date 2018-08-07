@@ -171,6 +171,7 @@ def movetotopsolidify(myobject):
 def circle_radius_property(callback=None):
     return FloatProperty(
             name='Radius',
+            soft_min=0.001,
             default=1.0, precision=3, unit='LENGTH',
             description='Circle radius', update=callback,
             )
@@ -186,6 +187,7 @@ def circle_quality_property(callback=None):
 def circle_depth_property(callback=None):
     return FloatProperty(
             name='Thickness',
+            soft_min=0.0,
             default=0.0, precision=4, unit='LENGTH',
             description='Thickness of the circle', update=callback,
             )
