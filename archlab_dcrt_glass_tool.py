@@ -54,9 +54,7 @@ def create_glass(self, context):
     # we shape the mesh.
     shape_glass_mesh(glassobject, glassmesh)
     set_smooth(glassobject)
-    # TODO Make those modifiers optional or disable them by default!
-    # set_modifier_subsurf(glassobject)
-    # set_modifier_array(glassobject, relativeoffset=(0.0, 0.0, 0.4), count=5)
+    set_modifier_subsurf(glassobject)
 
     # assign a material
     mat = meshlib_glass_material()

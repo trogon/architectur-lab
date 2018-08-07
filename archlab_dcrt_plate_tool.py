@@ -54,9 +54,7 @@ def create_plate(self, context):
     # we shape the mesh.
     shape_plate_mesh(plateobject, platemesh)
     set_smooth(plateobject)
-    # TODO Make those modifiers optional or disable them by default!
-    # set_modifier_subsurf(plateobject)
-    # set_modifier_array(plateobject, relativeoffset=(0.0, 0.0, 0.4), count=5)
+    set_modifier_subsurf(plateobject)
 
     # assign a material
     mat = meshlib_ceramic_material()
