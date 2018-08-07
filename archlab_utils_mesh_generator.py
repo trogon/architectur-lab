@@ -170,12 +170,17 @@ def generate_sphere_uv_mesh_data(radius, segments, rings):
 def generate_mesh_from_library(meshname, size=(1.0, 1.0, 1.0), segments=32):
     meshdata = load_mesh_data_from_library(meshname)
     if meshdata is not None:
-        dvertex = meshdata['Vertices']
+        mlsize = meshdata['RealSize']
+        mlvertex = meshdata['Vertices']
         myedges = meshdata['Edges']
         myfaces = meshdata['Faces']
         myvertex = []
-        for v in dvertex:
-            myvertex.append((v[0] * size[0], v[1] * size[1], v[2] * size[2]))
+        for mlv in mlvertex:
+            myvertex.append((
+                mlv[0] * size[0] / mlsize[0],
+                mlv[1] * size[1] / mlsize[1],
+                mlv[2] * size[2] / mlsize[2]
+            ))
         if meshdata['ConstructMethod'] == 'SoR_D':
             return [], [], []
         if meshdata['ConstructMethod'] == 'SoR_C':
