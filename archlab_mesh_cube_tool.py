@@ -29,6 +29,7 @@ import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import FloatProperty, CollectionProperty
 from .archlab_utils import *
+from .archlab_utils_mesh_generator import *
 
 # ------------------------------------------------------------------------------
 # Create main object for the cube.
@@ -77,25 +78,9 @@ def shape_cube_mesh(mycube, tmp_mesh, update=False):
 # Creates cube mesh data.
 # ------------------------------------------------------------------------------
 def update_cube_mesh_data(mymesh, width, height, depth):
-    sizex = width
-    sizey = depth
-    sizez = height
-    posx = width /2
-    posy = depth /2
-    posz = height /2
+    (myvertex, myedges, myfaces) = generate_cube_mesh_data(width, height, depth)
 
-    myvertex = [(-posx, -posy, -posz), (posx, -posy, -posz),
-                (-posx, posy, -posz), (posx, posy, -posz),
-                (-posx, -posy, posz), (posx, -posy, posz),
-                (-posx, posy, posz), (posx, posy, posz)]
-    myfaces = [(0, 1, 3, 2),
-                (0, 1, 5, 4),
-                (0, 4, 6, 2),
-                (1, 5, 7, 3),
-                (2, 3, 7, 6),
-                (4, 5, 7, 6)]
-
-    mymesh.from_pydata(myvertex, [], myfaces)
+    mymesh.from_pydata(myvertex, myedges, myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------

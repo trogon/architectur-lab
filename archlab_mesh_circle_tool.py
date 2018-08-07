@@ -29,6 +29,7 @@ import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import EnumProperty, IntProperty, FloatProperty, CollectionProperty
 from .archlab_utils import *
+from .archlab_utils_mesh_generator import *
 
 # ------------------------------------------------------------------------------
 # Create main object for the circle.
@@ -94,35 +95,14 @@ def shape_circle_mesh(mycircle, tmp_mesh, update=False):
 # Creates circle mesh data.
 # ------------------------------------------------------------------------------
 def update_circle_mesh_data(mymesh, radius, vertices, fill_type, trunc_val):
-    deltaAngle = 360 / vertices
-
-    myvertex = []
     if fill_type == 'NONE':
-        myedges = []
-        for t in range(vertices):
-            v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
-            myvertex.append((v1[0], v1[1], 0.0))
-            myedges.append((t, ((t+1) % vertices)))
-        mymesh.from_pydata(myvertex, myedges, [])
-        mymesh.update(calc_edges=True)
-        return None
-    
-    myfaces = []
+        (myvertex, myedges, myfaces) = generate_circle_nofill_mesh_data(radius, vertices)
     if fill_type == 'NGON':
-        myfaces = [list(range(vertices))]
-        for t in range(vertices):
-            v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
-            myvertex.append((v1[0], v1[1], 0.0))
-        if trunc_val > 0.0:
-            (myvertex, myfaces) = truncate_mesh(myvertex, myfaces, trunc_val)
+        (myvertex, myedges, myfaces) = generate_circle_ngonfill_mesh_data(radius, vertices, trunc_val)
     if fill_type == 'TRIF':
-        myvertex.append((0.0, 0.0, 0.0))
-        for t in range(vertices):
-            v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
-            myvertex.append((v1[0], v1[1], 0.0))
-            myfaces.append((0, t+1, ((t+1) % vertices) +1))
+        (myvertex, myedges, myfaces) = generate_circle_tfanfill_mesh_data(radius, vertices)
 
-    mymesh.from_pydata(myvertex, [], myfaces)
+    mymesh.from_pydata(myvertex, myedges, myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------
@@ -183,24 +163,6 @@ def movetotopsolidify(myobject):
                     bpy.ops.object.modifier_move_up(modifier=mymod.name)
     except AttributeError:
         return
-
-# -----------------------------------------------------
-# Truncate circle ngon mesh
-# -----------------------------------------------------
-def truncate_mesh(verts, faces, trunc_val):
-    myverts = []
-    vertnum = len(verts)
-    tscal = 0.5 * trunc_val
-    for t in range(vertnum):
-        pprev = verts[(t+vertnum-1) % vertnum]
-        p1 = verts[t]
-        pnext = verts[(t+1) % vertnum]
-        v1 = slide_point3d(pprev, p1, tscal)
-        v2 = slide_point3d(pnext, p1, tscal)
-        myverts.append((v1))
-        myverts.append((v2))
-    myfaces = [list(range(len(myverts)))]
-    return myverts, myfaces
 
 
 # -----------------------------------------------------

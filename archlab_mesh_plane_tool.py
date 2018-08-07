@@ -29,6 +29,7 @@ import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import FloatProperty, CollectionProperty
 from .archlab_utils import *
+from .archlab_utils_mesh_generator import *
 
 # ------------------------------------------------------------------------------
 # Create main object for the plane.
@@ -92,16 +93,9 @@ def shape_plane_mesh(myplane, tmp_mesh, update=False):
 # Creates plane mesh data.
 # ------------------------------------------------------------------------------
 def update_plane_mesh_data(mymesh, width, height):
-    sizex = width
-    sizey = height
-    posx = width /2
-    posy = height /2
+    (myvertex, myedges, myfaces) = generate_plane_mesh_data(width, height)
 
-    myvertex = [(-posx, -posy, 0.0), (posx, -posy, 0.0),
-                (-posx, posy, 0.0), (posx, posy, 0.0)]
-    myfaces = [(0, 1, 3, 2)]
-
-    mymesh.from_pydata(myvertex, [], myfaces)
+    mymesh.from_pydata(myvertex, myedges, myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------
