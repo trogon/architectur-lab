@@ -96,13 +96,13 @@ def shape_circle_mesh(mycircle, tmp_mesh, update=False):
 # ------------------------------------------------------------------------------
 def update_circle_mesh_data(mymesh, radius, vertices, fill_type, trunc_val):
     if fill_type == 'NONE':
-        (myvertex, myedges, myfaces) = generate_circle_nofill_mesh_data(radius, vertices)
+        (myvertices, myedges, myfaces) = generate_circle_nofill_mesh_data(radius, vertices)
     if fill_type == 'NGON':
-        (myvertex, myedges, myfaces) = generate_circle_ngonfill_mesh_data(radius, vertices, trunc_val)
+        (myvertices, myedges, myfaces) = generate_circle_ngonfill_mesh_data(radius, vertices, trunc_val)
     if fill_type == 'TRIF':
-        (myvertex, myedges, myfaces) = generate_circle_tfanfill_mesh_data(radius, vertices)
+        (myvertices, myedges, myfaces) = generate_circle_tfanfill_mesh_data(radius, vertices)
 
-    mymesh.from_pydata(myvertex, myedges, myfaces)
+    mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------

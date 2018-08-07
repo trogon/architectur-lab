@@ -78,9 +78,9 @@ def shape_cube_mesh(mycube, tmp_mesh, update=False):
 # Creates cube mesh data.
 # ------------------------------------------------------------------------------
 def update_cube_mesh_data(mymesh, width, height, depth):
-    (myvertex, myedges, myfaces) = generate_cube_mesh_data(width, height, depth)
+    (myvertices, myedges, myfaces) = generate_cube_mesh_data(width, height, depth)
 
-    mymesh.from_pydata(myvertex, myedges, myfaces)
+    mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------

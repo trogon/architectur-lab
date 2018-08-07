@@ -87,13 +87,13 @@ def shape_plate_mesh(myplate, tmp_mesh, update=False):
 # Creates plate mesh data.
 # ------------------------------------------------------------------------------
 def update_plate_mesh_data(mymesh, diameter, height, segments):
-    (myvertex, myedges, myfaces) = generate_mesh_from_library(
+    (myvertices, myedges, myfaces) = generate_mesh_from_library(
         'Plate02',
         size=(diameter, diameter, height),
         segments=segments
     )
 
-    mymesh.from_pydata(myvertex, [], myfaces)
+    mymesh.from_pydata(myvertices, [], myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------

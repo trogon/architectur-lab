@@ -37,41 +37,41 @@ from .archlab_utils import *
 # ------------------------------------------------------------------------------
 def generate_circle_ngonfill_mesh_data(radius, vertices, trunc_val):
     deltaAngle = 360 / vertices
-    myvertex = []
+    myvertices = []
     myfaces = [list(range(vertices))]
     for t in range(vertices):
         v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
-        myvertex.append((v1[0], v1[1], 0.0))
+        myvertices.append((v1[0], v1[1], 0.0))
     if trunc_val > 0.0:
-        (myvertex, myfaces) = truncate_circle_mesh(myvertex, myfaces, trunc_val)
-    return myvertex, [], myfaces
+        (myvertices, myfaces) = truncate_circle_mesh(myvertices, myfaces, trunc_val)
+    return myvertices, [], myfaces
 
 # ------------------------------------------------------------------------------
 # Creates circle witout filling mesh data.
 # ------------------------------------------------------------------------------
 def generate_circle_nofill_mesh_data(radius, vertices):
     deltaAngle = 360 / vertices
-    myvertex = []
+    myvertices = []
     myedges = []
     for t in range(vertices):
         v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
-        myvertex.append((v1[0], v1[1], 0.0))
+        myvertices.append((v1[0], v1[1], 0.0))
         myedges.append((t, ((t+1) % vertices)))
-    return myvertex, myedges, []
+    return myvertices, myedges, []
 
 # ------------------------------------------------------------------------------
 # Creates circle filled with triangle fan mesh data.
 # ------------------------------------------------------------------------------
 def generate_circle_tfanfill_mesh_data(radius, vertices):
     deltaAngle = 360 / vertices
-    myvertex = []
+    myvertices = []
     myfaces = []
-    myvertex.append((0.0, 0.0, 0.0))
+    myvertices.append((0.0, 0.0, 0.0))
     for t in range(vertices):
         v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
-        myvertex.append((v1[0], v1[1], 0.0))
+        myvertices.append((v1[0], v1[1], 0.0))
         myfaces.append((0, t+1, ((t+1) % vertices) +1))
-    return myvertex, [], myfaces
+    return myvertices, [], myfaces
 
 # ------------------------------------------------------------------------------
 # Creates cube mesh data.
@@ -80,7 +80,7 @@ def generate_cube_mesh_data(width, height, depth):
     posx = width /2
     posy = depth /2
     posz = height /2
-    myvertex = [(-posx, -posy, -posz), (posx, -posy, -posz),
+    myvertices = [(-posx, -posy, -posz), (posx, -posy, -posz),
                 (-posx, posy, -posz), (posx, posy, -posz),
                 (-posx, -posy, posz), (posx, -posy, posz),
                 (-posx, posy, posz), (posx, posy, posz)]
@@ -90,7 +90,7 @@ def generate_cube_mesh_data(width, height, depth):
                 (1, 5, 7, 3),
                 (2, 3, 7, 6),
                 (4, 5, 7, 6)]
-    return myvertex, [], myfaces
+    return myvertices, [], myfaces
 
 # ------------------------------------------------------------------------------
 # Creates plane mesh data.
@@ -98,16 +98,16 @@ def generate_cube_mesh_data(width, height, depth):
 def generate_plane_mesh_data(width, height):
     posx = width /2
     posy = height /2
-    myvertex = [(-posx, -posy, 0.0), (posx, -posy, 0.0),
+    myvertices = [(-posx, -posy, 0.0), (posx, -posy, 0.0),
                 (-posx, posy, 0.0), (posx, posy, 0.0)]
     myfaces = [(0, 1, 3, 2)]
-    return myvertex, [], myfaces
+    return myvertices, [], myfaces
 
 # ------------------------------------------------------------------------------
 # Creates ico sphere mesh data.
 # ------------------------------------------------------------------------------
 def generate_sphere_ico_mesh_data(radius, subdivisions):
-    myvertex = []
+    myvertices = []
     myfaces = []
     segments = 5
     topv = range(1, segments + 1)
@@ -115,31 +115,31 @@ def generate_sphere_ico_mesh_data(radius, subdivisions):
     sDeltaAngle = 360 /segments
     p1 = (0.2764 * radius, 0.8506 * radius, 0.4472 * radius)
     p2 = (0.7236 * radius, 0.5257 * radius, -0.4472 * radius)
-    myvertex.append((0.0000, 0.0000, radius))
+    myvertices.append((0.0000, 0.0000, radius))
     lastv = topv[-1]
     for ts in topv:
         v1 = rotate_point3d(p1, anglez=(ts * sDeltaAngle))
-        myvertex.append(v1)
+        myvertices.append(v1)
         myfaces.append((0, lastv, ts))
         myfaces.append((lastv, ts, ts + segments))
         lastv = ts
     lastv = botv[-1]
     for ts in botv:
         v1 = rotate_point3d(p2, anglez=(ts * sDeltaAngle))
-        myvertex.append(v1)
+        myvertices.append(v1)
         myfaces.append((lastv, ts, lastv - segments))
         myfaces.append((11, lastv, ts))
         lastv = ts
-    myvertex.append((0.0000, 0.0000, -radius))
+    myvertices.append((0.0000, 0.0000, -radius))
     for ts in range(1, subdivisions):
-        (myvertex, myfaces) = subdivide_icosphere_mesh(myvertex, myfaces)
-    return myvertex, [], myfaces
+        (myvertices, myfaces) = subdivide_icosphere_mesh(myvertices, myfaces)
+    return myvertices, [], myfaces
 
 # ------------------------------------------------------------------------------
 # Creates uv sphere mesh data.
 # ------------------------------------------------------------------------------
 def generate_sphere_uv_mesh_data(radius, segments, rings):
-    myvertex = []
+    myvertices = []
     myfaces = []
     segv = range(segments)
     sDeltaAngle = 360 /segments
@@ -150,7 +150,7 @@ def generate_sphere_uv_mesh_data(radius, segments, rings):
         lastv = segv[-1]
         for ts in segv:
             p1 = rotate_point3d(p, anglex=(tr * rDeltaAngle), anglez=(ts * sDeltaAngle))
-            myvertex.append(p1)
+            myvertices.append(p1)
             if tr > 0:
                 myfaces.append((
                     lastr * segments + lastv,
@@ -160,7 +160,7 @@ def generate_sphere_uv_mesh_data(radius, segments, rings):
                 ))
                 lastv = ts
         lastr = tr
-    return myvertex, [], myfaces
+    return myvertices, [], myfaces
 
 # --------------------------------------------------------------------
 # Creates mesh based on meshes library data
@@ -171,21 +171,22 @@ def generate_mesh_from_library(meshname, size=(1.0, 1.0, 1.0), segments=32):
     meshdata = load_mesh_data_from_library(meshname)
     if meshdata is not None:
         mlsize = meshdata['RealSize']
-        mlvertex = meshdata['Vertices']
+        mlvertices = meshdata['Vertices']
         myedges = meshdata['Edges']
         myfaces = meshdata['Faces']
-        myvertex = []
-        for mlv in mlvertex:
-            myvertex.append((
+        myvertices = []
+        for mlv in mlvertices:
+            myvertices.append((
                 mlv[0] * size[0] / mlsize[0],
                 mlv[1] * size[1] / mlsize[1],
                 mlv[2] * size[2] / mlsize[2]
             ))
         if meshdata['ConstructMethod'] == 'SoR_D':
-            return [], [], []
+            myvertices, myedges, myfaces = generate_sord_mesh(myvertices, myedges, myfaces)
+            return myvertices, myedges, myfaces
         if meshdata['ConstructMethod'] == 'SoR_C':
             return [], [], []
         if meshdata['ConstructMethod'] == 'Math':
             return [], [], []
-        return myvertex, myedges, myfaces
+        return myvertices, myedges, myfaces
     return None

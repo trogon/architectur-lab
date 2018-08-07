@@ -82,11 +82,11 @@ def shape_sphere_mesh(mysphere, tmp_mesh, update=False):
 # ------------------------------------------------------------------------------
 def update_sphere_mesh_data(mymesh, radius, type, segments, rings, subdivisions):
     if type == 'UV':
-        (myvertex, myedges, myfaces) = generate_sphere_uv_mesh_data(radius, segments, rings)
+        (myvertices, myedges, myfaces) = generate_sphere_uv_mesh_data(radius, segments, rings)
     if type == 'ICO':
-        (myvertex, myedges, myfaces) = generate_sphere_ico_mesh_data(radius, subdivisions)
+        (myvertices, myedges, myfaces) = generate_sphere_ico_mesh_data(radius, subdivisions)
 
-    mymesh.from_pydata(myvertex, myedges, myfaces)
+    mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------

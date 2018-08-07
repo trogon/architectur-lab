@@ -97,11 +97,11 @@ def update_wall_mesh_data(mymesh, width, height):
     posw = width
     posz = height
 
-    myvertex = [(0.0, 0.0, 0.0), (0.0, 0.0, posz),]
-    myvertex.extend([(posw, 0.0, 0.0), (posw, 0.0, posz)])
+    myvertices = [(0.0, 0.0, 0.0), (0.0, 0.0, posz),]
+    myvertices.extend([(posw, 0.0, 0.0), (posw, 0.0, posz)])
     myfaces = [(0, 1, 3, 2)]
 
-    mymesh.from_pydata(myvertex, [], myfaces)
+    mymesh.from_pydata(myvertices, [], myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------

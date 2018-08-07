@@ -93,9 +93,9 @@ def shape_plane_mesh(myplane, tmp_mesh, update=False):
 # Creates plane mesh data.
 # ------------------------------------------------------------------------------
 def update_plane_mesh_data(mymesh, width, height):
-    (myvertex, myedges, myfaces) = generate_plane_mesh_data(width, height)
+    (myvertices, myedges, myfaces) = generate_plane_mesh_data(width, height)
 
-    mymesh.from_pydata(myvertex, myedges, myfaces)
+    mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------
