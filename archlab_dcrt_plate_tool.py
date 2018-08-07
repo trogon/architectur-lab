@@ -27,7 +27,7 @@
 # ----------------------------------------------------------
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import IntProperty, FloatProperty, CollectionProperty
+from bpy.props import EnumProperty, IntProperty, FloatProperty, CollectionProperty
 from .archlab_utils import *
 from .archlab_utils_material_data import *
 from .archlab_utils_mesh_generator import *
@@ -50,6 +50,7 @@ def create_plate(self, context):
     plateobject.ArchLabPlateGenerator[0].plate_diameter = self.plate_diameter
     plateobject.ArchLabPlateGenerator[0].plate_height = self.plate_height
     plateobject.ArchLabPlateGenerator[0].plate_segments = self.plate_segments
+    plateobject.ArchLabPlateGenerator[0].plate_type = self.plate_type
 
     # we shape the mesh.
     shape_plate_mesh(plateobject, platemesh)
@@ -68,9 +69,9 @@ def create_plate(self, context):
 # Shapes mesh the plate mesh
 # ------------------------------------------------------------------------------
 def shape_plate_mesh(myplate, tmp_mesh, update=False):
-    usp = myplate.ArchLabPlateGenerator[0]  # "usp" means "plate properties".
+    pp = myplate.ArchLabPlateGenerator[0]  # "pp" means "plate properties".
     # Create plate mesh data
-    update_plate_mesh_data(tmp_mesh, usp.plate_diameter, usp.plate_height, usp.plate_segments)
+    update_plate_mesh_data(tmp_mesh, pp.plate_diameter, pp.plate_height, pp.plate_segments, pp.plate_type)
     myplate.data = tmp_mesh
 
     remove_doubles(myplate)
@@ -84,9 +85,14 @@ def shape_plate_mesh(myplate, tmp_mesh, update=False):
 # ------------------------------------------------------------------------------
 # Creates plate mesh data.
 # ------------------------------------------------------------------------------
-def update_plate_mesh_data(mymesh, diameter, height, segments):
+def update_plate_mesh_data(mymesh, diameter, height, segments, type):
+    if type is None:
+        mytype = 'Plate01'
+    else:
+        mytype = type
+
     (myvertices, myedges, myfaces) = generate_mesh_from_library(
-        'Plate01',
+        type,
         size=(diameter, diameter, height),
         segments=segments
     )
@@ -119,6 +125,37 @@ def update_plate(self, context):
     o.select = True
     bpy.context.scene.objects.active = o
 
+# ------------------------------------------------------------------------------
+# Update plate mesh and sizes based on new kind.
+# ------------------------------------------------------------------------------
+def update_plate_kind(self, context):
+    update_plate_size(self, context)
+    update_plate(self, context)
+
+# ------------------------------------------------------------------------------
+# Update plate sizes based on new kind.
+# ------------------------------------------------------------------------------
+def update_plate_size(self, context):
+    cob = context.object
+    cao = context.active_operator
+    if cob is not None and 'ArchLabPlateGenerator' in cob:
+        props = cob.ArchLabPlateGenerator[0]
+    elif cao is not None:
+        props = cao
+    if props is not None:
+        if props.plate_type == 'Plate01':
+            props.plate_diameter = 0.21
+            props.plate_height = 0.03
+        elif props.plate_type == 'DinnerPlate01':
+            props.plate_diameter = 0.25
+            props.plate_height = 0.02
+        elif props.plate_type == 'DeepPlate01':
+            props.plate_diameter = 0.21
+            props.plate_height = 0.03
+        elif props.plate_type == 'SidePlate01':
+            props.plate_diameter = 0.185
+            props.plate_height = 0.017
+
 
 # -----------------------------------------------------
 # Property definition creator
@@ -142,12 +179,27 @@ def plate_segments_property(callback=None):
             name='Segments',
             min=3, max=1000,
             default=16,
+            description='Plate segments amount', update=callback,
+            )
+
+def plate_type_property(defaultitem='Plate01', callback=None):
+    return EnumProperty(
+            items=(
+                ('Plate01', 'Plate', ''),
+                ('DinnerPlate01', 'Dinner Plate', ''),
+                ('DeepPlate01', 'Deep Plate', ''),
+                ('SidePlate01', 'Side Plate', ''),
+                ),
+            name='Kind',
+            default=defaultitem,
+            description='Plate kind', update=callback,
             )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a plates.
 # ------------------------------------------------------------------
 class ArchLabPlateProperties(PropertyGroup):
+    plate_type = plate_type_property(callback=update_plate_kind)
     plate_diameter = plate_diameter_property(callback=update_plate)
     plate_height = plate_height_property(callback=update_plate)
     plate_segments = plate_segments_property(callback=update_plate)
@@ -160,7 +212,7 @@ Object.ArchLabPlateGenerator = CollectionProperty(type=ArchLabPlateProperties)
 # ------------------------------------------------------------------
 class ArchLabPlateGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_plate_generator"
-    bl_label = "Add Plate"
+    bl_label = "Plate"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'ArchLab'
@@ -199,6 +251,8 @@ class ArchLabPlateGeneratorPanel(Panel):
         else:
             plate = o.ArchLabPlateGenerator[0]
             row = layout.row()
+            row.prop(plate, 'plate_type')
+            row = layout.row()
             row.prop(plate, 'plate_diameter')
             row = layout.row()
             row.prop(plate, 'plate_height')
@@ -210,12 +264,13 @@ class ArchLabPlateGeneratorPanel(Panel):
 # ------------------------------------------------------------------
 class ArchLabPlate(Operator):
     bl_idname = "mesh.archlab_plate"
-    bl_label = "Plate"
+    bl_label = "Add Plate"
     bl_description = "Generate plate decoration"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
     # preset
+    plate_type = plate_type_property(callback=update_plate_size)
     plate_diameter = plate_diameter_property()
     plate_height = plate_height_property()
     plate_segments = plate_segments_property()
@@ -227,6 +282,8 @@ class ArchLabPlate(Operator):
         layout = self.layout
         space = bpy.context.space_data
         if not space.local_view:
+            row = layout.row()
+            row.prop(self, 'plate_type')
             row = layout.row()
             row.prop(self, 'plate_diameter')
             row = layout.row()
