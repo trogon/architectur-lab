@@ -182,7 +182,7 @@ def generate_mesh_from_library(meshname, size=(1.0, 1.0, 1.0), segments=32):
                 mlv[2] * size[2] / mlsize[2]
             ))
         if meshdata['ConstructMethod'] == 'SoR_D':
-            myvertices, myedges, myfaces = generate_sord_mesh(myvertices, myedges, myfaces)
+            myvertices, myedges, myfaces = generate_sord_mesh(myvertices, myedges, segments)
             return myvertices, myedges, myfaces
         if meshdata['ConstructMethod'] == 'SoR_C':
             return [], [], []
@@ -192,30 +192,63 @@ def generate_mesh_from_library(meshname, size=(1.0, 1.0, 1.0), segments=32):
     return None
 
 # --------------------------------------------------------------------
-# Creates Solid of Revolution based on meshes library data
-# size - vector defines size in 3 axes
-# segments - amount of segments to create circular mesh
+# Creates Solid of Revolution mesh based on meshes library data
+# sordvertices - mesh profile vertices
+# sordedges - mesh profile edges
+# segments - amount of segments to create circular mesh base
 # --------------------------------------------------------------------
-def generate_sord_mesh(sordvertices, sordedges):
+def generate_sord_profile_mesh(sordvertices, sordedges, segments):
+    return sordvertices, sordedges, []
+
+# --------------------------------------------------------------------
+# Creates Solid of Revolution mesh based on meshes library data
+# sordvertices - mesh profile vertices
+# sordedges - mesh profile edges
+# segments - amount of segments to create circular mesh base
+# --------------------------------------------------------------------
+def generate_sord_mesh(sordvertices, sordedges, segments, close_top=True, close_bottom=True):
     myvertices = []
+    myedges = []
     myfaces = []
     segv = range(segments)
+    segh = len(sordvertices)
     sDeltaAngle = 360 /segments
-    p = (0.0, 0.0, radius)
-    lastr = 0
-    for tr in range(rings +1):
-        lastv = segv[-1]
-        for ts in segv:
-            p1 = rotate_point3d(p, anglex=(tr * rDeltaAngle), anglez=(ts * sDeltaAngle))
+    for ts in segv:
+        for tv in sordvertices:
+            p1 = rotate_point3d(tv, anglez=(ts * sDeltaAngle))
             myvertices.append(p1)
-            if tr > 0:
-                myfaces.append((
-                    lastr * segments + lastv,
-                    lastr * segments + ts,
-                    tr * segments + ts,
-                    tr * segments + lastv
-                ))
-                lastv = ts
-        lastr = tr
-    return myvertices, [], myfaces
-
+    lasts = segv[-1]
+    for ts in segv:
+        for te in sordedges:
+            myfaces.append((
+                te[0] + (lasts * segh),
+                te[1] + (lasts * segh),
+                te[1] + (ts * segh),
+                te[0] + (ts * segh),
+            ))
+        lasts = ts
+    if close_top or close_bottom:
+        ends = set()
+        for te in sordedges:
+            if te[0] not in ends:
+                ends.add(te[0])
+            else:
+                ends.remove(te[0])
+            if te[1] not in ends:
+                ends.add(te[1])
+            else:
+                ends.remove(te[1])
+        topv = ends.pop()
+        bottomv = ends.pop()
+        if myvertices[topv][2] < myvertices[bottomv][2]:
+            (topv, bottomv) = (bottomv, topv)
+        topf = []
+        bottomf = []
+        for ts in segv:
+            topf.append(ts * segh + topv)
+            bottomf.append(ts * segh + bottomv)
+        if close_top:
+            myfaces.append(topf)
+        if close_bottom:
+            myfaces.append(bottomf)
+    return myvertices, myedges, myfaces
