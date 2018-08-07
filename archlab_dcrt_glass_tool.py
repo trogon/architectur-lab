@@ -161,7 +161,7 @@ Object.ArchLabGlassGenerator = CollectionProperty(type=ArchLabGlassProperties)
 # ------------------------------------------------------------------
 class ArchLabGlassGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_glass_generator"
-    bl_label = "Add Glass"
+    bl_label = "Glass"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'ArchLab'
@@ -211,7 +211,7 @@ class ArchLabGlassGeneratorPanel(Panel):
 # ------------------------------------------------------------------
 class ArchLabGlass(Operator):
     bl_idname = "mesh.archlab_glass"
-    bl_label = "Glass"
+    bl_label = "Add Glass"
     bl_description = "Generate glass decoration"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}

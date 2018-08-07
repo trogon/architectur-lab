@@ -203,7 +203,7 @@ Object.ArchLabWallGenerator = CollectionProperty(type=ArchLabWallProperties)
 # ------------------------------------------------------------------
 class ArchLabWallGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_wall_generator"
-    bl_label = "Add Wall"
+    bl_label = "Wall"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'ArchLab'
@@ -253,7 +253,7 @@ class ArchLabWallGeneratorPanel(Panel):
 # ------------------------------------------------------------------
 class ArchLabWall(Operator):
     bl_idname = "mesh.archlab_wall"
-    bl_label = "Wall"
+    bl_label = "Add Wall"
     bl_description = "Generate wall mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}

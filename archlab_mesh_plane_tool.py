@@ -247,7 +247,7 @@ class ArchLabPlaneGeneratorPanel(Panel):
 # ------------------------------------------------------------------
 class ArchLabPlane(Operator):
     bl_idname = "mesh.archlab_plane"
-    bl_label = "Plane"
+    bl_label = "Add Plane"
     bl_description = "Generate plane primitive mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
