@@ -229,7 +229,7 @@ def truncate_circle_mesh(verts, faces, trunc_val):
 # -----------------------------------------------------
 # Subdivide ico sphere mesh
 # -----------------------------------------------------
-def subdivide_icosphere_mesh(verts, faces):
+def subdivide_icosphere_mesh(verts, faces, radius):
     myverts = verts
     myfaces = []
     vertnum = len(faces)
@@ -239,6 +239,7 @@ def subdivide_icosphere_mesh(verts, faces):
         for ts in range(len(f)):
             v1 = slide_point3d(verts[laste], verts[f[ts]], 0.5)
             v1.normalize()
+            v1 = v1 * radius
             newface.append(len(myverts))
             myverts.append(v1)
             laste = f[ts]
