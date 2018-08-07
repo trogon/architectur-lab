@@ -208,11 +208,50 @@ def slide_point3d(startpoint, endpoint, scale):
     v2 = Vector(endpoint)
     return v2 + (v1 - v2) * scale
 
+# -----------------------------------------------------
+# Truncate circle ngon mesh
+# -----------------------------------------------------
+def truncate_circle_mesh(verts, faces, trunc_val):
+    myverts = []
+    vertnum = len(verts)
+    tscal = 0.5 * trunc_val
+    for t in range(vertnum):
+        pprev = verts[(t+vertnum-1) % vertnum]
+        p1 = verts[t]
+        pnext = verts[(t+1) % vertnum]
+        v1 = slide_point3d(pprev, p1, tscal)
+        v2 = slide_point3d(pnext, p1, tscal)
+        myverts.append((v1))
+        myverts.append((v2))
+    myfaces = [list(range(len(myverts)))]
+    return myverts, myfaces
+
+# -----------------------------------------------------
+# Subdivide ico sphere mesh
+# -----------------------------------------------------
+def subdivide_icosphere_mesh(verts, faces):
+    myverts = verts
+    myfaces = []
+    vertnum = len(faces)
+    for f in faces:
+        laste = f[-1]
+        newface = []
+        for ts in range(len(f)):
+            v1 = slide_point3d(verts[laste], verts[f[ts]], 0.5)
+            v1.normalize()
+            newface.append(len(myverts))
+            myverts.append(v1)
+            laste = f[ts]
+        myfaces.append((newface[0], newface[1], newface[2]))
+        myfaces.append((newface[0], newface[1], f[0]))
+        myfaces.append((newface[1], newface[2], f[1]))
+        myfaces.append((newface[2], newface[0], f[2]))
+    return myverts, myfaces
 
 # --------------------------------------------------------------------
 # Gets mesh data from json file
 # --------------------------------------------------------------------
-def load_mesh_data(meshname):
+def load_mesh_data_from_library(meshname):
     meshlibrary = load_meshlibrary_data()
     return meshlibrary['Meshes'][meshname]
 

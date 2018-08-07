@@ -27,183 +27,141 @@
 # ----------------------------------------------------------
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import FloatProperty, CollectionProperty
+from bpy.props import IntProperty, FloatProperty, CollectionProperty
 from .archlab_utils import *
+from .archlab_utils_material_data import *
+from .archlab_utils_mesh_generator import *
 
 # ------------------------------------------------------------------------------
-# Create main object for the wall.
+# Create main object for the glass.
 # ------------------------------------------------------------------------------
-def create_wall(self, context):
+def create_glass(self, context):
     # deselect all objects
     for o in bpy.data.objects:
         o.select = False
 
-    # we create main object and mesh for wall
-    wallmesh = bpy.data.meshes.new("Wall")
-    wallobject = bpy.data.objects.new("Wall", wallmesh)
-    wallobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(wallobject)
-    wallobject.ArchLabWallGenerator.add()
+    # we create main object and mesh
+    glassmesh = bpy.data.meshes.new("Glass")
+    glassobject = bpy.data.objects.new("Glass", glassmesh)
+    glassobject.location = bpy.context.scene.cursor_location
+    bpy.context.scene.objects.link(glassobject)
+    glassobject.ArchLabGlassGenerator.add()
 
-    wallobject.ArchLabWallGenerator[0].wall_height = self.wall_height
-    wallobject.ArchLabWallGenerator[0].wall_width = self.wall_width
-    wallobject.ArchLabWallGenerator[0].wall_depth = self.wall_depth
+    glassobject.ArchLabGlassGenerator[0].glass_diameter = self.glass_diameter
+    glassobject.ArchLabGlassGenerator[0].glass_height = self.glass_height
+    glassobject.ArchLabGlassGenerator[0].glass_segments = self.glass_segments
 
     # we shape the mesh.
-    shape_wall_mesh(wallobject, wallmesh)
+    shape_glass_mesh(glassobject, glassmesh)
+    set_smooth(glassobject)
+    set_modifier_subsurf(glassobject)
 
-    # we select, and activate, main object for the wall.
-    wallobject.select = True
-    bpy.context.scene.objects.active = wallobject
+    # assign a material
+    mat = meshlib_glass_material()
+    set_material(glassobject, mat.name)
+
+    # we select, and activate, main object for the glass.
+    glassobject.select = True
+    bpy.context.scene.objects.active = glassobject
 
 # ------------------------------------------------------------------------------
-# Shapes mesh and creates modifier solidify (the modifier, only the first time).
+# Shapes mesh the glass mesh
 # ------------------------------------------------------------------------------
-def shape_wall_mesh(mywall, tmp_mesh, update=False):
-    pp = mywall.ArchLabWallGenerator[0]  # "pp" means "wall properties".
-    # Create wall mesh data
-    update_wall_mesh_data(tmp_mesh, pp.wall_width, pp.wall_height)
-    mywall.data = tmp_mesh
+def shape_glass_mesh(myglass, tmp_mesh, update=False):
+    gp = myglass.ArchLabGlassGenerator[0]  # "gp" means "glass properties".
+    # Create glass mesh data
+    update_glass_mesh_data(tmp_mesh, gp.glass_diameter, gp.glass_height, gp.glass_segments)
+    myglass.data = tmp_mesh
 
-    remove_doubles(mywall)
-    set_normals(mywall)
-
-    if pp.wall_depth > 0.0:
-        if update is False or is_solidify(mywall) is False:
-            set_modifier_solidify(mywall, pp.wall_depth)
-        else:
-            for mod in mywall.modifiers:
-                if mod.type == 'SOLIDIFY':
-                    mod.thickness = pp.wall_depth
-        # Move to Top SOLIDIFY
-        movetotopsolidify(mywall)
-
-    else:  # clear not used SOLIDIFY
-        for mod in mywall.modifiers:
-            if mod.type == 'SOLIDIFY':
-                mywall.modifiers.remove(mod)
+    remove_doubles(myglass)
+    set_normals(myglass)
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mywall.name:
+        if o.select is True and o.name != myglass.name:
             o.select = False
 
 # ------------------------------------------------------------------------------
-# Creates wall mesh data.
+# Creates glass mesh data.
 # ------------------------------------------------------------------------------
-def update_wall_mesh_data(mymesh, width, height):
-    sizew = width
-    sizez = height
-    posw = width
-    posz = height
+def update_glass_mesh_data(mymesh, diameter, height, segments):
+    (myvertices, myedges, myfaces) = generate_mesh_from_library(
+        'Glass01',
+        size=(diameter, diameter, height),
+        segments=segments
+    )
 
-    myvertices = [(0.0, 0.0, 0.0), (0.0, 0.0, posz),]
-    myvertices.extend([(posw, 0.0, 0.0), (posw, 0.0, posz)])
-    myfaces = [(0, 1, 3, 2)]
-
-    mymesh.from_pydata(myvertices, [], myfaces)
+    mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------
-# Update wall mesh.
+# Update glass mesh.
 # ------------------------------------------------------------------------------
-def update_wall(self, context):
-    # When we update, the active object is the main object of the wall.
+def update_glass(self, context):
+    # When we update, the active object is the main object of the glass.
     o = bpy.context.active_object
     oldmesh = o.data
     oldname = o.data.name
-    # Now we deselect that wall object to not delete it.
+    # Now we deselect that glass object to not delete it.
     o.select = False
-    # and we create a new mesh for the wall:
+    # and we create a new mesh for the glass:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
         obj.select = False
     # Finally we shape the main mesh again,
-    shape_wall_mesh(o, tmp_mesh, True)
+    shape_glass_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
     # Remove data (mesh of active object),
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
-    # and select, and activate, the main object of the wall.
+    # and select, and activate, the main object of the glass.
     o.select = True
     bpy.context.scene.objects.active = o
 
-# -----------------------------------------------------
-# Verify if solidify exist
-# -----------------------------------------------------
-def is_solidify(myobject):
-    flag = False
-    try:
-        if myobject.modifiers is None:
-            return False
-
-        for mod in myobject.modifiers:
-            if mod.type == 'SOLIDIFY':
-                flag = True
-                break
-        return flag
-    except AttributeError:
-        return False
-
-# -----------------------------------------------------
-# Move Solidify to Top
-# -----------------------------------------------------
-def movetotopsolidify(myobject):
-    mymod = None
-    try:
-        if myobject.modifiers is not None:
-            for mod in myobject.modifiers:
-                if mod.type == 'SOLIDIFY':
-                    mymod = mod
-
-            if mymod is not None:
-                while myobject.modifiers[0] != mymod:
-                    bpy.ops.object.modifier_move_up(modifier=mymod.name)
-    except AttributeError:
-        return
 
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
-def wall_height_property():
+def glass_diameter_property():
+    return FloatProperty(
+            name='Diameter',
+            default=0.05, precision=3, unit = 'LENGTH',
+            description='Glass diameter', update=update_glass,
+            )
+
+def glass_quality_property():
     return FloatProperty(
             name='Height',
-            default=2.5, precision=3, unit = 'LENGTH',
-            description='Wall height', update=update_wall,
+            default=0.08, precision=3, unit = 'LENGTH',
+            description='Glass height', update=update_glass,
             )
 
-def wall_width_property():
-    return FloatProperty(
-            name='Width',
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Wall width', update=update_wall,
-            )
-
-def wall_depth_property():
-    return FloatProperty(
-            name='Thickness',
-            default=0.025, precision=4, unit = 'LENGTH',
-            description='Thickness of the wall', update=update_wall,
+def glass_segments_property():
+    return IntProperty(
+            name='Segments',
+            min=3, max=1000,
+            default=16,
+            description='Glass segments amount', update=update_glass,
             )
 
 # ------------------------------------------------------------------
-# Define property group class to create or modify a walls.
+# Define property group class to create or modify a glasss.
 # ------------------------------------------------------------------
-class ArchLabWallProperties(PropertyGroup):
-    wall_height = wall_height_property()
-    wall_width = wall_width_property()
-    wall_depth = wall_depth_property()
+class ArchLabGlassProperties(PropertyGroup):
+    glass_diameter = glass_diameter_property()
+    glass_height = glass_quality_property()
+    glass_segments = glass_segments_property()
 
-bpy.utils.register_class(ArchLabWallProperties)
-Object.ArchLabWallGenerator = CollectionProperty(type=ArchLabWallProperties)
+bpy.utils.register_class(ArchLabGlassProperties)
+Object.ArchLabGlassGenerator = CollectionProperty(type=ArchLabGlassProperties)
 
 # ------------------------------------------------------------------
-# Define panel class to modify walls.
+# Define panel class to modify glasss.
 # ------------------------------------------------------------------
-class ArchLabWallGeneratorPanel(Panel):
-    bl_idname = "OBJECT_PT_wall_generator"
-    bl_label = "Add Wall"
+class ArchLabGlassGeneratorPanel(Panel):
+    bl_idname = "OBJECT_PT_glass_generator"
+    bl_label = "Add Glass"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'ArchLab'
@@ -217,9 +175,9 @@ class ArchLabWallGeneratorPanel(Panel):
         act_op = context.active_operator
         if o is None:
             return False
-        if 'ArchLabWallGenerator' not in o:
+        if 'ArchLabGlassGenerator' not in o:
             return False
-        if act_op is not None and act_op.bl_idname.endswith('archlab_wall'):
+        if act_op is not None and act_op.bl_idname.endswith('archlab_glass'):
             return False
         else:
             return True
@@ -229,9 +187,9 @@ class ArchLabWallGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabWallGenerator', this panel is not created.
+        # If the selected object didn't be created with the group 'ArchLabGlassGenerator', this panel is not created.
         try:
-            if 'ArchLabWallGenerator' not in o:
+            if 'ArchLabGlassGenerator' not in o:
                 return
         except:
             return
@@ -240,28 +198,28 @@ class ArchLabWallGeneratorPanel(Panel):
         if bpy.context.mode == 'EDIT_MESH':
             layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
-            wall = o.ArchLabWallGenerator[0]
+            glass = o.ArchLabGlassGenerator[0]
             row = layout.row()
-            row.prop(wall, 'wall_width')
+            row.prop(glass, 'glass_diameter')
             row = layout.row()
-            row.prop(wall, 'wall_height')
+            row.prop(glass, 'glass_height')
             row = layout.row()
-            row.prop(wall, 'wall_depth')
+            row.prop(glass, 'glass_segments')
 
 # ------------------------------------------------------------------
-# Define operator class to create walls
+# Define operator class to create glasss
 # ------------------------------------------------------------------
-class ArchLabWall(Operator):
-    bl_idname = "mesh.archlab_wall"
-    bl_label = "Wall"
-    bl_description = "Generate wall mesh"
+class ArchLabGlass(Operator):
+    bl_idname = "mesh.archlab_glass"
+    bl_label = "Glass"
+    bl_description = "Generate glass decoration"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
     # preset
-    wall_height = wall_height_property()
-    wall_width = wall_width_property()
-    wall_depth = wall_depth_property()
+    glass_diameter = glass_diameter_property()
+    glass_height = glass_quality_property()
+    glass_segments = glass_segments_property()
 
     # -----------------------------------------------------
     # Draw (create UI interface)
@@ -271,11 +229,11 @@ class ArchLabWall(Operator):
         space = bpy.context.space_data
         if not space.local_view:
             row = layout.row()
-            row.prop(self, 'wall_height')
+            row.prop(self, 'glass_diameter')
             row = layout.row()
-            row.prop(self, 'wall_width')
+            row.prop(self, 'glass_height')
             row = layout.row()
-            row.prop(self, 'wall_depth')
+            row.prop(self, 'glass_segments')
         else:
             row = layout.row()
             row.label("Warning: Operator does not work in local view mode", icon='ERROR')
@@ -287,7 +245,7 @@ class ArchLabWall(Operator):
         if bpy.context.mode == "OBJECT":
             space = bpy.context.space_data
             if not space.local_view:
-                create_wall(self, context)
+                create_glass(self, context)
                 return {'FINISHED'}
             else:
                 self.report({'WARNING'}, "ArchLab: Option only valid in global view mode")

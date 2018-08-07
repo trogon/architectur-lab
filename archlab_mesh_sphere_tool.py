@@ -30,6 +30,7 @@ from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import EnumProperty, IntProperty, FloatProperty, CollectionProperty
 from math import sqrt
 from .archlab_utils import *
+from .archlab_utils_mesh_generator import *
 
 # ------------------------------------------------------------------------------
 # Create main object for the sphere.
@@ -80,59 +81,12 @@ def shape_sphere_mesh(mysphere, tmp_mesh, update=False):
 # Creates sphere mesh data.
 # ------------------------------------------------------------------------------
 def update_sphere_mesh_data(mymesh, radius, type, segments, rings, subdivisions):
-    myvertex = []
-    myfaces = []
-    
     if type == 'UV':
-        segv = range(segments)
-        sDeltaAngle = 360 /segments
-        rDeltaAngle = 180 /rings
-        p = (0.0, 0.0, radius)
-        lastr = 0
-        for tr in range(rings +1):
-            lastv = segv[-1]
-            for ts in segv:
-                p1 = rotate_point3d(p, anglex=(tr * rDeltaAngle), anglez=(ts * sDeltaAngle))
-                myvertex.append(p1)
-                if tr > 0:
-                    myfaces.append((
-                        lastr * segments + lastv,
-                        lastr * segments + ts,
-                        tr * segments + ts,
-                        tr * segments + lastv
-                    ))
-                    lastv = ts
-            lastr = tr
-
+        (myvertices, myedges, myfaces) = generate_sphere_uv_mesh_data(radius, segments, rings)
     if type == 'ICO':
-        segments = 5
-        topv = range(1, segments + 1)
-        botv = range(segments + 1, segments * 2 + 1)
-        sDeltaAngle = 360 /segments
-        p1 = (0.2764 * radius, 0.8506 * radius, 0.4472 * radius)
-        p2 = (0.7236 * radius, 0.5257 * radius, -0.4472 * radius)
+        (myvertices, myedges, myfaces) = generate_sphere_ico_mesh_data(radius, subdivisions)
 
-        myvertex.append((0.0000, 0.0000, radius))
-        lastv = topv[-1]
-        for ts in topv:
-            v1 = rotate_point3d(p1, anglez=(ts * sDeltaAngle))
-            myvertex.append(v1)
-            myfaces.append((0, lastv, ts))
-            myfaces.append((lastv, ts, ts + segments))
-            lastv = ts
-        lastv = botv[-1]
-        for ts in botv:
-            v1 = rotate_point3d(p2, anglez=(ts * sDeltaAngle))
-            myvertex.append(v1)
-            myfaces.append((lastv, ts, lastv - segments))
-            myfaces.append((11, lastv, ts))
-            lastv = ts
-        myvertex.append((0.0000, 0.0000, -radius))
-        for ts in range(1, subdivisions):
-            (myvertex, myfaces) = subdivide_mesh(myvertex, myfaces)
-
-
-    mymesh.from_pydata(myvertex, [], myfaces)
+    mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------
@@ -160,28 +114,6 @@ def update_sphere(self, context):
     o.select = True
     bpy.context.scene.objects.active = o
 
-# -----------------------------------------------------
-# Subdivide circle mesh
-# -----------------------------------------------------
-def subdivide_mesh(verts, faces):
-    myverts = verts
-    myfaces = []
-    vertnum = len(faces)
-    for f in faces:
-        laste = f[-1]
-        newface = []
-        for ts in range(len(f)):
-            v1 = slide_point3d(verts[laste], verts[f[ts]], 0.5)
-            v1.normalize()
-            newface.append(len(myverts))
-            myverts.append(v1)
-            laste = f[ts]
-        myfaces.append((newface[0], newface[1], newface[2]))
-        myfaces.append((newface[0], newface[1], f[0]))
-        myfaces.append((newface[1], newface[2], f[1]))
-        myfaces.append((newface[2], newface[0], f[2]))
-    #myfaces.extend(faces)
-    return myverts, myfaces
 
 # -----------------------------------------------------
 # Property definition creator

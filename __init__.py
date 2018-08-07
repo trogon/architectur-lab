@@ -33,7 +33,7 @@ bl_info = {
     "name": "Architecture Lab",
     "author": "Insma Software - Maciej Klemarczyk (mklemarczyk)",
     "location": "View3D > Add > Mesh > ArchLab",
-    "version": (1, 0, 7),
+    "version": (1, 0, 8),
     "blender": (2, 7, 9),
     "description": "Creates rooms, doors, windows, and other architecture objects",
     "wiki_url": "https://github.com/insma/ArchitectureLab/wiki",
@@ -47,6 +47,7 @@ bl_info = {
 # ----------------------------------------------
 if "bpy" in locals():
     import importlib
+    importlib.reload(archlab_dcrt_glass_tool)
     importlib.reload(archlab_dcrt_plate_tool)
     importlib.reload(archlab_mesh_cube_tool)
     importlib.reload(archlab_mesh_cube_tool)
@@ -56,6 +57,7 @@ if "bpy" in locals():
 
     print("archlab: Reloaded multifiles")
 else:
+    from . import archlab_dcrt_glass_tool
     from . import archlab_dcrt_plate_tool
     from . import archlab_mesh_circle_tool
     from . import archlab_mesh_cube_tool
@@ -66,6 +68,8 @@ else:
     print("archlab: Imported multifiles")
 
 modules = [
+    archlab_dcrt_glass_tool.ArchLabGlass,
+    archlab_dcrt_glass_tool.ArchLabGlassGeneratorPanel,
     archlab_dcrt_plate_tool.ArchLabPlate,
     archlab_dcrt_plate_tool.ArchLabPlateGeneratorPanel,
     archlab_mesh_circle_tool.ArchLabCircle,
@@ -112,6 +116,7 @@ class ArchLabMeshDecorationsAdd(Menu):
     bl_label = "Decorations"
 
     def draw(self, context):
+        self.layout.operator("mesh.archlab_glass", text="Add Glass")
         self.layout.operator("mesh.archlab_plate", text="Add Plate")
 
 # ----------------------------------------------------------
