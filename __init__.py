@@ -47,6 +47,7 @@ bl_info = {
 # ----------------------------------------------
 if "bpy" in locals():
     import importlib
+    importlib.reload(archlab_bldn_room_tool)
     importlib.reload(archlab_bldn_stairs_tool)
     importlib.reload(archlab_bldn_wall_tool)
     importlib.reload(archlab_dcrt_glass_tool)
@@ -58,6 +59,7 @@ if "bpy" in locals():
 
     print("archlab: Reloaded multifiles")
 else:
+    from . import archlab_bldn_room_tool
     from . import archlab_bldn_stairs_tool
     from . import archlab_bldn_wall_tool
     from . import archlab_dcrt_glass_tool
@@ -70,6 +72,8 @@ else:
     print("archlab: Imported multifiles")
 
 modules = [
+    archlab_bldn_room_tool.ArchLabRoom,
+    archlab_bldn_room_tool.ArchLabRoomGeneratorPanel,
     archlab_bldn_stairs_tool.ArchLabStairs,
     archlab_bldn_stairs_tool.ArchLabStairsGeneratorPanel,
     archlab_bldn_wall_tool.ArchLabWall,
@@ -146,6 +150,7 @@ class ArchLabMeshCustomMenuAdd(Menu):
 
     def draw(self, context):
         self.layout.operator_context = 'INVOKE_REGION_WIN'
+        self.layout.operator("mesh.archlab_room", text="Add Room")
         self.layout.operator("mesh.archlab_stairs", text="Add Stairs")
         self.layout.operator("mesh.archlab_wall", text="Add Wall")
         self.layout.separator()
