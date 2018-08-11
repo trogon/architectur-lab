@@ -158,39 +158,47 @@ def rotate_point2d(posx, posy, angle):
     return v2
 
 # --------------------------------------------------------------------
-# Rotates a point in 3D space with specified angle
+# Rotates a point in 3D space with specified angle in deg
 # --------------------------------------------------------------------
-def rotate_point3d(pos, anglex = 0.0, angley = 0.0, anglez = 0.0):
+def rotate_point3d(pos, anglex=0.0, angley=0.0, anglez=0.0):
+    return rotate_point3d_rad(
+        pos,
+        anglex=radians(anglex),
+        angley=radians(angley),
+        anglez=radians(anglez)
+    )
+
+# --------------------------------------------------------------------
+# Rotates a point in 3D space with specified angle in radians
+# --------------------------------------------------------------------
+def rotate_point3d_rad(pos, anglex=0.0, angley=0.0, anglez=0.0):
     v1 = Vector(pos)
     mat1 = Matrix([
         [1, 0, 0],
         [0, 1, 0],
         [0, 0, 1]
     ])
-    if anglez > 0.0:
-        rada1 = radians(anglez)
-        cosa1 = cos(rada1)
-        sina1 = sin(rada1)
+    if not anglez == 0.0:
+        cosa1 = cos(anglez)
+        sina1 = sin(anglez)
         mat2 = Matrix([
             [cosa1, -sina1, 0],
             [sina1, cosa1, 0],
             [0, 0, 1]
         ])
         mat1 = mat1 * mat2
-    if angley > 0.0:
-        rada1 = radians(angley)
-        cosa1 = cos(rada1)
-        sina1 = sin(rada1)
+    if not angley == 0.0:
+        cosa1 = cos(angley)
+        sina1 = sin(angley)
         mat2 = Matrix([
             [cosa1, 0, -sina1],
             [0, 1, 0],
             [sina1, 0, cosa1]
         ])
         mat1 = mat1 * mat2
-    if anglex > 0.0:
-        rada1 = radians(anglex)
-        cosa1 = cos(rada1)
-        sina1 = sin(rada1)
+    if not anglex == 0.0:
+        cosa1 = cos(anglex)
+        sina1 = sin(anglex)
         mat2 = Matrix([
             [1, 0, 0],
             [0, cosa1, -sina1],
@@ -229,7 +237,7 @@ def truncate_circle_mesh(verts, faces, trunc_val):
 # -----------------------------------------------------
 # Subdivide ico sphere mesh
 # -----------------------------------------------------
-def subdivide_icosphere_mesh(verts, faces):
+def subdivide_icosphere_mesh(verts, faces, radius):
     myverts = verts
     myfaces = []
     vertnum = len(faces)
@@ -239,6 +247,7 @@ def subdivide_icosphere_mesh(verts, faces):
         for ts in range(len(f)):
             v1 = slide_point3d(verts[laste], verts[f[ts]], 0.5)
             v1.normalize()
+            v1 = v1 * radius
             newface.append(len(myverts))
             myverts.append(v1)
             laste = f[ts]

@@ -111,34 +111,37 @@ def update_cube(self, context):
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
-def cube_height_property():
+def cube_height_property(callback=None):
     return FloatProperty(
             name='Height',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Cube height', update=update_cube,
+            description='Cube height', update=callback,
             )
 
-def cube_width_property():
+def cube_width_property(callback=None):
     return FloatProperty(
             name='Width',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Cube width', update=update_cube,
+            description='Cube width', update=callback,
             )
 
-def cube_depth_property():
+def cube_depth_property(callback=None):
     return FloatProperty(
             name='Depth',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Cube depth', update=update_cube,
+            description='Cube depth', update=callback,
             )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a cubes.
 # ------------------------------------------------------------------
 class ArchLabCubeProperties(PropertyGroup):
-    cube_height = cube_height_property()
-    cube_width = cube_width_property()
-    cube_depth = cube_depth_property()
+    cube_height = cube_height_property(callback=update_cube)
+    cube_width = cube_width_property(callback=update_cube)
+    cube_depth = cube_depth_property(callback=update_cube)
 
 bpy.utils.register_class(ArchLabCubeProperties)
 Object.ArchLabCubeGenerator = CollectionProperty(type=ArchLabCubeProperties)

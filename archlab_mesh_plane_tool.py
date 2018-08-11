@@ -160,34 +160,37 @@ def movetotopsolidify(myobject):
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
-def plane_height_property():
+def plane_height_property(callback=None):
     return FloatProperty(
             name='Height',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Plane height', update=update_plane,
+            description='Plane height', update=callback,
             )
 
-def plane_width_property():
+def plane_width_property(callback=None):
     return FloatProperty(
             name='Width',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Plane width', update=update_plane,
+            description='Plane width', update=callback,
             )
 
-def plane_depth_property():
+def plane_depth_property(callback=None):
     return FloatProperty(
             name='Thickness',
+            soft_min=0.0,
             default=0.0, precision=4, unit = 'LENGTH',
-            description='Thickness of the plane', update=update_plane,
+            description='Thickness of the plane', update=callback,
             )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a planes.
 # ------------------------------------------------------------------
 class ArchLabPlaneProperties(PropertyGroup):
-    plane_height = plane_height_property()
-    plane_width = plane_width_property()
-    plane_depth = plane_depth_property()
+    plane_height = plane_height_property(callback=update_plane)
+    plane_width = plane_width_property(callback=update_plane)
+    plane_depth = plane_depth_property(callback=update_plane)
 
 bpy.utils.register_class(ArchLabPlaneProperties)
 Object.ArchLabPlaneGenerator = CollectionProperty(type=ArchLabPlaneProperties)
@@ -247,7 +250,7 @@ class ArchLabPlaneGeneratorPanel(Panel):
 # ------------------------------------------------------------------
 class ArchLabPlane(Operator):
     bl_idname = "mesh.archlab_plane"
-    bl_label = "Plane"
+    bl_label = "Add Plane"
     bl_description = "Generate plane primitive mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}

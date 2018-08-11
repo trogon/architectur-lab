@@ -168,29 +168,31 @@ def movetotopsolidify(myobject):
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
-def circle_radius_property():
+def circle_radius_property(callback=None):
     return FloatProperty(
             name='Radius',
+            soft_min=0.001,
             default=1.0, precision=3, unit='LENGTH',
-            description='Circle radius', update=update_circle,
+            description='Circle radius', update=callback,
             )
 
-def circle_quality_property():
+def circle_quality_property(callback=None):
     return IntProperty(
             name='Vertices',
             min=3, max=1000,
             default=32,
-            description='Circle vertices', update=update_circle,
+            description='Circle vertices', update=callback,
             )
 
-def circle_depth_property():
+def circle_depth_property(callback=None):
     return FloatProperty(
             name='Thickness',
+            soft_min=0.0,
             default=0.0, precision=4, unit='LENGTH',
-            description='Thickness of the circle', update=update_circle,
+            description='Thickness of the circle', update=callback,
             )
 
-def circle_fill_type_property():
+def circle_fill_type_property(callback=None):
     return EnumProperty(
             items=(
                 ('TRIF', 'Triangle Fan', ''),
@@ -198,26 +200,26 @@ def circle_fill_type_property():
                 ('NONE', 'Nothing', ''),
                 ),
             name='Fill type',
-            description='Topology of circle face', update=update_circle,
+            description='Topology of circle face', update=callback,
             )
 
-def circle_truncation_property():
+def circle_truncation_property(callback=None):
     return FloatProperty(
             name='Truncation',
             min=0.0, max=1.0,
             default=0.0, precision=4,
-            description='Truncation of the circle', update=update_circle,
+            description='Truncation of the circle', update=callback,
             )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a circles.
 # ------------------------------------------------------------------
 class ArchLabCircleProperties(PropertyGroup):
-    circle_radius = circle_radius_property()
-    circle_quality = circle_quality_property()
-    circle_fill_type = circle_fill_type_property()
-    circle_depth = circle_depth_property()
-    circle_truncation = circle_truncation_property()
+    circle_radius = circle_radius_property(callback=update_circle)
+    circle_quality = circle_quality_property(callback=update_circle)
+    circle_fill_type = circle_fill_type_property(callback=update_circle)
+    circle_depth = circle_depth_property(callback=update_circle)
+    circle_truncation = circle_truncation_property(callback=update_circle)
 
 bpy.utils.register_class(ArchLabCircleProperties)
 Object.ArchLabCircleGenerator = CollectionProperty(type=ArchLabCircleProperties)

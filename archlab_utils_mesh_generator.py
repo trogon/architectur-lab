@@ -132,7 +132,7 @@ def generate_sphere_ico_mesh_data(radius, subdivisions):
         lastv = ts
     myvertices.append((0.0000, 0.0000, -radius))
     for ts in range(1, subdivisions):
-        (myvertices, myfaces) = subdivide_icosphere_mesh(myvertices, myfaces)
+        (myvertices, myfaces) = subdivide_icosphere_mesh(myvertices, myfaces, radius)
     return myvertices, [], myfaces
 
 # ------------------------------------------------------------------------------

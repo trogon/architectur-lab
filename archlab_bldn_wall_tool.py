@@ -166,34 +166,37 @@ def movetotopsolidify(myobject):
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
-def wall_height_property():
+def wall_height_property(callback=None):
     return FloatProperty(
             name='Height',
+            soft_min=0.001,
             default=2.5, precision=3, unit = 'LENGTH',
-            description='Wall height', update=update_wall,
+            description='Wall height', update=callback,
             )
 
-def wall_width_property():
+def wall_width_property(callback=None):
     return FloatProperty(
             name='Width',
+            soft_min=0.001,
             default=1.0, precision=3, unit = 'LENGTH',
-            description='Wall width', update=update_wall,
+            description='Wall width', update=callback,
             )
 
-def wall_depth_property():
+def wall_depth_property(callback=None):
     return FloatProperty(
             name='Thickness',
+            soft_min=0.001,
             default=0.025, precision=4, unit = 'LENGTH',
-            description='Thickness of the wall', update=update_wall,
+            description='Thickness of the wall', update=callback,
             )
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a walls.
 # ------------------------------------------------------------------
 class ArchLabWallProperties(PropertyGroup):
-    wall_height = wall_height_property()
-    wall_width = wall_width_property()
-    wall_depth = wall_depth_property()
+    wall_height = wall_height_property(callback=update_wall)
+    wall_width = wall_width_property(callback=update_wall)
+    wall_depth = wall_depth_property(callback=update_wall)
 
 bpy.utils.register_class(ArchLabWallProperties)
 Object.ArchLabWallGenerator = CollectionProperty(type=ArchLabWallProperties)
@@ -203,7 +206,7 @@ Object.ArchLabWallGenerator = CollectionProperty(type=ArchLabWallProperties)
 # ------------------------------------------------------------------
 class ArchLabWallGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_wall_generator"
-    bl_label = "Add Wall"
+    bl_label = "Wall"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'ArchLab'
@@ -253,7 +256,7 @@ class ArchLabWallGeneratorPanel(Panel):
 # ------------------------------------------------------------------
 class ArchLabWall(Operator):
     bl_idname = "mesh.archlab_wall"
-    bl_label = "Wall"
+    bl_label = "Add Wall"
     bl_description = "Generate wall mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
