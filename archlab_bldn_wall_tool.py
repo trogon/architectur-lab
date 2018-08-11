@@ -182,15 +182,6 @@ def wall_width_property(callback=None):
             description='Wall width', update=callback,
             )
 
-def wall_angle_property(callback=None):
-    return FloatProperty(
-            name='Angle',
-            soft_min=-3.14159, soft_max=3.14159,
-            default=3.14159/2, precision=3, step=50,
-            description='Angle of this wall with previous', update=callback,
-            subtype='ANGLE',
-            )
-
 def wall_depth_property(callback=None):
     return FloatProperty(
             name='Thickness',
@@ -205,7 +196,6 @@ def wall_depth_property(callback=None):
 class ArchLabWallProperties(PropertyGroup):
     wall_height = wall_height_property(callback=update_wall)
     wall_width = wall_width_property(callback=update_wall)
-    wall_angle = wall_angle_property(callback=update_wall)
     wall_depth = wall_depth_property(callback=update_wall)
 
 bpy.utils.register_class(ArchLabWallProperties)

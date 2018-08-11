@@ -28,7 +28,6 @@
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import IntProperty, FloatProperty, CollectionProperty
-from .archlab_bldn_wall_tool import ArchLabWallProperties
 from .archlab_utils import *
 
 # ------------------------------------------------------------------------------
@@ -51,7 +50,6 @@ def create_room(self, context):
     for wall in self.room_walls:
         wallprop = roomobject.ArchLabRoomGenerator[0].room_walls.add()
         wallprop.wall_width = wall.wall_width
-        wallprop.wall_depth = wall.wall_depth
         wallprop.wall_angle = wall.wall_angle
 
     # we shape the mesh.
@@ -92,7 +90,7 @@ def shape_room_mesh(myroom, tmp_mesh, update=False):
             for mod in myroom.modifiers:
                 if mod.type == 'SOLIDIFY':
                     mod.thickness = rp.room_wall_depth
-                    mod.use_even_offset = False # The solidify have a problem with some wall angles
+                    mod.use_even_offset = True # The solidify have a problem with some wall angles
         # Move to Top SOLIDIFY
         movetotopsolidify(myroom)
 
@@ -196,6 +194,33 @@ def movetotopsolidify(myobject):
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
+def wall_width_property(callback=None):
+    return FloatProperty(
+            name='Width',
+            soft_min=0.001,
+            default=1.0, precision=3, unit = 'LENGTH',
+            description='Wall width', update=callback,
+            )
+
+def wall_angle_property(callback=None):
+    return FloatProperty(
+            name='Angle',
+            soft_min=-3.14159, soft_max=3.14159,
+            default=3.14159/2, precision=3, step=50,
+            description='Angle of this wall with previous', update=callback,
+            subtype='ANGLE',
+            )
+
+# ------------------------------------------------------------------
+# Define property group class to create or modify a walls.
+# ------------------------------------------------------------------
+class ArchLabWallProperties(PropertyGroup):
+    wall_width = wall_width_property(callback=update_room)
+    wall_angle = wall_angle_property(callback=update_room)
+
+# -----------------------------------------------------
+# Property definition creator
+# -----------------------------------------------------
 def room_height_property(callback=None):
     return FloatProperty(
             name='Height',
@@ -232,6 +257,7 @@ class ArchLabRoomProperties(PropertyGroup):
     room_wall_depth = room_wall_depth_property(callback=update_room)
     room_walls = room_walls_property(callback=update_room)
 
+bpy.utils.register_class(ArchLabWallProperties)
 bpy.utils.register_class(ArchLabRoomProperties)
 Object.ArchLabRoomGenerator = CollectionProperty(type=ArchLabRoomProperties)
 
@@ -281,6 +307,8 @@ class ArchLabRoomGeneratorPanel(Panel):
             row = layout.row()
             row.prop(room, 'room_height')
             row = layout.row()
+            row.prop(room, 'room_wall_depth')
+            row = layout.row()
             row.prop(room, 'room_wall_count')
             for wt in range(len(room.room_walls)):
                 box = layout.box()
@@ -316,6 +344,8 @@ class ArchLabRoom(Operator):
             row = layout.row()
             row.prop(self, 'room_height')
             row = layout.row()
+            row.prop(self, 'room_wall_depth')
+            row = layout.row()
             row.prop(self, 'room_wall_count')
             for wt in range(len(self.room_walls)):
                 box = layout.box()
@@ -332,6 +362,10 @@ class ArchLabRoom(Operator):
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
+        drwc = len(self.room_walls)
+        if drwc == 0:
+            firstwall = self.room_walls.add()
+            firstwall.wall_angle = 0.0
         drwc = len(self.room_walls)
         prwc = self.room_wall_count
         if not drwc == prwc:
