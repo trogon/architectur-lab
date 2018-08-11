@@ -28,7 +28,7 @@
 
 import bpy
 from math import sin, cos, radians
-from mathutils import Vector, Matrix
+from mathutils import Vector, Matrix, Euler
 from os import path
 import json
 
@@ -172,41 +172,10 @@ def rotate_point3d(pos, anglex=0.0, angley=0.0, anglez=0.0):
 # Rotates a point in 3D space with specified angle in radians
 # --------------------------------------------------------------------
 def rotate_point3d_rad(pos, anglex=0.0, angley=0.0, anglez=0.0):
-    v1 = Vector(pos)
-    mat1 = Matrix([
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1]
-    ])
-    if not anglez == 0.0:
-        cosa1 = cos(anglez)
-        sina1 = sin(anglez)
-        mat2 = Matrix([
-            [cosa1, -sina1, 0],
-            [sina1, cosa1, 0],
-            [0, 0, 1]
-        ])
-        mat1 = mat1 * mat2
-    if not angley == 0.0:
-        cosa1 = cos(angley)
-        sina1 = sin(angley)
-        mat2 = Matrix([
-            [cosa1, 0, -sina1],
-            [0, 1, 0],
-            [sina1, 0, cosa1]
-        ])
-        mat1 = mat1 * mat2
-    if not anglex == 0.0:
-        cosa1 = cos(anglex)
-        sina1 = sin(anglex)
-        mat2 = Matrix([
-            [1, 0, 0],
-            [0, cosa1, -sina1],
-            [0, sina1, cosa1]
-        ])
-        mat1 = mat1 * mat2
-    v2 = mat1 * v1
-    return v2
+    genvector = Vector(pos)
+    myEuler = Euler((anglex, angley, anglez),'XYZ')
+    genvector.rotate(myEuler)
+    return genvector
 
 # --------------------------------------------------------------------
 # Rotates a point in 2D space with specified angle
