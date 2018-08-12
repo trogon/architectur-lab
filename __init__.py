@@ -52,6 +52,7 @@ if "bpy" in locals():
     importlib.reload(archlab_bldn_wall_tool)
     importlib.reload(archlab_dcrt_glass_tool)
     importlib.reload(archlab_dcrt_plate_tool)
+    importlib.reload(archlab_frnt_bench_tool)
     importlib.reload(archlab_frnt_shelve_tool)
     importlib.reload(archlab_mesh_cube_tool)
     importlib.reload(archlab_mesh_cube_tool)
@@ -65,6 +66,7 @@ else:
     from . import archlab_bldn_wall_tool
     from . import archlab_dcrt_glass_tool
     from . import archlab_dcrt_plate_tool
+    from . import archlab_frnt_bench_tool
     from . import archlab_frnt_shelve_tool
     from . import archlab_mesh_circle_tool
     from . import archlab_mesh_cube_tool
@@ -84,6 +86,8 @@ modules = [
     archlab_dcrt_glass_tool.ArchLabGlassGeneratorPanel,
     archlab_dcrt_plate_tool.ArchLabPlate,
     archlab_dcrt_plate_tool.ArchLabPlateGeneratorPanel,
+    archlab_frnt_bench_tool.ArchLabBench,
+    archlab_frnt_bench_tool.ArchLabBenchGeneratorPanel,
     archlab_frnt_shelve_tool.ArchLabShelve,
     archlab_frnt_shelve_tool.ArchLabShelveGeneratorPanel,
     archlab_mesh_circle_tool.ArchLabCircle,
@@ -128,6 +132,7 @@ class ArchLabMeshFurnituresAdd(Menu):
     bl_label = "Furnitures"
 
     def draw(self, context):
+        self.layout.operator("mesh.archlab_bench", text="Add Bench")
         self.layout.operator("mesh.archlab_shelve", text="Add Shelve")
 
 # ----------------------------------------------------------
