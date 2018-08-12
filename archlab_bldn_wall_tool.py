@@ -274,9 +274,9 @@ class ArchLabWall(Operator):
         space = bpy.context.space_data
         if not space.local_view:
             row = layout.row()
-            row.prop(self, 'wall_height')
-            row = layout.row()
             row.prop(self, 'wall_width')
+            row = layout.row()
+            row.prop(self, 'wall_height')
             row = layout.row()
             row.prop(self, 'wall_depth')
         else:

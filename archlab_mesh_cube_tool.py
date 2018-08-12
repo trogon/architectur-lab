@@ -219,9 +219,9 @@ class ArchLabCube(Operator):
         space = bpy.context.space_data
         if not space.local_view:
             row = layout.row()
-            row.prop(self, 'cube_height')
-            row = layout.row()
             row.prop(self, 'cube_width')
+            row = layout.row()
+            row.prop(self, 'cube_height')
             row = layout.row()
             row.prop(self, 'cube_depth')
         else:

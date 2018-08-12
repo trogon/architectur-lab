@@ -443,9 +443,9 @@ class ArchLabShelve(Operator):
         space = bpy.context.space_data
         if not space.local_view:
             row = layout.row()
-            row.prop(self, 'shelve_height')
-            row = layout.row()
             row.prop(self, 'shelve_width')
+            row = layout.row()
+            row.prop(self, 'shelve_height')
             row = layout.row()
             row.prop(self, 'shelve_depth')
             row = layout.row()
