@@ -300,7 +300,7 @@ def extract_vertices():
 # --------------------------------------------------------------------
 # Extracts edges from selected object
 # --------------------------------------------------------------------
-def extract_vertices():
+def extract_edges():
     print("".join(["[(", "),(".join(",".join(str(v) for v in e.vertices) for e in bpy.context.object.data.edges), ")]"]))
 
 # --------------------------------------------------------------------
