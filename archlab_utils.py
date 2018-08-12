@@ -107,6 +107,17 @@ def set_material(ob, matname, index = 0):
     return mat
 
 # --------------------------------------------------------------------
+# Adds armature modifier
+# --------------------------------------------------------------------
+def set_modifier_armature(myobject, armatureobject, modname = "Armature ArchLib"):
+    modid = myobject.modifiers.find(modname)
+    if (modid == -1):
+        mod = myobject.modifiers.new(name=modname, type="ARMATURE")
+    else:
+        mod = myobject.modifiers[modname]
+    mod.object = armatureobject
+
+# --------------------------------------------------------------------
 # Adds array modifier
 # --------------------------------------------------------------------
 def set_modifier_array(myobject, relativeoffset = (1.0, 0.0, 0.0), count = 2, modname = "Array ArchLib"):
