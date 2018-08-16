@@ -28,6 +28,7 @@
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import IntProperty, FloatProperty, CollectionProperty
+from math import sin
 from .archlab_utils import *
 
 # ------------------------------------------------------------------------------
@@ -50,6 +51,7 @@ def create_room(self, context):
     for wall in self.room_walls:
         wallprop = roomobject.ArchLabRoomGenerator[0].room_walls.add()
         wallprop.wall_width = wall.wall_width
+        wallprop.wall_depth = wall.wall_depth
         wallprop.wall_angle = wall.wall_angle
 
     # we shape the mesh.
@@ -83,22 +85,6 @@ def shape_room_mesh(myroom, tmp_mesh, update=False):
     remove_doubles(myroom)
     set_normals(myroom)
 
-    if rp.room_wall_depth > 0.0:
-        if update is False or is_solidify(myroom) is False:
-            set_modifier_solidify(myroom, rp.room_wall_depth)
-        else:
-            for mod in myroom.modifiers:
-                if mod.type == 'SOLIDIFY':
-                    mod.thickness = rp.room_wall_depth
-                    mod.use_even_offset = True # The solidify have a problem with some wall angles
-        # Move to Top SOLIDIFY
-        movetotopsolidify(myroom)
-
-    else:  # clear not used SOLIDIFY
-        for mod in myroom.modifiers:
-            if mod.type == 'SOLIDIFY':
-                myroom.modifiers.remove(mod)
-
     # deactivate others
     for o in bpy.data.objects:
         if o.select is True and o.name != myroom.name:
@@ -108,14 +94,13 @@ def shape_room_mesh(myroom, tmp_mesh, update=False):
 # Creates room mesh data.
 # ------------------------------------------------------------------------------
 def update_room_mesh_data(mymesh, height, walls):
-    myvertices = []
+    myvertices = None
     myfaces = []
-
-    if len(walls) > 0:
-        myvertices = [(0.0, 0.0, 0.0), (0.0, 0.0, height)]
+    lwalls = len(walls)
     lastwi = 0
-    lastp = [0.0, 0.0, 0.0]
-    lastpnorm = [1.0, 0.0, 0.0]
+    lastdepth = 0
+    lastp = (0.0, 0.0, 0.0)
+    lastpnorm = (1.0, 0.0, 0.0)
     for wall in walls:
         pnorm = rotate_point3d_rad(lastpnorm, anglez=wall.wall_angle)
         p1 = [
@@ -123,11 +108,58 @@ def update_room_mesh_data(mymesh, height, walls):
             lastp[1] + pnorm[1] * wall.wall_width,
             lastp[2] + pnorm[2] * wall.wall_width
         ]
-        myvertices.extend([(p1[0], p1[1], 0.0), (p1[0], p1[1], height)])
-        myfaces.append((lastwi * 2 + 0, lastwi * 2 + 1, lastwi * 2 + 3, lastwi * 2 + 2))
+        wdepth = wall.wall_depth /2
+        wdp = (-pnorm[1] * wdepth, pnorm[0] * wdepth, 0.0)
+        if myvertices is None: # First wall
+            myvertices = [
+                (-wdp[0], -wdp[1], 0.0),
+                (-wdp[0], -wdp[1], height),
+                ( wdp[0],  wdp[1], 0.0),
+                ( wdp[0],  wdp[1], height)
+            ]
+            lastdepth = wdepth
+            myfaces.extend([
+                [0, 1, 3, 2]
+            ])
+            myfaces.extend([
+                [lastwi * 4 + 0, lastwi * 4 + 1, lastwi * 4 + 5, lastwi * 4 + 4],
+                [lastwi * 4 + 0, lastwi * 4 + 2, lastwi * 4 + 6, lastwi * 4 + 4],
+                [lastwi * 4 + 1, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 5],
+                [lastwi * 4 + 2, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 6]
+            ])
+        else: # Wall not first
+            sinwa = sin(wall.wall_angle)
+            crosswdp = (wdp[0], wdp[1], 0.0)
+            if not sinwa == 0: # angle = 0
+                h1 = -lastpnorm * wdepth
+                h2 = pnorm * lastdepth
+                crosswdp = (h1 + h2) / sinwa
+            myvertices.extend([
+                (lastp[0]-crosswdp[0], lastp[1]-crosswdp[1], 0.0),
+                (lastp[0]-crosswdp[0], lastp[1]-crosswdp[1], height),
+                (lastp[0]+crosswdp[0], lastp[1]+crosswdp[1], 0.0),
+                (lastp[0]+crosswdp[0], lastp[1]+crosswdp[1], height)
+            ])
+            myfaces.extend([
+                [lastwi * 4 + 0, lastwi * 4 + 1, lastwi * 4 + 5, lastwi * 4 + 4],
+                [lastwi * 4 + 0, lastwi * 4 + 2, lastwi * 4 + 6, lastwi * 4 + 4],
+                [lastwi * 4 + 1, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 5],
+                [lastwi * 4 + 2, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 6]
+            ])
+            lastdepth == wdepth
+        if lwalls == lastwi +1: #Last wall
+            myvertices.extend([
+                (p1[0]-wdp[0], p1[1]-wdp[1], 0.0),
+                (p1[0]-wdp[0], p1[1]-wdp[1], height),
+                (p1[0]+wdp[0], p1[1]+wdp[1], 0.0),
+                (p1[0]+wdp[0], p1[1]+wdp[1], height)
+            ])
+            myfaces.extend([
+                [lastwi * 4 + 4, lastwi * 4 + 5, lastwi * 4 + 7, lastwi * 4 + 6]
+            ])
         lastwi = lastwi + 1
-        lastp = p1
         lastpnorm = pnorm
+        lastp = p1
 
     mymesh.from_pydata(myvertices, [], myfaces)
     mymesh.update(calc_edges=True)
@@ -202,10 +234,18 @@ def wall_width_property(callback=None):
             description='Wall width', update=callback,
             )
 
+def wall_depth_property(callback=None):
+    return FloatProperty(
+            name='Thickness',
+            soft_min=0.001,
+            default=0.025, precision=4, unit = 'LENGTH',
+            description='Thickness of the walls', update=callback,
+            )
+
 def wall_angle_property(callback=None):
     return FloatProperty(
             name='Angle',
-            soft_min=-3.14159, soft_max=3.14159,
+            soft_min=-2.79232, soft_max=2.79232,
             default=3.14159/2, precision=3, step=50,
             description='Angle of this wall with previous', update=callback,
             subtype='ANGLE',
@@ -216,6 +256,7 @@ def wall_angle_property(callback=None):
 # ------------------------------------------------------------------
 class ArchLabWallProperties(PropertyGroup):
     wall_width = wall_width_property(callback=update_room)
+    wall_depth = wall_depth_property(callback=update_room)
     wall_angle = wall_angle_property(callback=update_room)
 
 # -----------------------------------------------------
@@ -237,14 +278,6 @@ def room_wall_count_property(callback=None):
             description='Number of walls in the room', update=callback,
             )
 
-def room_wall_depth_property(callback=None):
-    return FloatProperty(
-            name='Thickness',
-            soft_min=0.001,
-            default=0.025, precision=4, unit = 'LENGTH',
-            description='Thickness of the walls', update=callback,
-            )
-
 def room_walls_property(callback=None):
     return CollectionProperty(type=ArchLabWallProperties)
 
@@ -254,7 +287,6 @@ def room_walls_property(callback=None):
 class ArchLabRoomProperties(PropertyGroup):
     room_height = room_height_property(callback=update_room)
     room_wall_count = room_wall_count_property(callback=update_room)
-    room_wall_depth = room_wall_depth_property(callback=update_room)
     room_walls = room_walls_property(callback=update_room)
 
 bpy.utils.register_class(ArchLabWallProperties)
@@ -307,14 +339,14 @@ class ArchLabRoomGeneratorPanel(Panel):
             row = layout.row()
             row.prop(room, 'room_height')
             row = layout.row()
-            row.prop(room, 'room_wall_depth')
-            row = layout.row()
             row.prop(room, 'room_wall_count')
             for wt in range(len(room.room_walls)):
                 box = layout.box()
                 label = box.label('Wall %i' % (wt+1))
                 row = box.row()
                 row.prop(room.room_walls[wt], 'wall_width')
+                row = box.row()
+                row.prop(room.room_walls[wt], 'wall_depth')
                 row = box.row()
                 row.prop(room.room_walls[wt], 'wall_angle')
 
@@ -331,7 +363,6 @@ class ArchLabRoom(Operator):
     # preset
     room_height = room_height_property()
     room_wall_count = room_wall_count_property()
-    room_wall_depth = room_wall_depth_property()
     room_walls = CollectionProperty(type=ArchLabWallProperties)
 
     # -----------------------------------------------------
@@ -344,14 +375,14 @@ class ArchLabRoom(Operator):
             row = layout.row()
             row.prop(self, 'room_height')
             row = layout.row()
-            row.prop(self, 'room_wall_depth')
-            row = layout.row()
             row.prop(self, 'room_wall_count')
             for wt in range(len(self.room_walls)):
                 box = layout.box()
                 label = box.label('Wall %i' % (wt+1))
                 row = box.row()
                 row.prop(self.room_walls[wt], 'wall_width')
+                row = box.row()
+                row.prop(self.room_walls[wt], 'wall_depth')
                 row = box.row()
                 row.prop(self.room_walls[wt], 'wall_angle')
         else:
