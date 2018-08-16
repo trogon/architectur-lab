@@ -124,10 +124,10 @@ def update_room_mesh_data(mymesh, height, walls, has_floor, has_ceiling):
                 [0, 1, 3, 2]
             ])
             myfaces.extend([
-                [lastwi * 4 + 0, lastwi * 4 + 1, lastwi * 4 + 5, lastwi * 4 + 4],
-                [lastwi * 4 + 0, lastwi * 4 + 2, lastwi * 4 + 6, lastwi * 4 + 4],
-                [lastwi * 4 + 1, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 5],
-                [lastwi * 4 + 2, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 6]
+                [lastwi * 4 + 0, lastwi * 4 + 2, lastwi * 4 + 6, lastwi * 4 + 4], # bottom
+                [lastwi * 4 + 0, lastwi * 4 + 4, lastwi * 4 + 5, lastwi * 4 + 1], # outer
+                [lastwi * 4 + 1, lastwi * 4 + 5, lastwi * 4 + 7, lastwi * 4 + 3], # top
+                [lastwi * 4 + 2, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 6]  # inner
             ])
         else: # Wall not first
             sinwa = sin(wall.wall_angle)
@@ -143,10 +143,10 @@ def update_room_mesh_data(mymesh, height, walls, has_floor, has_ceiling):
                 (lastp[0]+crosswdp[0], lastp[1]+crosswdp[1], height)
             ])
             myfaces.extend([
-                [lastwi * 4 + 0, lastwi * 4 + 1, lastwi * 4 + 5, lastwi * 4 + 4],
-                [lastwi * 4 + 0, lastwi * 4 + 2, lastwi * 4 + 6, lastwi * 4 + 4],
-                [lastwi * 4 + 1, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 5],
-                [lastwi * 4 + 2, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 6]
+                [lastwi * 4 + 0, lastwi * 4 + 2, lastwi * 4 + 6, lastwi * 4 + 4], # bottom
+                [lastwi * 4 + 0, lastwi * 4 + 4, lastwi * 4 + 5, lastwi * 4 + 1], # outer
+                [lastwi * 4 + 1, lastwi * 4 + 5, lastwi * 4 + 7, lastwi * 4 + 3], # top
+                [lastwi * 4 + 2, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 6]  # inner
             ])
         if lwalls == lastwi +1: #Last wall
             myvertices.extend([
@@ -156,7 +156,7 @@ def update_room_mesh_data(mymesh, height, walls, has_floor, has_ceiling):
                 (p1[0]+wdp[0], p1[1]+wdp[1], height)
             ])
             myfaces.extend([
-                [lastwi * 4 + 4, lastwi * 4 + 5, lastwi * 4 + 7, lastwi * 4 + 6]
+                [lastwi * 4 + 5, lastwi * 4 + 4, lastwi * 4 + 6, lastwi * 4 + 7]
             ])
         lastwi = lastwi + 1
         lastpnorm = pnorm
