@@ -27,7 +27,7 @@
 # ----------------------------------------------------------
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import IntProperty, FloatProperty, CollectionProperty
+from bpy.props import BoolProperty, IntProperty, FloatProperty, CollectionProperty
 from math import sin
 from .archlab_utils import *
 
@@ -47,6 +47,8 @@ def create_room(self, context):
     roomobject.ArchLabRoomGenerator.add()
 
     roomobject.ArchLabRoomGenerator[0].room_height = self.room_height
+    roomobject.ArchLabRoomGenerator[0].room_floor = self.room_floor
+    roomobject.ArchLabRoomGenerator[0].room_ceiling = self.room_ceiling
     roomobject.ArchLabRoomGenerator[0].room_wall_count = self.room_wall_count
     for wall in self.room_walls:
         wallprop = roomobject.ArchLabRoomGenerator[0].room_walls.add()
@@ -79,11 +81,11 @@ def shape_room_mesh(myroom, tmp_mesh, update=False):
                 rp.room_walls.remove(prwc)
 
     # Create room mesh data
-    update_room_mesh_data(tmp_mesh, rp.room_height, rp.room_walls)
+    update_room_mesh_data(tmp_mesh, rp.room_height, rp.room_walls, rp.room_floor, rp.room_ceiling)
     myroom.data = tmp_mesh
 
     remove_doubles(myroom)
-    set_normals(myroom)
+    #set_normals(myroom)
 
     # deactivate others
     for o in bpy.data.objects:
@@ -93,9 +95,10 @@ def shape_room_mesh(myroom, tmp_mesh, update=False):
 # ------------------------------------------------------------------------------
 # Creates room mesh data.
 # ------------------------------------------------------------------------------
-def update_room_mesh_data(mymesh, height, walls):
+def update_room_mesh_data(mymesh, height, walls, has_floor, has_ceiling):
     myvertices = None
     myfaces = []
+
     lwalls = len(walls)
     lastwi = 0
     lastdepth = 0
@@ -159,6 +162,20 @@ def update_room_mesh_data(mymesh, height, walls):
         lastpnorm = pnorm
         lastp = p1
         lastdepth = wdepth
+
+    if has_floor and lwalls > 1:
+        floorverts = []
+        for wno in range(lwalls):
+            floorverts.append(wno * 4 + 2)
+        floorverts.append(lwalls * 4 + 2)
+        myfaces.append(floorverts)
+
+    if has_ceiling and lwalls > 1:
+        ceilingverts = []
+        for wno in range(lwalls, 0, -1):
+            ceilingverts.append(wno * 4 + 3)
+        ceilingverts.append(0 * 4 + 3)
+        myfaces.append(ceilingverts)
 
     mymesh.from_pydata(myvertices, [], myfaces)
     mymesh.update(calc_edges=True)
@@ -277,6 +294,20 @@ def room_wall_count_property(callback=None):
             description='Number of walls in the room', update=callback,
             )
 
+def room_floor_property(callback=None):
+    return BoolProperty(
+            name='Floor',
+            default=True,
+            description='Generates floor for the room', update=callback,
+            )
+
+def room_ceiling_property(callback=None):
+    return BoolProperty(
+            name='Ceiling',
+            default=False,
+            description='Generates ceiling for the room', update=callback,
+            )
+
 def room_walls_property(callback=None):
     return CollectionProperty(type=ArchLabWallProperties)
 
@@ -285,6 +316,9 @@ def room_walls_property(callback=None):
 # ------------------------------------------------------------------
 class ArchLabRoomProperties(PropertyGroup):
     room_height = room_height_property(callback=update_room)
+    room_floor = room_floor_property(callback=update_room)
+    room_ceiling = room_ceiling_property(callback=update_room)
+    room_wall_count = room_wall_count_property(callback=update_room)
     room_wall_count = room_wall_count_property(callback=update_room)
     room_walls = room_walls_property(callback=update_room)
 
@@ -338,6 +372,10 @@ class ArchLabRoomGeneratorPanel(Panel):
             row = layout.row()
             row.prop(room, 'room_height')
             row = layout.row()
+            row.prop(room, 'room_floor')
+            row = layout.row()
+            row.prop(room, 'room_ceiling')
+            row = layout.row()
             row.prop(room, 'room_wall_count')
             for wt in range(len(room.room_walls)):
                 box = layout.box()
@@ -361,6 +399,8 @@ class ArchLabRoom(Operator):
 
     # preset
     room_height = room_height_property()
+    room_floor = room_floor_property(callback=update_room)
+    room_ceiling = room_ceiling_property(callback=update_room)
     room_wall_count = room_wall_count_property()
     room_walls = CollectionProperty(type=ArchLabWallProperties)
 
@@ -373,6 +413,10 @@ class ArchLabRoom(Operator):
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'room_height')
+            row = layout.row()
+            row.prop(self, 'room_floor')
+            row = layout.row()
+            row.prop(self, 'room_ceiling')
             row = layout.row()
             row.prop(self, 'room_wall_count')
             for wt in range(len(self.room_walls)):
