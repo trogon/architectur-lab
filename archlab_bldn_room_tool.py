@@ -117,7 +117,6 @@ def update_room_mesh_data(mymesh, height, walls):
                 ( wdp[0],  wdp[1], 0.0),
                 ( wdp[0],  wdp[1], height)
             ]
-            lastdepth = wdepth
             myfaces.extend([
                 [0, 1, 3, 2]
             ])
@@ -146,7 +145,6 @@ def update_room_mesh_data(mymesh, height, walls):
                 [lastwi * 4 + 1, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 5],
                 [lastwi * 4 + 2, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 6]
             ])
-            lastdepth == wdepth
         if lwalls == lastwi +1: #Last wall
             myvertices.extend([
                 (p1[0]-wdp[0], p1[1]-wdp[1], 0.0),
@@ -160,6 +158,7 @@ def update_room_mesh_data(mymesh, height, walls):
         lastwi = lastwi + 1
         lastpnorm = pnorm
         lastp = p1
+        lastdepth = wdepth
 
     mymesh.from_pydata(myvertices, [], myfaces)
     mymesh.update(calc_edges=True)
