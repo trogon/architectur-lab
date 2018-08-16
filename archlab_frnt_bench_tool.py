@@ -29,184 +29,132 @@ import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import FloatProperty, CollectionProperty
 from .archlab_utils import *
+from .archlab_utils_mesh_generator import *
 
 # ------------------------------------------------------------------------------
-# Create main object for the wall.
+# Create main object for the bench.
 # ------------------------------------------------------------------------------
-def create_wall(self, context):
+def create_bench(self, context):
     # deselect all objects
     for o in bpy.data.objects:
         o.select = False
 
-    # we create main object and mesh for wall
-    wallmesh = bpy.data.meshes.new("Wall")
-    wallobject = bpy.data.objects.new("Wall", wallmesh)
-    wallobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(wallobject)
-    wallobject.ArchLabWallGenerator.add()
+    # we create main object and mesh for bench
+    benchmesh = bpy.data.meshes.new("Bench")
+    benchobject = bpy.data.objects.new("Bench", benchmesh)
+    benchobject.location = bpy.context.scene.cursor_location
+    bpy.context.scene.objects.link(benchobject)
+    benchobject.ArchLabBenchGenerator.add()
 
-    wallobject.ArchLabWallGenerator[0].wall_height = self.wall_height
-    wallobject.ArchLabWallGenerator[0].wall_width = self.wall_width
-    wallobject.ArchLabWallGenerator[0].wall_depth = self.wall_depth
-
+    benchobject.ArchLabBenchGenerator[0].bench_height = self.bench_height
+    benchobject.ArchLabBenchGenerator[0].bench_width = self.bench_width
+    benchobject.ArchLabBenchGenerator[0].bench_depth = self.bench_depth
+    
     # we shape the mesh.
-    shape_wall_mesh(wallobject, wallmesh)
+    shape_bench_mesh(benchobject, benchmesh)
 
-    # we select, and activate, main object for the wall.
-    wallobject.select = True
-    bpy.context.scene.objects.active = wallobject
+    # we select, and activate, main object for the bench.
+    benchobject.select = True
+    bpy.context.scene.objects.active = benchobject
 
 # ------------------------------------------------------------------------------
 # Shapes mesh and creates modifier solidify (the modifier, only the first time).
 # ------------------------------------------------------------------------------
-def shape_wall_mesh(mywall, tmp_mesh, update=False):
-    pp = mywall.ArchLabWallGenerator[0]  # "pp" means "wall properties".
-    # Create wall mesh data
-    update_wall_mesh_data(tmp_mesh, pp.wall_width, pp.wall_height)
-    mywall.data = tmp_mesh
+def shape_bench_mesh(mybench, tmp_mesh, update=False):
+    sp = mybench.ArchLabBenchGenerator[0]  # "sp" means "bench properties".
+    # Create bench mesh data
+    update_bench_mesh_data(tmp_mesh, sp.bench_width, sp.bench_height, sp.bench_depth)
+    mybench.data = tmp_mesh
 
-    remove_doubles(mywall)
-    set_normals(mywall)
-
-    if pp.wall_depth > 0.0:
-        if update is False or is_solidify(mywall) is False:
-            set_modifier_solidify(mywall, pp.wall_depth)
-        else:
-            for mod in mywall.modifiers:
-                if mod.type == 'SOLIDIFY':
-                    mod.thickness = pp.wall_depth
-        # Move to Top SOLIDIFY
-        movetotopsolidify(mywall)
-
-    else:  # clear not used SOLIDIFY
-        for mod in mywall.modifiers:
-            if mod.type == 'SOLIDIFY':
-                mywall.modifiers.remove(mod)
+    remove_doubles(mybench)
+    set_normals(mybench)
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mywall.name:
+        if o.select is True and o.name != mybench.name:
             o.select = False
 
 # ------------------------------------------------------------------------------
-# Creates wall mesh data.
+# Creates bench mesh data.
 # ------------------------------------------------------------------------------
-def update_wall_mesh_data(mymesh, width, height):
-    sizew = width
-    sizez = height
-    posw = width
-    posz = height
+def update_bench_mesh_data(mymesh, width, height, depth):
+    (myvertices, myedges, myfaces) = generate_mesh_from_library(
+        'BenchN',
+        size=(width, depth, height)
+    )
 
-    myvertices = [(0.0, 0.0, 0.0), (0.0, 0.0, posz),]
-    myvertices.extend([(posw, 0.0, 0.0), (posw, 0.0, posz)])
-    myfaces = [(0, 1, 3, 2)]
-
-    mymesh.from_pydata(myvertices, [], myfaces)
+    mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
 
 # ------------------------------------------------------------------------------
-# Update wall mesh.
+# Update bench mesh.
 # ------------------------------------------------------------------------------
-def update_wall(self, context):
-    # When we update, the active object is the main object of the wall.
+def update_bench(self, context):
+    # When we update, the active object is the main object of the bench.
     o = bpy.context.active_object
     oldmesh = o.data
     oldname = o.data.name
-    # Now we deselect that wall object to not delete it.
+    # Now we deselect that bench object to not delete it.
     o.select = False
-    # and we create a new mesh for the wall:
+    # and we create a new mesh for the bench:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
         obj.select = False
     # Finally we shape the main mesh again,
-    shape_wall_mesh(o, tmp_mesh, True)
+    shape_bench_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
     # Remove data (mesh of active object),
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
-    # and select, and activate, the main object of the wall.
+    # and select, and activate, the main object of the bench.
     o.select = True
     bpy.context.scene.objects.active = o
 
 # -----------------------------------------------------
-# Verify if solidify exist
-# -----------------------------------------------------
-def is_solidify(myobject):
-    flag = False
-    try:
-        if myobject.modifiers is None:
-            return False
-
-        for mod in myobject.modifiers:
-            if mod.type == 'SOLIDIFY':
-                flag = True
-                break
-        return flag
-    except AttributeError:
-        return False
-
-# -----------------------------------------------------
-# Move Solidify to Top
-# -----------------------------------------------------
-def movetotopsolidify(myobject):
-    mymod = None
-    try:
-        if myobject.modifiers is not None:
-            for mod in myobject.modifiers:
-                if mod.type == 'SOLIDIFY':
-                    mymod = mod
-
-            if mymod is not None:
-                while myobject.modifiers[0] != mymod:
-                    bpy.ops.object.modifier_move_up(modifier=mymod.name)
-    except AttributeError:
-        return
-
-# -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
-def wall_height_property(callback=None):
+def bench_height_property(callback=None):
     return FloatProperty(
             name='Height',
             soft_min=0.001,
-            default=2.5, precision=3, unit = 'LENGTH',
-            description='Wall height', update=callback,
+            default=0.45, precision=3, unit = 'LENGTH',
+            description='Bench height', update=callback,
             )
 
-def wall_width_property(callback=None):
+def bench_width_property(callback=None):
     return FloatProperty(
             name='Width',
             soft_min=0.001,
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Wall width', update=callback,
+            default=1.20, precision=3, unit = 'LENGTH',
+            description='Bench width', update=callback,
             )
 
-def wall_depth_property(callback=None):
+def bench_depth_property(callback=None):
     return FloatProperty(
-            name='Thickness',
+            name='Depth',
             soft_min=0.001,
-            default=0.025, precision=4, unit = 'LENGTH',
-            description='Thickness of the wall', update=callback,
+            default=0.34, precision=3, unit = 'LENGTH',
+            description='Bench depth', update=callback,
             )
 
 # ------------------------------------------------------------------
-# Define property group class to create or modify a walls.
+# Define property group class to create or modify a benchs.
 # ------------------------------------------------------------------
-class ArchLabWallProperties(PropertyGroup):
-    wall_height = wall_height_property(callback=update_wall)
-    wall_width = wall_width_property(callback=update_wall)
-    wall_depth = wall_depth_property(callback=update_wall)
+class ArchLabBenchProperties(PropertyGroup):
+    bench_height = bench_height_property(callback=update_bench)
+    bench_width = bench_width_property(callback=update_bench)
+    bench_depth = bench_depth_property(callback=update_bench)
 
-bpy.utils.register_class(ArchLabWallProperties)
-Object.ArchLabWallGenerator = CollectionProperty(type=ArchLabWallProperties)
+bpy.utils.register_class(ArchLabBenchProperties)
+Object.ArchLabBenchGenerator = CollectionProperty(type=ArchLabBenchProperties)
 
 # ------------------------------------------------------------------
-# Define panel class to modify walls.
+# Define panel class to modify benchs.
 # ------------------------------------------------------------------
-class ArchLabWallGeneratorPanel(Panel):
-    bl_idname = "OBJECT_PT_wall_generator"
-    bl_label = "Wall"
+class ArchLabBenchGeneratorPanel(Panel):
+    bl_idname = "OBJECT_PT_bench_generator"
+    bl_label = "Bench"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'ArchLab'
@@ -220,9 +168,9 @@ class ArchLabWallGeneratorPanel(Panel):
         act_op = context.active_operator
         if o is None:
             return False
-        if 'ArchLabWallGenerator' not in o:
+        if 'ArchLabBenchGenerator' not in o:
             return False
-        if act_op is not None and act_op.bl_idname.endswith('archlab_wall'):
+        if act_op is not None and act_op.bl_idname.endswith('archlab_bench'):
             return False
         else:
             return True
@@ -232,9 +180,9 @@ class ArchLabWallGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabWallGenerator', this panel is not created.
+        # If the selected object didn't be created with the group 'ArchLabBenchGenerator', this panel is not created.
         try:
-            if 'ArchLabWallGenerator' not in o:
+            if 'ArchLabBenchGenerator' not in o:
                 return
         except:
             return
@@ -243,28 +191,28 @@ class ArchLabWallGeneratorPanel(Panel):
         if bpy.context.mode == 'EDIT_MESH':
             layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
-            wall = o.ArchLabWallGenerator[0]
+            bench = o.ArchLabBenchGenerator[0]
             row = layout.row()
-            row.prop(wall, 'wall_width')
+            row.prop(bench, 'bench_width')
             row = layout.row()
-            row.prop(wall, 'wall_height')
+            row.prop(bench, 'bench_height')
             row = layout.row()
-            row.prop(wall, 'wall_depth')
+            row.prop(bench, 'bench_depth')
 
 # ------------------------------------------------------------------
-# Define operator class to create walls
+# Define operator class to create benchs
 # ------------------------------------------------------------------
-class ArchLabWall(Operator):
-    bl_idname = "mesh.archlab_wall"
-    bl_label = "Add Wall"
-    bl_description = "Generate wall mesh"
+class ArchLabBench(Operator):
+    bl_idname = "mesh.archlab_bench"
+    bl_label = "Add Bench"
+    bl_description = "Generate bench mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
     # preset
-    wall_height = wall_height_property()
-    wall_width = wall_width_property()
-    wall_depth = wall_depth_property()
+    bench_height = bench_height_property()
+    bench_width = bench_width_property()
+    bench_depth = bench_depth_property()
 
     # -----------------------------------------------------
     # Draw (create UI interface)
@@ -274,11 +222,11 @@ class ArchLabWall(Operator):
         space = bpy.context.space_data
         if not space.local_view:
             row = layout.row()
-            row.prop(self, 'wall_width')
+            row.prop(self, 'bench_width')
             row = layout.row()
-            row.prop(self, 'wall_height')
+            row.prop(self, 'bench_height')
             row = layout.row()
-            row.prop(self, 'wall_depth')
+            row.prop(self, 'bench_depth')
         else:
             row = layout.row()
             row.label("Warning: Operator does not work in local view mode", icon='ERROR')
@@ -290,7 +238,7 @@ class ArchLabWall(Operator):
         if bpy.context.mode == "OBJECT":
             space = bpy.context.space_data
             if not space.local_view:
-                create_wall(self, context)
+                create_bench(self, context)
                 return {'FINISHED'}
             else:
                 self.report({'WARNING'}, "ArchLab: Option only valid in global view mode")

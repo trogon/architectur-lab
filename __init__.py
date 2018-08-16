@@ -33,7 +33,7 @@ bl_info = {
     "name": "Architecture Lab",
     "author": "Insma Software - Maciej Klemarczyk (mklemarczyk)",
     "location": "View3D > Add > Mesh > ArchLab",
-    "version": (1, 0, 9),
+    "version": (1, 1, 0),
     "blender": (2, 7, 9),
     "description": "Creates rooms, doors, windows, and other architecture objects",
     "wiki_url": "https://github.com/insma/ArchitectureLab/wiki",
@@ -52,6 +52,8 @@ if "bpy" in locals():
     importlib.reload(archlab_bldn_wall_tool)
     importlib.reload(archlab_dcrt_glass_tool)
     importlib.reload(archlab_dcrt_plate_tool)
+    importlib.reload(archlab_frnt_bench_tool)
+    importlib.reload(archlab_frnt_shelve_tool)
     importlib.reload(archlab_mesh_cube_tool)
     importlib.reload(archlab_mesh_cube_tool)
     importlib.reload(archlab_mesh_plane_tool)
@@ -64,6 +66,8 @@ else:
     from . import archlab_bldn_wall_tool
     from . import archlab_dcrt_glass_tool
     from . import archlab_dcrt_plate_tool
+    from . import archlab_frnt_bench_tool
+    from . import archlab_frnt_shelve_tool
     from . import archlab_mesh_circle_tool
     from . import archlab_mesh_cube_tool
     from . import archlab_mesh_plane_tool
@@ -82,6 +86,10 @@ modules = [
     archlab_dcrt_glass_tool.ArchLabGlassGeneratorPanel,
     archlab_dcrt_plate_tool.ArchLabPlate,
     archlab_dcrt_plate_tool.ArchLabPlateGeneratorPanel,
+    archlab_frnt_bench_tool.ArchLabBench,
+    archlab_frnt_bench_tool.ArchLabBenchGeneratorPanel,
+    archlab_frnt_shelve_tool.ArchLabShelve,
+    archlab_frnt_shelve_tool.ArchLabShelveGeneratorPanel,
     archlab_mesh_circle_tool.ArchLabCircle,
     archlab_mesh_circle_tool.ArchLabCircleGeneratorPanel,
     archlab_mesh_cube_tool.ArchLabCube,
@@ -115,6 +123,17 @@ from bpy.types import (
         WindowManager,
     )
 
+
+# ----------------------------------------------------------
+# Furnitures menu
+# ----------------------------------------------------------
+class ArchLabMeshFurnituresAdd(Menu):
+    bl_idname = "INFO_MT_archlab_mesh_furnitures_add"
+    bl_label = "Furnitures"
+
+    def draw(self, context):
+        self.layout.operator("mesh.archlab_bench", text="Add Bench")
+        self.layout.operator("mesh.archlab_shelve", text="Add Shelve")
 
 # ----------------------------------------------------------
 # Decorations menu
@@ -156,9 +175,11 @@ class ArchLabMeshCustomMenuAdd(Menu):
         self.layout.separator()
         self.layout.menu("INFO_MT_archlab_mesh_primitives_add", text="Primitives", icon="GROUP")
         self.layout.menu("INFO_MT_archlab_mesh_decorations_add", text="Decorations", icon="GROUP")
+        self.layout.menu("INFO_MT_archlab_mesh_furnitures_add", text="Furnitures", icon="GROUP")
 
 modules.extend([
     ArchLabMeshCustomMenuAdd,
+    ArchLabMeshFurnituresAdd,
     ArchLabMeshDecorationsAdd,
     ArchLabMeshPrimitivesAdd
 ])
