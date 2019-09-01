@@ -176,7 +176,7 @@ def rotate_point2d(posx, posy, angle):
     sina1 = sin(rada1)
     mat1 = Matrix([[cosa1, -sina1],
                    [sina1, cosa1]])
-    v2 = mat1 * v1
+    v2 = mat1 @ v1
     return v2
 
 
