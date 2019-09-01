@@ -3,7 +3,7 @@ Blender addon to create architecture elements. As well as some primitive meshes 
 The primary feature is modeling scene using object properties instead of manual mesh modifications.
 
 # Installation process
-1. Go to [Releases](https://github.com/insma/ArchitectureLab/releases) and download zip file with addon.
+1. Go to [Releases](https://github.com/trogon/ArchitectureLab/releases) and download zip file with addon.
 2. Open _Blender_ application
 3. Click _File_ menu > Choose _User Preferences_ option
 4. Switch to _Add-ons_ tab
