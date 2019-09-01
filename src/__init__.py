@@ -56,8 +56,8 @@ bl_info = {
     "name": "Architecture Lab",
     "author": "Insma Software - Maciej Klemarczyk (mklemarczyk)",
     "location": "View3D > Add > Mesh > ArchLab",
-    "version": (1, 1, 0),
-    "blender": (2, 7, 9),
+    "version": (2, 0, 0),
+    "blender": (2, 80, 0),
     "description": "Creates rooms, doors, windows, and other architecture "
                    "objects",
     "wiki_url": "https://github.com/insma/ArchitectureLab/wiki",
