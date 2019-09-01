@@ -1,18 +1,18 @@
 # ##### BEGIN MIT LICENSE BLOCK #####
 # MIT License
-# 
-# Copyright (c) 2018 Insma Software
-# 
+#
+# Copyright (c) 2018-2019 Maciej Klemarczyk, Trogon Studios
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,13 +23,16 @@
 # ##### END MIT LICENSE BLOCK #####
 
 # ----------------------------------------------------------
-# Author: Maciej Klemarczyk (mklemarczyk)
+# Author: Maciej Klemarczyk (github: mklemarczyk)
+# Publisher: Trogon Studios (github: trogon)
 # ----------------------------------------------------------
+
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import FloatProperty, CollectionProperty
 from .archlab_utils import *
 from .archlab_utils_mesh_generator import *
+
 
 # ------------------------------------------------------------------------------
 # Create main object for the cube.
@@ -57,6 +60,7 @@ def create_cube(self, context):
     cubeobject.select = True
     bpy.context.scene.objects.active = cubeobject
 
+
 # ------------------------------------------------------------------------------
 # Shapes mesh the cube mesh
 # ------------------------------------------------------------------------------
@@ -74,6 +78,7 @@ def shape_cube_mesh(mycube, tmp_mesh, update=False):
         if o.select is True and o.name != mycube.name:
             o.select = False
 
+
 # ------------------------------------------------------------------------------
 # Creates cube mesh data.
 # ------------------------------------------------------------------------------
@@ -82,6 +87,7 @@ def update_cube_mesh_data(mymesh, width, height, depth):
 
     mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
+
 
 # ------------------------------------------------------------------------------
 # Update cube mesh.
@@ -108,32 +114,36 @@ def update_cube(self, context):
     o.select = True
     bpy.context.scene.objects.active = o
 
+
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
 def cube_height_property(callback=None):
     return FloatProperty(
-            name='Height',
-            soft_min=0.001,
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Cube height', update=callback,
-            )
+        name='Height',
+        soft_min=0.001,
+        default=1.0, precision=3, unit='LENGTH',
+        description='Cube height', update=callback,
+    )
+
 
 def cube_width_property(callback=None):
     return FloatProperty(
-            name='Width',
-            soft_min=0.001,
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Cube width', update=callback,
-            )
+        name='Width',
+        soft_min=0.001,
+        default=1.0, precision=3, unit='LENGTH',
+        description='Cube width', update=callback,
+    )
+
 
 def cube_depth_property(callback=None):
     return FloatProperty(
-            name='Depth',
-            soft_min=0.001,
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Cube depth', update=callback,
-            )
+        name='Depth',
+        soft_min=0.001,
+        default=1.0, precision=3, unit='LENGTH',
+        description='Cube depth', update=callback,
+    )
+
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a cubes.
@@ -145,6 +155,7 @@ class ArchLabCubeProperties(PropertyGroup):
 
 bpy.utils.register_class(ArchLabCubeProperties)
 Object.ArchLabCubeGenerator = CollectionProperty(type=ArchLabCubeProperties)
+
 
 # ------------------------------------------------------------------
 # Define panel class to modify cubes.
@@ -177,7 +188,8 @@ class ArchLabCubeGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabCubeGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        #  'ArchLabCubeGenerator', this panel is not created.
         try:
             if 'ArchLabCubeGenerator' not in o:
                 return
@@ -195,6 +207,7 @@ class ArchLabCubeGeneratorPanel(Panel):
             row.prop(cube, 'cube_height')
             row = layout.row()
             row.prop(cube, 'cube_depth')
+
 
 # ------------------------------------------------------------------
 # Define operator class to create cubes

@@ -1,18 +1,18 @@
 # ##### BEGIN MIT LICENSE BLOCK #####
 # MIT License
-# 
-# Copyright (c) 2018 Insma Software
-# 
+#
+# Copyright (c) 2018-2019 Maciej Klemarczyk, Trogon Studios
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,112 +23,118 @@
 # ##### END MIT LICENSE BLOCK #####
 
 # ----------------------------------------------------------
-# Author: Maciej Klemarczyk (mklemarczyk)
+# Author: Maciej Klemarczyk (github: mklemarczyk)
+# Publisher: Trogon Studios (github: trogon)
 # ----------------------------------------------------------
+
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import EnumProperty, IntProperty, FloatProperty, CollectionProperty
+from bpy.props import FloatProperty, CollectionProperty
 from .archlab_utils import *
-from .archlab_utils_mesh_generator import *
+
 
 # ------------------------------------------------------------------------------
-# Create main object for the circle.
+# Create main object for the wall.
 # ------------------------------------------------------------------------------
-def create_circle(self, context):
+def create_wall(self, context):
     # deselect all objects
     for o in bpy.data.objects:
         o.select = False
 
-    # we create main object and mesh for circle
-    circlemesh = bpy.data.meshes.new("Circle")
-    circleobject = bpy.data.objects.new("Circle", circlemesh)
-    circleobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(circleobject)
-    circleobject.ArchLabCircleGenerator.add()
+    # we create main object and mesh for wall
+    wallmesh = bpy.data.meshes.new("Wall")
+    wallobject = bpy.data.objects.new("Wall", wallmesh)
+    wallobject.location = bpy.context.scene.cursor_location
+    bpy.context.scene.objects.link(wallobject)
+    wallobject.ArchLabWallGenerator.add()
 
-    circleobject.ArchLabCircleGenerator[0].circle_radius = self.circle_radius
-    circleobject.ArchLabCircleGenerator[0].circle_quality = self.circle_quality
-    circleobject.ArchLabCircleGenerator[0].circle_fill_type = self.circle_fill_type
-    circleobject.ArchLabCircleGenerator[0].circle_depth = self.circle_depth
-    circleobject.ArchLabCircleGenerator[0].circle_truncation = self.circle_truncation
+    wallobject.ArchLabWallGenerator[0].wall_height = self.wall_height
+    wallobject.ArchLabWallGenerator[0].wall_width = self.wall_width
+    wallobject.ArchLabWallGenerator[0].wall_depth = self.wall_depth
 
     # we shape the mesh.
-    shape_circle_mesh(circleobject, circlemesh)
+    shape_wall_mesh(wallobject, wallmesh)
 
-    # we select, and activate, main object for the circle.
-    circleobject.select = True
-    bpy.context.scene.objects.active = circleobject
+    # we select, and activate, main object for the wall.
+    wallobject.select = True
+    bpy.context.scene.objects.active = wallobject
+
 
 # ------------------------------------------------------------------------------
 # Shapes mesh and creates modifier solidify (the modifier, only the first time).
 # ------------------------------------------------------------------------------
-def shape_circle_mesh(mycircle, tmp_mesh, update=False):
-    pp = mycircle.ArchLabCircleGenerator[0]  # "pp" means "circle properties".
-    # Create circle mesh data
-    update_circle_mesh_data(tmp_mesh, pp.circle_radius, pp.circle_quality, pp.circle_fill_type, pp.circle_truncation)
-    mycircle.data = tmp_mesh
+def shape_wall_mesh(mywall, tmp_mesh, update=False):
+    pp = mywall.ArchLabWallGenerator[0]  # "pp" means "wall properties".
+    # Create wall mesh data
+    update_wall_mesh_data(tmp_mesh, pp.wall_width, pp.wall_height)
+    mywall.data = tmp_mesh
 
-    remove_doubles(mycircle)
-    set_normals(mycircle)
+    remove_doubles(mywall)
+    set_normals(mywall)
 
-    if pp.circle_depth > 0.0:
-        if update is False or is_solidify(mycircle) is False:
-            set_modifier_solidify(mycircle, pp.circle_depth)
+    if pp.wall_depth > 0.0:
+        if update is False or is_solidify(mywall) is False:
+            set_modifier_solidify(mywall, pp.wall_depth)
         else:
-            for mod in mycircle.modifiers:
+            for mod in mywall.modifiers:
                 if mod.type == 'SOLIDIFY':
-                    mod.thickness = pp.circle_depth
+                    mod.thickness = pp.wall_depth
         # Move to Top SOLIDIFY
-        movetotopsolidify(mycircle)
+        movetotopsolidify(mywall)
 
     else:  # clear not used SOLIDIFY
-        for mod in mycircle.modifiers:
+        for mod in mywall.modifiers:
             if mod.type == 'SOLIDIFY':
-                mycircle.modifiers.remove(mod)
+                mywall.modifiers.remove(mod)
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mycircle.name:
+        if o.select is True and o.name != mywall.name:
             o.select = False
 
-# ------------------------------------------------------------------------------
-# Creates circle mesh data.
-# ------------------------------------------------------------------------------
-def update_circle_mesh_data(mymesh, radius, vertices, fill_type, trunc_val):
-    if fill_type == 'NONE':
-        (myvertices, myedges, myfaces) = generate_circle_nofill_mesh_data(radius, vertices)
-    if fill_type == 'NGON':
-        (myvertices, myedges, myfaces) = generate_circle_ngonfill_mesh_data(radius, vertices, trunc_val)
-    if fill_type == 'TRIF':
-        (myvertices, myedges, myfaces) = generate_circle_tfanfill_mesh_data(radius, vertices)
 
-    mymesh.from_pydata(myvertices, myedges, myfaces)
+# ------------------------------------------------------------------------------
+# Creates wall mesh data.
+# ------------------------------------------------------------------------------
+def update_wall_mesh_data(mymesh, width, height):
+    sizew = width
+    sizez = height
+    posw = width
+    posz = height
+
+    myvertices = [(0.0, 0.0, 0.0), (0.0, 0.0, posz),]
+    myvertices.extend([(posw, 0.0, 0.0), (posw, 0.0, posz)])
+    myfaces = [(0, 1, 3, 2)]
+
+    mymesh.from_pydata(myvertices, [], myfaces)
     mymesh.update(calc_edges=True)
 
+
 # ------------------------------------------------------------------------------
-# Update circle mesh.
+# Update wall mesh.
 # ------------------------------------------------------------------------------
-def update_circle(self, context):
-    # When we update, the active object is the main object of the circle.
+def update_wall(self, context):
+    # When we update, the active object is the main object of the wall.
     o = bpy.context.active_object
     oldmesh = o.data
     oldname = o.data.name
-    # Now we deselect that circle object to not delete it.
+    # Now we deselect that wall object to not delete it.
     o.select = False
-    # and we create a new mesh for the circle:
+    # and we create a new mesh for the wall:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
         obj.select = False
     # Finally we shape the main mesh again,
-    shape_circle_mesh(o, tmp_mesh, True)
+    shape_wall_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
     # Remove data (mesh of active object),
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
-    # and select, and activate, the main object of the circle.
+    # and select, and activate, the main object of the wall.
     o.select = True
     bpy.context.scene.objects.active = o
+
 
 # -----------------------------------------------------
 # Verify if solidify exist
@@ -146,6 +152,7 @@ def is_solidify(myobject):
         return flag
     except AttributeError:
         return False
+
 
 # -----------------------------------------------------
 # Move Solidify to Top
@@ -168,68 +175,51 @@ def movetotopsolidify(myobject):
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
-def circle_radius_property(callback=None):
+def wall_height_property(callback=None):
     return FloatProperty(
-            name='Radius',
-            soft_min=0.001,
-            default=1.0, precision=3, unit='LENGTH',
-            description='Circle radius', update=callback,
-            )
+        name='Height',
+        soft_min=0.001,
+        default=2.5, precision=3, unit='LENGTH',
+        description='Wall height', update=callback,
+    )
 
-def circle_quality_property(callback=None):
-    return IntProperty(
-            name='Vertices',
-            min=3, max=1000,
-            default=32,
-            description='Circle vertices', update=callback,
-            )
 
-def circle_depth_property(callback=None):
+def wall_width_property(callback=None):
     return FloatProperty(
-            name='Thickness',
-            soft_min=0.0,
-            default=0.0, precision=4, unit='LENGTH',
-            description='Thickness of the circle', update=callback,
-            )
+        name='Width',
+        soft_min=0.001,
+        default=1.0, precision=3, unit='LENGTH',
+        description='Wall width', update=callback,
+    )
 
-def circle_fill_type_property(callback=None):
-    return EnumProperty(
-            items=(
-                ('TRIF', 'Triangle Fan', ''),
-                ('NGON', 'Ngon', ''),
-                ('NONE', 'Nothing', ''),
-                ),
-            name='Fill type',
-            description='Topology of circle face', update=callback,
-            )
 
-def circle_truncation_property(callback=None):
+def wall_depth_property(callback=None):
     return FloatProperty(
-            name='Truncation',
-            min=0.0, max=1.0,
-            default=0.0, precision=4,
-            description='Truncation of the circle', update=callback,
-            )
+        name='Thickness',
+        soft_min=0.001,
+        default=0.025, precision=4, unit='LENGTH',
+        description='Thickness of the wall', update=callback,
+    )
+
 
 # ------------------------------------------------------------------
-# Define property group class to create or modify a circles.
+# Define property group class to create or modify a walls.
 # ------------------------------------------------------------------
-class ArchLabCircleProperties(PropertyGroup):
-    circle_radius = circle_radius_property(callback=update_circle)
-    circle_quality = circle_quality_property(callback=update_circle)
-    circle_fill_type = circle_fill_type_property(callback=update_circle)
-    circle_depth = circle_depth_property(callback=update_circle)
-    circle_truncation = circle_truncation_property(callback=update_circle)
+class ArchLabWallProperties(PropertyGroup):
+    wall_height = wall_height_property(callback=update_wall)
+    wall_width = wall_width_property(callback=update_wall)
+    wall_depth = wall_depth_property(callback=update_wall)
 
-bpy.utils.register_class(ArchLabCircleProperties)
-Object.ArchLabCircleGenerator = CollectionProperty(type=ArchLabCircleProperties)
+bpy.utils.register_class(ArchLabWallProperties)
+Object.ArchLabWallGenerator = CollectionProperty(type=ArchLabWallProperties)
+
 
 # ------------------------------------------------------------------
-# Define panel class to modify circles.
+# Define panel class to modify walls.
 # ------------------------------------------------------------------
-class ArchLabCircleGeneratorPanel(Panel):
-    bl_idname = "OBJECT_PT_circle_generator"
-    bl_label = "Circle"
+class ArchLabWallGeneratorPanel(Panel):
+    bl_idname = "OBJECT_PT_wall_generator"
+    bl_label = "Wall"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'ArchLab'
@@ -243,9 +233,9 @@ class ArchLabCircleGeneratorPanel(Panel):
         act_op = context.active_operator
         if o is None:
             return False
-        if 'ArchLabCircleGenerator' not in o:
+        if 'ArchLabWallGenerator' not in o:
             return False
-        if act_op is not None and act_op.bl_idname.endswith('archlab_circle'):
+        if act_op is not None and act_op.bl_idname.endswith('archlab_wall'):
             return False
         else:
             return True
@@ -255,9 +245,10 @@ class ArchLabCircleGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabCircleGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        #  'ArchLabWallGenerator', this panel is not created.
         try:
-            if 'ArchLabCircleGenerator' not in o:
+            if 'ArchLabWallGenerator' not in o:
                 return
         except:
             return
@@ -266,35 +257,29 @@ class ArchLabCircleGeneratorPanel(Panel):
         if bpy.context.mode == 'EDIT_MESH':
             layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
-            circle = o.ArchLabCircleGenerator[0]
+            wall = o.ArchLabWallGenerator[0]
             row = layout.row()
-            row.prop(circle, 'circle_quality')
+            row.prop(wall, 'wall_width')
             row = layout.row()
-            row.prop(circle, 'circle_radius')
+            row.prop(wall, 'wall_height')
             row = layout.row()
-            row.prop(circle, 'circle_fill_type')
-            row = layout.row()
-            row.prop(circle, 'circle_depth')
-            if circle.circle_fill_type == 'NGON':
-                row = layout.row()
-                row.prop(circle, 'circle_truncation')
+            row.prop(wall, 'wall_depth')
+
 
 # ------------------------------------------------------------------
-# Define operator class to create circles
+# Define operator class to create walls
 # ------------------------------------------------------------------
-class ArchLabCircle(Operator):
-    bl_idname = "mesh.archlab_circle"
-    bl_label = "Add Circle"
-    bl_description = "Generate circle primitive mesh"
+class ArchLabWall(Operator):
+    bl_idname = "mesh.archlab_wall"
+    bl_label = "Add Wall"
+    bl_description = "Generate wall mesh"
     bl_category = 'ArchLab'
     bl_options = {'REGISTER', 'UNDO'}
 
     # preset
-    circle_radius = circle_radius_property()
-    circle_quality = circle_quality_property()
-    circle_fill_type = circle_fill_type_property()
-    circle_depth = circle_depth_property()
-    circle_truncation = circle_truncation_property()
+    wall_height = wall_height_property()
+    wall_width = wall_width_property()
+    wall_depth = wall_depth_property()
 
     # -----------------------------------------------------
     # Draw (create UI interface)
@@ -304,16 +289,11 @@ class ArchLabCircle(Operator):
         space = bpy.context.space_data
         if not space.local_view:
             row = layout.row()
-            row.prop(self, 'circle_quality')
+            row.prop(self, 'wall_width')
             row = layout.row()
-            row.prop(self, 'circle_radius')
+            row.prop(self, 'wall_height')
             row = layout.row()
-            row.prop(self, 'circle_fill_type')
-            row = layout.row()
-            row.prop(self, 'circle_depth')
-            if self.circle_fill_type == 'NGON':
-                row = layout.row()
-                row.prop(self, 'circle_truncation')
+            row.prop(self, 'wall_depth')
         else:
             row = layout.row()
             row.label("Warning: Operator does not work in local view mode", icon='ERROR')
@@ -325,7 +305,7 @@ class ArchLabCircle(Operator):
         if bpy.context.mode == "OBJECT":
             space = bpy.context.space_data
             if not space.local_view:
-                create_circle(self, context)
+                create_wall(self, context)
                 return {'FINISHED'}
             else:
                 self.report({'WARNING'}, "ArchLab: Option only valid in global view mode")

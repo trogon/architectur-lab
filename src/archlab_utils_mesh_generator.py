@@ -1,18 +1,18 @@
 # ##### BEGIN MIT LICENSE BLOCK #####
 # MIT License
-# 
-# Copyright (c) 2018 Insma Software
-# 
+#
+# Copyright (c) 2018-2019 Maciej Klemarczyk, Trogon Studios
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,7 +23,8 @@
 # ##### END MIT LICENSE BLOCK #####
 
 # ----------------------------------------------------------
-# Author: Maciej Klemarczyk (mklemarczyk)
+# Author: Maciej Klemarczyk (github: mklemarczyk)
+# Publisher: Trogon Studios (github: trogon)
 # ----------------------------------------------------------
 
 import bpy
@@ -46,6 +47,7 @@ def generate_circle_ngonfill_mesh_data(radius, vertices, trunc_val):
         (myvertices, myfaces) = truncate_circle_mesh(myvertices, myfaces, trunc_val)
     return myvertices, [], myfaces
 
+
 # ------------------------------------------------------------------------------
 # Creates circle witout filling mesh data.
 # ------------------------------------------------------------------------------
@@ -59,6 +61,7 @@ def generate_circle_nofill_mesh_data(radius, vertices):
         myedges.append((t, ((t+1) % vertices)))
     return myvertices, myedges, []
 
+
 # ------------------------------------------------------------------------------
 # Creates circle filled with triangle fan mesh data.
 # ------------------------------------------------------------------------------
@@ -70,38 +73,41 @@ def generate_circle_tfanfill_mesh_data(radius, vertices):
     for t in range(vertices):
         v1 = rotate_point2d(radius, 0.0, t * deltaAngle)
         myvertices.append((v1[0], v1[1], 0.0))
-        myfaces.append((0, t+1, ((t+1) % vertices) +1))
+        myfaces.append((0, t+1, ((t+1) % vertices) + 1))
     return myvertices, [], myfaces
+
 
 # ------------------------------------------------------------------------------
 # Creates cube mesh data.
 # ------------------------------------------------------------------------------
 def generate_cube_mesh_data(width, height, depth):
-    posx = width /2
-    posy = depth /2
-    posz = height /2
+    posx = width / 2
+    posy = depth / 2
+    posz = height / 2
     myvertices = [(-posx, -posy, -posz), (posx, -posy, -posz),
-                (-posx, posy, -posz), (posx, posy, -posz),
-                (-posx, -posy, posz), (posx, -posy, posz),
-                (-posx, posy, posz), (posx, posy, posz)]
+                  (-posx, posy, -posz), (posx, posy, -posz),
+                  (-posx, -posy, posz), (posx, -posy, posz),
+                  (-posx, posy, posz), (posx, posy, posz)]
     myfaces = [(0, 1, 3, 2),
-                (0, 1, 5, 4),
-                (0, 4, 6, 2),
-                (1, 5, 7, 3),
-                (2, 3, 7, 6),
-                (4, 5, 7, 6)]
+               (0, 1, 5, 4),
+               (0, 4, 6, 2),
+               (1, 5, 7, 3),
+               (2, 3, 7, 6),
+               (4, 5, 7, 6)]
     return myvertices, [], myfaces
+
 
 # ------------------------------------------------------------------------------
 # Creates plane mesh data.
 # ------------------------------------------------------------------------------
 def generate_plane_mesh_data(width, height):
-    posx = width /2
-    posy = height /2
+    posx = width / 2
+    posy = height / 2
     myvertices = [(-posx, -posy, 0.0), (posx, -posy, 0.0),
-                (-posx, posy, 0.0), (posx, posy, 0.0)]
+                  (-posx, posy, 0.0), (posx, posy, 0.0)]
     myfaces = [(0, 1, 3, 2)]
     return myvertices, [], myfaces
+
 
 # ------------------------------------------------------------------------------
 # Creates ico sphere mesh data.
@@ -112,7 +118,7 @@ def generate_sphere_ico_mesh_data(radius, subdivisions):
     segments = 5
     topv = range(1, segments + 1)
     botv = range(segments + 1, segments * 2 + 1)
-    sDeltaAngle = 360 /segments
+    sDeltaAngle = 360 / segments
     p1 = (0.2764 * radius, 0.8506 * radius, 0.4472 * radius)
     p2 = (0.7236 * radius, 0.5257 * radius, -0.4472 * radius)
     myvertices.append((0.0000, 0.0000, radius))
@@ -135,6 +141,7 @@ def generate_sphere_ico_mesh_data(radius, subdivisions):
         (myvertices, myfaces) = subdivide_icosphere_mesh(myvertices, myfaces, radius)
     return myvertices, [], myfaces
 
+
 # ------------------------------------------------------------------------------
 # Creates uv sphere mesh data.
 # ------------------------------------------------------------------------------
@@ -142,11 +149,11 @@ def generate_sphere_uv_mesh_data(radius, segments, rings):
     myvertices = []
     myfaces = []
     segv = range(segments)
-    sDeltaAngle = 360 /segments
-    rDeltaAngle = 180 /rings
+    sDeltaAngle = 360 / segments
+    rDeltaAngle = 180 / rings
     p = (0.0, 0.0, radius)
     lastr = 0
-    for tr in range(rings +1):
+    for tr in range(rings + 1):
         lastv = segv[-1]
         for ts in segv:
             p1 = rotate_point3d(p, anglex=(tr * rDeltaAngle), anglez=(ts * sDeltaAngle))
@@ -161,6 +168,7 @@ def generate_sphere_uv_mesh_data(radius, segments, rings):
                 lastv = ts
         lastr = tr
     return myvertices, [], myfaces
+
 
 # --------------------------------------------------------------------
 # Creates mesh based on meshes library data
@@ -191,6 +199,7 @@ def generate_mesh_from_library(meshname, size=(1.0, 1.0, 1.0), segments=32):
         return myvertices, myedges, myfaces
     return None
 
+
 # --------------------------------------------------------------------
 # Creates Solid of Revolution mesh based on meshes library data
 # sordvertices - mesh profile vertices
@@ -199,6 +208,7 @@ def generate_mesh_from_library(meshname, size=(1.0, 1.0, 1.0), segments=32):
 # --------------------------------------------------------------------
 def generate_sord_profile_mesh(sordvertices, sordedges, segments):
     return sordvertices, sordedges, []
+
 
 # --------------------------------------------------------------------
 # Creates Solid of Revolution mesh based on meshes library data
@@ -212,7 +222,7 @@ def generate_sord_mesh(sordvertices, sordedges, segments, close_top=True, close_
     myfaces = []
     segv = range(segments)
     segh = len(sordvertices)
-    sDeltaAngle = 360 /segments
+    sDeltaAngle = 360 / segments
     for ts in segv:
         for tv in sordvertices:
             p1 = rotate_point3d(tv, anglez=(ts * sDeltaAngle))
