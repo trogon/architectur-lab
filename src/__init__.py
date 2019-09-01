@@ -44,7 +44,7 @@ from bpy.types import (
     AddonPreferences,
     Menu,
     Scene,
-    INFO_MT_mesh_add,
+    VIEW3D_MT_mesh_add,
     WindowManager,
 )
 
@@ -130,7 +130,7 @@ modules = [
 # Furnitures menu
 # ----------------------------------------------------------
 class ArchLabMeshFurnituresAdd(Menu):
-    bl_idname = "INFO_MT_archlab_mesh_furnitures_add"
+    bl_idname = "VIEW3D_MT_archlab_mesh_furnitures_add"
     bl_label = "Furnitures"
 
     def draw(self, context):
@@ -142,7 +142,7 @@ class ArchLabMeshFurnituresAdd(Menu):
 # Decorations menu
 # ----------------------------------------------------------
 class ArchLabMeshDecorationsAdd(Menu):
-    bl_idname = "INFO_MT_archlab_mesh_decorations_add"
+    bl_idname = "VIEW3D_MT_archlab_mesh_decorations_add"
     bl_label = "Decorations"
 
     def draw(self, context):
@@ -154,7 +154,7 @@ class ArchLabMeshDecorationsAdd(Menu):
 # Primitives menu
 # ----------------------------------------------------------
 class ArchLabMeshPrimitivesAdd(Menu):
-    bl_idname = "INFO_MT_archlab_mesh_primitives_add"
+    bl_idname = "VIEW3D_MT_archlab_mesh_primitives_add"
     bl_label = "Primitives"
 
     def draw(self, context):
@@ -179,7 +179,7 @@ class ArchLabMeshPrimitivesAdd(Menu):
 # ArchLab menu
 # ----------------------------------------------------------
 class ArchLabMeshCustomMenuAdd(Menu):
-    bl_idname = "INFO_MT_archlab_mesh_custom_menu_add"
+    bl_idname = "VIEW3D_MT_archlab_mesh_custom_menu_add"
     bl_label = "ArchLab"
 
     def draw(self, context):
@@ -189,13 +189,13 @@ class ArchLabMeshCustomMenuAdd(Menu):
         self.layout.operator("mesh.archlab_wall", text="Add Wall")
         self.layout.separator()
         self.layout.menu(
-            "INFO_MT_archlab_mesh_primitives_add",
+            "VIEW3D_MT_archlab_mesh_primitives_add",
             text="Primitives", icon="GROUP")
         self.layout.menu(
-            "INFO_MT_archlab_mesh_decorations_add",
+            "VIEW3D_MT_archlab_mesh_decorations_add",
             text="Decorations", icon="GROUP")
         self.layout.menu(
-            "INFO_MT_archlab_mesh_furnitures_add",
+            "VIEW3D_MT_archlab_mesh_furnitures_add",
             text="Furnitures", icon="GROUP")
 
 modules.extend([
@@ -211,7 +211,7 @@ modules.extend([
 # --------------------------------------------------------------
 # Define menu
 def ArchLabMeshMenu_func(self, context):
-    self.layout.menu("INFO_MT_archlab_mesh_custom_menu_add", icon="GROUP")
+    self.layout.menu("VIEW3D_MT_archlab_mesh_custom_menu_add", icon="GROUP")
 
 
 # --------------------------------------------------------------
@@ -220,7 +220,7 @@ def ArchLabMeshMenu_func(self, context):
 def register():
     for module_class in modules:
         bpy.utils.register_class(module_class)
-    INFO_MT_mesh_add.append(ArchLabMeshMenu_func)
+    VIEW3D_MT_mesh_add.append(ArchLabMeshMenu_func)
 
 
 # --------------------------------------------------------------
@@ -229,7 +229,7 @@ def register():
 def unregister():
     for module_class in modules:
         bpy.utils.unregister_class(module_class)
-    INFO_MT_mesh_add.remove(ArchLabMeshMenu_func)
+    VIEW3D_MT_mesh_add.remove(ArchLabMeshMenu_func)
 
 
 # --------------------------------------------------------------
