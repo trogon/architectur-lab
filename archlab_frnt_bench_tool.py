@@ -33,6 +33,7 @@ from bpy.props import FloatProperty, CollectionProperty
 from .archlab_utils import *
 from .archlab_utils_mesh_generator import *
 
+
 # ------------------------------------------------------------------------------
 # Create main object for the bench.
 # ------------------------------------------------------------------------------
@@ -51,7 +52,7 @@ def create_bench(self, context):
     benchobject.ArchLabBenchGenerator[0].bench_height = self.bench_height
     benchobject.ArchLabBenchGenerator[0].bench_width = self.bench_width
     benchobject.ArchLabBenchGenerator[0].bench_depth = self.bench_depth
-    
+
     # we shape the mesh.
     shape_bench_mesh(benchobject, benchmesh)
 
@@ -59,8 +60,9 @@ def create_bench(self, context):
     benchobject.select = True
     bpy.context.scene.objects.active = benchobject
 
+
 # ------------------------------------------------------------------------------
-# Shapes mesh and creates modifier solidify (the modifier, only the first time).
+# Shapes mesh and creates modifier solidify (the modifier, only the first time)
 # ------------------------------------------------------------------------------
 def shape_bench_mesh(mybench, tmp_mesh, update=False):
     sp = mybench.ArchLabBenchGenerator[0]  # "sp" means "bench properties".
@@ -76,6 +78,7 @@ def shape_bench_mesh(mybench, tmp_mesh, update=False):
         if o.select is True and o.name != mybench.name:
             o.select = False
 
+
 # ------------------------------------------------------------------------------
 # Creates bench mesh data.
 # ------------------------------------------------------------------------------
@@ -87,6 +90,7 @@ def update_bench_mesh_data(mymesh, width, height, depth):
 
     mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
+
 
 # ------------------------------------------------------------------------------
 # Update bench mesh.
@@ -113,32 +117,36 @@ def update_bench(self, context):
     o.select = True
     bpy.context.scene.objects.active = o
 
+
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
 def bench_height_property(callback=None):
     return FloatProperty(
-            name='Height',
-            soft_min=0.001,
-            default=0.45, precision=3, unit = 'LENGTH',
-            description='Bench height', update=callback,
-            )
+        name='Height',
+        soft_min=0.001,
+        default=0.45, precision=3, unit='LENGTH',
+        description='Bench height', update=callback,
+    )
+
 
 def bench_width_property(callback=None):
     return FloatProperty(
-            name='Width',
-            soft_min=0.001,
-            default=1.20, precision=3, unit = 'LENGTH',
-            description='Bench width', update=callback,
-            )
+        name='Width',
+        soft_min=0.001,
+        default=1.20, precision=3, unit='LENGTH',
+        description='Bench width', update=callback,
+    )
+
 
 def bench_depth_property(callback=None):
     return FloatProperty(
-            name='Depth',
-            soft_min=0.001,
-            default=0.34, precision=3, unit = 'LENGTH',
-            description='Bench depth', update=callback,
-            )
+        name='Depth',
+        soft_min=0.001,
+        default=0.34, precision=3, unit='LENGTH',
+        description='Bench depth', update=callback,
+    )
+
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a benchs.
@@ -150,6 +158,7 @@ class ArchLabBenchProperties(PropertyGroup):
 
 bpy.utils.register_class(ArchLabBenchProperties)
 Object.ArchLabBenchGenerator = CollectionProperty(type=ArchLabBenchProperties)
+
 
 # ------------------------------------------------------------------
 # Define panel class to modify benchs.
@@ -182,7 +191,8 @@ class ArchLabBenchGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabBenchGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        #  'ArchLabBenchGenerator', this panel is not created.
         try:
             if 'ArchLabBenchGenerator' not in o:
                 return
@@ -200,6 +210,7 @@ class ArchLabBenchGeneratorPanel(Panel):
             row.prop(bench, 'bench_height')
             row = layout.row()
             row.prop(bench, 'bench_depth')
+
 
 # ------------------------------------------------------------------
 # Define operator class to create benchs

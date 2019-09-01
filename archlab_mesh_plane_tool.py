@@ -33,6 +33,7 @@ from bpy.props import FloatProperty, CollectionProperty
 from .archlab_utils import *
 from .archlab_utils_mesh_generator import *
 
+
 # ------------------------------------------------------------------------------
 # Create main object for the plane.
 # ------------------------------------------------------------------------------
@@ -58,6 +59,7 @@ def create_plane(self, context):
     # we select, and activate, main object for the plane.
     planeobject.select = True
     bpy.context.scene.objects.active = planeobject
+
 
 # ------------------------------------------------------------------------------
 # Shapes mesh and creates modifier solidify (the modifier, only the first time).
@@ -91,6 +93,7 @@ def shape_plane_mesh(myplane, tmp_mesh, update=False):
         if o.select is True and o.name != myplane.name:
             o.select = False
 
+
 # ------------------------------------------------------------------------------
 # Creates plane mesh data.
 # ------------------------------------------------------------------------------
@@ -99,6 +102,7 @@ def update_plane_mesh_data(mymesh, width, height):
 
     mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
+
 
 # ------------------------------------------------------------------------------
 # Update plane mesh.
@@ -125,6 +129,7 @@ def update_plane(self, context):
     o.select = True
     bpy.context.scene.objects.active = o
 
+
 # -----------------------------------------------------
 # Verify if solidify exist
 # -----------------------------------------------------
@@ -141,6 +146,7 @@ def is_solidify(myobject):
         return flag
     except AttributeError:
         return False
+
 
 # -----------------------------------------------------
 # Move Solidify to Top
@@ -159,32 +165,36 @@ def movetotopsolidify(myobject):
     except AttributeError:
         return
 
+
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
 def plane_height_property(callback=None):
     return FloatProperty(
-            name='Height',
-            soft_min=0.001,
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Plane height', update=callback,
-            )
+        name='Height',
+        soft_min=0.001,
+        default=1.0, precision=3, unit='LENGTH',
+        description='Plane height', update=callback,
+    )
+
 
 def plane_width_property(callback=None):
     return FloatProperty(
-            name='Width',
-            soft_min=0.001,
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Plane width', update=callback,
-            )
+        name='Width',
+        soft_min=0.001,
+        default=1.0, precision=3, unit='LENGTH',
+        description='Plane width', update=callback,
+    )
+
 
 def plane_depth_property(callback=None):
     return FloatProperty(
-            name='Thickness',
-            soft_min=0.0,
-            default=0.0, precision=4, unit = 'LENGTH',
-            description='Thickness of the plane', update=callback,
-            )
+        name='Thickness',
+        soft_min=0.0,
+        default=0.0, precision=4, unit='LENGTH',
+        description='Thickness of the plane', update=callback,
+    )
+
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a planes.
@@ -196,6 +206,7 @@ class ArchLabPlaneProperties(PropertyGroup):
 
 bpy.utils.register_class(ArchLabPlaneProperties)
 Object.ArchLabPlaneGenerator = CollectionProperty(type=ArchLabPlaneProperties)
+
 
 # ------------------------------------------------------------------
 # Define panel class to modify planes.
@@ -228,7 +239,8 @@ class ArchLabPlaneGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabPlaneGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        #  'ArchLabPlaneGenerator', this panel is not created.
         try:
             if 'ArchLabPlaneGenerator' not in o:
                 return
@@ -246,6 +258,7 @@ class ArchLabPlaneGeneratorPanel(Panel):
             row.prop(plane, 'plane_height')
             row = layout.row()
             row.prop(plane, 'plane_depth')
+
 
 # ------------------------------------------------------------------
 # Define operator class to create planes

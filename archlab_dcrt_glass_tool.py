@@ -34,6 +34,7 @@ from .archlab_utils import *
 from .archlab_utils_material_data import *
 from .archlab_utils_mesh_generator import *
 
+
 # ------------------------------------------------------------------------------
 # Create main object for the glass.
 # ------------------------------------------------------------------------------
@@ -66,6 +67,7 @@ def create_glass(self, context):
     glassobject.select = True
     bpy.context.scene.objects.active = glassobject
 
+
 # ------------------------------------------------------------------------------
 # Shapes mesh the glass mesh
 # ------------------------------------------------------------------------------
@@ -83,6 +85,7 @@ def shape_glass_mesh(myglass, tmp_mesh, update=False):
         if o.select is True and o.name != myglass.name:
             o.select = False
 
+
 # ------------------------------------------------------------------------------
 # Creates glass mesh data.
 # ------------------------------------------------------------------------------
@@ -95,6 +98,7 @@ def update_glass_mesh_data(mymesh, diameter, height, segments):
 
     mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
+
 
 # ------------------------------------------------------------------------------
 # Update glass mesh.
@@ -127,27 +131,30 @@ def update_glass(self, context):
 # -----------------------------------------------------
 def glass_diameter_property(callback=None):
     return FloatProperty(
-            name='Diameter',
-            soft_min=0.001,
-            default=0.05, precision=3, unit = 'LENGTH',
-            description='Glass diameter', update=callback,
-            )
+        name='Diameter',
+        soft_min=0.001,
+        default=0.05, precision=3, unit='LENGTH',
+        description='Glass diameter', update=callback,
+    )
+
 
 def glass_quality_property(callback=None):
     return FloatProperty(
-            name='Height',
-            soft_min=0.001,
-            default=0.08, precision=3, unit = 'LENGTH',
-            description='Glass height', update=callback,
-            )
+        name='Height',
+        soft_min=0.001,
+        default=0.08, precision=3, unit='LENGTH',
+        description='Glass height', update=callback,
+    )
+
 
 def glass_segments_property(callback=None):
     return IntProperty(
-            name='Segments',
-            min=3, max=1000,
-            default=16,
-            description='Glass segments amount', update=callback,
-            )
+        name='Segments',
+        min=3, max=1000,
+        default=16,
+        description='Glass segments amount', update=callback,
+    )
+
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a glasss.
@@ -159,6 +166,7 @@ class ArchLabGlassProperties(PropertyGroup):
 
 bpy.utils.register_class(ArchLabGlassProperties)
 Object.ArchLabGlassGenerator = CollectionProperty(type=ArchLabGlassProperties)
+
 
 # ------------------------------------------------------------------
 # Define panel class to modify glasss.
@@ -191,7 +199,8 @@ class ArchLabGlassGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabGlassGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        #  'ArchLabGlassGenerator', this panel is not created.
         try:
             if 'ArchLabGlassGenerator' not in o:
                 return
@@ -209,6 +218,7 @@ class ArchLabGlassGeneratorPanel(Panel):
             row.prop(glass, 'glass_height')
             row = layout.row()
             row.prop(glass, 'glass_segments')
+
 
 # ------------------------------------------------------------------
 # Define operator class to create glasss

@@ -32,6 +32,7 @@ from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import FloatProperty, CollectionProperty
 from .archlab_utils import *
 
+
 # ------------------------------------------------------------------------------
 # Create main object for the wall.
 # ------------------------------------------------------------------------------
@@ -57,6 +58,7 @@ def create_wall(self, context):
     # we select, and activate, main object for the wall.
     wallobject.select = True
     bpy.context.scene.objects.active = wallobject
+
 
 # ------------------------------------------------------------------------------
 # Shapes mesh and creates modifier solidify (the modifier, only the first time).
@@ -90,6 +92,7 @@ def shape_wall_mesh(mywall, tmp_mesh, update=False):
         if o.select is True and o.name != mywall.name:
             o.select = False
 
+
 # ------------------------------------------------------------------------------
 # Creates wall mesh data.
 # ------------------------------------------------------------------------------
@@ -105,6 +108,7 @@ def update_wall_mesh_data(mymesh, width, height):
 
     mymesh.from_pydata(myvertices, [], myfaces)
     mymesh.update(calc_edges=True)
+
 
 # ------------------------------------------------------------------------------
 # Update wall mesh.
@@ -131,6 +135,7 @@ def update_wall(self, context):
     o.select = True
     bpy.context.scene.objects.active = o
 
+
 # -----------------------------------------------------
 # Verify if solidify exist
 # -----------------------------------------------------
@@ -147,6 +152,7 @@ def is_solidify(myobject):
         return flag
     except AttributeError:
         return False
+
 
 # -----------------------------------------------------
 # Move Solidify to Top
@@ -165,32 +171,36 @@ def movetotopsolidify(myobject):
     except AttributeError:
         return
 
+
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
 def wall_height_property(callback=None):
     return FloatProperty(
-            name='Height',
-            soft_min=0.001,
-            default=2.5, precision=3, unit = 'LENGTH',
-            description='Wall height', update=callback,
-            )
+        name='Height',
+        soft_min=0.001,
+        default=2.5, precision=3, unit='LENGTH',
+        description='Wall height', update=callback,
+    )
+
 
 def wall_width_property(callback=None):
     return FloatProperty(
-            name='Width',
-            soft_min=0.001,
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Wall width', update=callback,
-            )
+        name='Width',
+        soft_min=0.001,
+        default=1.0, precision=3, unit='LENGTH',
+        description='Wall width', update=callback,
+    )
+
 
 def wall_depth_property(callback=None):
     return FloatProperty(
-            name='Thickness',
-            soft_min=0.001,
-            default=0.025, precision=4, unit = 'LENGTH',
-            description='Thickness of the wall', update=callback,
-            )
+        name='Thickness',
+        soft_min=0.001,
+        default=0.025, precision=4, unit='LENGTH',
+        description='Thickness of the wall', update=callback,
+    )
+
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a walls.
@@ -202,6 +212,7 @@ class ArchLabWallProperties(PropertyGroup):
 
 bpy.utils.register_class(ArchLabWallProperties)
 Object.ArchLabWallGenerator = CollectionProperty(type=ArchLabWallProperties)
+
 
 # ------------------------------------------------------------------
 # Define panel class to modify walls.
@@ -234,7 +245,8 @@ class ArchLabWallGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabWallGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        #  'ArchLabWallGenerator', this panel is not created.
         try:
             if 'ArchLabWallGenerator' not in o:
                 return
@@ -252,6 +264,7 @@ class ArchLabWallGeneratorPanel(Panel):
             row.prop(wall, 'wall_height')
             row = layout.row()
             row.prop(wall, 'wall_depth')
+
 
 # ------------------------------------------------------------------
 # Define operator class to create walls

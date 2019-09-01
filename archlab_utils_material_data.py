@@ -29,6 +29,7 @@
 
 import bpy
 
+
 # --------------------------------------------------------------------
 # Creates new ceramic material
 # --------------------------------------------------------------------
@@ -54,12 +55,14 @@ def meshlib_ceramic_material():
     principled_node.inputs['Transmission Roughness'].default_value = 0.0
     return mat
 
+
 # --------------------------------------------------------------------
 # Creates new cloud material
 # --------------------------------------------------------------------
 def meshlib_cloud_material():
     (mat, principled_node) = create_principled_material(matname='Cloud Material (ArchLib)')
     return mat
+
 
 # --------------------------------------------------------------------
 # Creates new fabric material
@@ -86,6 +89,7 @@ def meshlib_fabric_material():
     principled_node.inputs['Transmission Roughness'].default_value = 0.0
     return mat
 
+
 # --------------------------------------------------------------------
 # Creates new glass material
 # --------------------------------------------------------------------
@@ -110,6 +114,7 @@ def meshlib_glass_material():
     principled_node.inputs['Transmission'].default_value = 1.0
     principled_node.inputs['Transmission Roughness'].default_value = 0.0
     return mat
+
 
 # --------------------------------------------------------------------
 # Creates new matt glass material
@@ -136,12 +141,14 @@ def meshlib_matt_glass_material():
     principled_node.inputs['Transmission Roughness'].default_value = 1.0
     return mat
 
+
 # --------------------------------------------------------------------
 # Creates new metalic material
 # --------------------------------------------------------------------
 def meshlib_metalic_material():
     (mat, principled_node) = create_principled_material(matname='Metalic Material (ArchLib)')
     return mat
+
 
 # --------------------------------------------------------------------
 # Creates new plastic material
@@ -168,6 +175,7 @@ def meshlib_plastic_material():
     principled_node.inputs['Transmission Roughness'].default_value = 0.0
     return mat
 
+
 # --------------------------------------------------------------------
 # Creates new wax material
 # --------------------------------------------------------------------
@@ -192,6 +200,7 @@ def meshlib_wax_material():
     principled_node.inputs['Transmission'].default_value = 0.0
     principled_node.inputs['Transmission Roughness'].default_value = 0.0
     return mat
+
 
 # --------------------------------------------------------------------
 # Creates new principled material

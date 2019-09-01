@@ -28,6 +28,28 @@
 # ----------------------------------------------------------
 
 # ----------------------------------------------
+# Import libraries
+# ----------------------------------------------
+import bpy
+
+from bpy.props import (
+    BoolProperty,
+    FloatVectorProperty,
+    IntProperty,
+    FloatProperty,
+    StringProperty,
+)
+
+from bpy.types import (
+    AddonPreferences,
+    Menu,
+    Scene,
+    INFO_MT_mesh_add,
+    WindowManager,
+)
+
+
+# ----------------------------------------------
 # Define Addon info
 # ----------------------------------------------
 bl_info = {
@@ -36,7 +58,8 @@ bl_info = {
     "location": "View3D > Add > Mesh > ArchLab",
     "version": (1, 1, 0),
     "blender": (2, 7, 9),
-    "description": "Creates rooms, doors, windows, and other architecture objects",
+    "description": "Creates rooms, doors, windows, and other architecture "
+                   "objects",
     "wiki_url": "https://github.com/insma/ArchitectureLab/wiki",
     "tracker_url": "https://github.com/insma/ArchitectureLab/issues",
     "category": "Add Mesh"
@@ -103,28 +126,6 @@ modules = [
 ]
 
 
-# ----------------------------------------------
-# Import libraries
-# ----------------------------------------------
-import bpy
-
-from bpy.props import (
-        BoolProperty,
-        FloatVectorProperty,
-        IntProperty,
-        FloatProperty,
-        StringProperty,
-    )
-
-from bpy.types import (
-        AddonPreferences,
-        Menu,
-        Scene,
-        INFO_MT_mesh_add,
-        WindowManager,
-    )
-
-
 # ----------------------------------------------------------
 # Furnitures menu
 # ----------------------------------------------------------
@@ -135,6 +136,7 @@ class ArchLabMeshFurnituresAdd(Menu):
     def draw(self, context):
         self.layout.operator("mesh.archlab_bench", text="Add Bench")
         self.layout.operator("mesh.archlab_shelve", text="Add Shelve")
+
 
 # ----------------------------------------------------------
 # Decorations menu
@@ -147,6 +149,7 @@ class ArchLabMeshDecorationsAdd(Menu):
         self.layout.operator("mesh.archlab_glass", text="Add Glass")
         self.layout.operator("mesh.archlab_plate", text="Add Plate")
 
+
 # ----------------------------------------------------------
 # Primitives menu
 # ----------------------------------------------------------
@@ -155,11 +158,22 @@ class ArchLabMeshPrimitivesAdd(Menu):
     bl_label = "Primitives"
 
     def draw(self, context):
-        self.layout.operator("mesh.archlab_plane", text="Add Plane", icon="MESH_PLANE")
-        self.layout.operator("mesh.archlab_cube", text="Add Cube", icon="MESH_CUBE")
-        self.layout.operator("mesh.archlab_circle", text="Add Circle", icon="MESH_CIRCLE")
-        self.layout.operator("mesh.archlab_uvsphere", text="Add UV Sphere", icon="MESH_UVSPHERE")
-        self.layout.operator("mesh.archlab_icosphere", text="Add Ico Sphere", icon="MESH_ICOSPHERE")
+        self.layout.operator(
+            "mesh.archlab_plane",
+            text="Add Plane", icon="MESH_PLANE")
+        self.layout.operator(
+            "mesh.archlab_cube",
+            text="Add Cube", icon="MESH_CUBE")
+        self.layout.operator(
+            "mesh.archlab_circle",
+            text="Add Circle", icon="MESH_CIRCLE")
+        self.layout.operator(
+            "mesh.archlab_uvsphere",
+            text="Add UV Sphere", icon="MESH_UVSPHERE")
+        self.layout.operator(
+            "mesh.archlab_icosphere",
+            text="Add Ico Sphere", icon="MESH_ICOSPHERE")
+
 
 # ----------------------------------------------------------
 # ArchLab menu
@@ -174,9 +188,15 @@ class ArchLabMeshCustomMenuAdd(Menu):
         self.layout.operator("mesh.archlab_stairs", text="Add Stairs")
         self.layout.operator("mesh.archlab_wall", text="Add Wall")
         self.layout.separator()
-        self.layout.menu("INFO_MT_archlab_mesh_primitives_add", text="Primitives", icon="GROUP")
-        self.layout.menu("INFO_MT_archlab_mesh_decorations_add", text="Decorations", icon="GROUP")
-        self.layout.menu("INFO_MT_archlab_mesh_furnitures_add", text="Furnitures", icon="GROUP")
+        self.layout.menu(
+            "INFO_MT_archlab_mesh_primitives_add",
+            text="Primitives", icon="GROUP")
+        self.layout.menu(
+            "INFO_MT_archlab_mesh_decorations_add",
+            text="Decorations", icon="GROUP")
+        self.layout.menu(
+            "INFO_MT_archlab_mesh_furnitures_add",
+            text="Furnitures", icon="GROUP")
 
 modules.extend([
     ArchLabMeshCustomMenuAdd,
@@ -185,12 +205,14 @@ modules.extend([
     ArchLabMeshPrimitivesAdd
 ])
 
+
 # --------------------------------------------------------------
 # Register add mesh menus
 # --------------------------------------------------------------
 # Define menu
 def ArchLabMeshMenu_func(self, context):
     self.layout.menu("INFO_MT_archlab_mesh_custom_menu_add", icon="GROUP")
+
 
 # --------------------------------------------------------------
 # Register all operators and panels
@@ -200,6 +222,7 @@ def register():
         bpy.utils.register_class(module_class)
     INFO_MT_mesh_add.append(ArchLabMeshMenu_func)
 
+
 # --------------------------------------------------------------
 # Unregister all operators and panels
 # --------------------------------------------------------------
@@ -207,6 +230,7 @@ def unregister():
     for module_class in modules:
         bpy.utils.unregister_class(module_class)
     INFO_MT_mesh_add.remove(ArchLabMeshMenu_func)
+
 
 # --------------------------------------------------------------
 # Addon registration

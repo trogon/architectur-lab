@@ -29,10 +29,16 @@
 
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import EnumProperty, IntProperty, FloatProperty, CollectionProperty
+from bpy.props import (
+    EnumProperty,
+    IntProperty,
+    FloatProperty,
+    CollectionProperty
+)
 from math import sqrt
 from .archlab_utils import *
 from .archlab_utils_mesh_generator import *
+
 
 # ------------------------------------------------------------------------------
 # Create main object for the sphere.
@@ -49,11 +55,16 @@ def create_sphere(self, context):
     bpy.context.scene.objects.link(sphereobject)
     sphereobject.ArchLabSphereGenerator.add()
 
-    sphereobject.ArchLabSphereGenerator[0].sphere_radius = self.sphere_radius
-    sphereobject.ArchLabSphereGenerator[0].sphere_type = self.sphere_type
-    sphereobject.ArchLabSphereGenerator[0].sphere_segments = self.sphere_segments
-    sphereobject.ArchLabSphereGenerator[0].sphere_rings = self.sphere_rings
-    sphereobject.ArchLabSphereGenerator[0].sphere_subdivisions = self.sphere_subdivisions
+    sphereobject.ArchLabSphereGenerator[0].sphere_radius = \
+        self.sphere_radius
+    sphereobject.ArchLabSphereGenerator[0].sphere_type = \
+        self.sphere_type
+    sphereobject.ArchLabSphereGenerator[0].sphere_segments = \
+        self.sphere_segments
+    sphereobject.ArchLabSphereGenerator[0].sphere_rings = \
+        self.sphere_rings
+    sphereobject.ArchLabSphereGenerator[0].sphere_subdivisions = \
+        self.sphere_subdivisions
 
     # we shape the mesh.
     shape_sphere_mesh(sphereobject, spheremesh)
@@ -61,6 +72,7 @@ def create_sphere(self, context):
     # we select, and activate, main object for the sphere.
     sphereobject.select = True
     bpy.context.scene.objects.active = sphereobject
+
 
 # ------------------------------------------------------------------------------
 # Shapes mesh the sphere mesh
@@ -79,17 +91,21 @@ def shape_sphere_mesh(mysphere, tmp_mesh, update=False):
         if o.select is True and o.name != mysphere.name:
             o.select = False
 
+
 # ------------------------------------------------------------------------------
 # Creates sphere mesh data.
 # ------------------------------------------------------------------------------
 def update_sphere_mesh_data(mymesh, radius, type, segments, rings, subdivisions):
     if type == 'UV':
-        (myvertices, myedges, myfaces) = generate_sphere_uv_mesh_data(radius, segments, rings)
+        (myvertices, myedges, myfaces) = \
+            generate_sphere_uv_mesh_data(radius, segments, rings)
     if type == 'ICO':
-        (myvertices, myedges, myfaces) = generate_sphere_ico_mesh_data(radius, subdivisions)
+        (myvertices, myedges, myfaces) = \
+            generate_sphere_ico_mesh_data(radius, subdivisions)
 
     mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
+
 
 # ------------------------------------------------------------------------------
 # Update sphere mesh.
@@ -122,46 +138,51 @@ def update_sphere(self, context):
 # -----------------------------------------------------
 def sphere_radius_property(callback=None):
     return FloatProperty(
-            name='Radius',
-            soft_min=0.001,
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Sphere radius', update=callback,
-            )
+        name='Radius',
+        soft_min=0.001,
+        default=1.0, precision=3, unit='LENGTH',
+        description='Sphere radius', update=callback,
+    )
 
-def sphere_type_property(defaultitem = 'UV', callback=None):
+
+def sphere_type_property(defaultitem='UV', callback=None):
     return EnumProperty(
-            items=(
-                ('UV', 'UV Sphere', ''),
-                ('ICO', 'Ico Sphere', ''),
-                ),
-            name='Topology type',
-            default=defaultitem,
-            description='Topology of sphere mesh', update=callback,
-            )
+        items=(
+            ('UV', 'UV Sphere', ''),
+            ('ICO', 'Ico Sphere', ''),
+        ),
+        name='Topology type',
+        default=defaultitem,
+        description='Topology of sphere mesh', update=callback,
+    )
+
 
 def sphere_segments_property(callback=None):
     return IntProperty(
-            name='Segments',
-            min=3, max=1000, soft_max=200,
-            default=32,
-            description='UV Sphere segments amount', update=callback,
-            )
+        name='Segments',
+        min=3, max=1000, soft_max=200,
+        default=32,
+        description='UV Sphere segments amount', update=callback,
+    )
+
 
 def sphere_rings_property(callback=None):
     return IntProperty(
-            name='Rings',
-            min=2, max=1000, soft_max=100,
-            default=16,
-            description='UV Sphere rings amount', update=callback,
-            )
+        name='Rings',
+        min=2, max=1000, soft_max=100,
+        default=16,
+        description='UV Sphere rings amount', update=callback,
+    )
+
 
 def sphere_subdivisions_property(callback=None):
     return IntProperty(
-            name='Subdivisions',
-            min=1, max=10, soft_max=8,
-            default=2,
-            description='Ico Sphere subdivisions amount', update=callback,
-            )
+        name='Subdivisions',
+        min=1, max=10, soft_max=8,
+        default=2,
+        description='Ico Sphere subdivisions amount', update=callback,
+    )
+
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a spheres.
@@ -174,7 +195,9 @@ class ArchLabSphereProperties(PropertyGroup):
     sphere_subdivisions = sphere_subdivisions_property(callback=update_sphere)
 
 bpy.utils.register_class(ArchLabSphereProperties)
-Object.ArchLabSphereGenerator = CollectionProperty(type=ArchLabSphereProperties)
+Object.ArchLabSphereGenerator = \
+    CollectionProperty(type=ArchLabSphereProperties)
+
 
 # ------------------------------------------------------------------
 # Define panel class to modify spheres.
@@ -207,7 +230,8 @@ class ArchLabSphereGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabSphereGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        #  'ArchLabSphereGenerator', this panel is not created.
         try:
             if 'ArchLabSphereGenerator' not in o:
                 return
@@ -231,6 +255,7 @@ class ArchLabSphereGeneratorPanel(Panel):
             if sphere.sphere_type == 'ICO':
                 row = layout.row()
                 row.prop(sphere, 'sphere_subdivisions')
+
 
 # ------------------------------------------------------------------
 # Define operator class to create spheres
