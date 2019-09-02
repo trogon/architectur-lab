@@ -58,7 +58,7 @@ def create_cube(self, context):
 
     # we select, and activate, main object for the cube.
     cubeobject.select = True
-    bpy.context.scene.objects.active = cubeobject
+    bpy.context.view_layer.objects.active = cubeobject
 
 
 # ------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ def update_cube_mesh_data(mymesh, width, height, depth):
 # ------------------------------------------------------------------------------
 def update_cube(self, context):
     # When we update, the active object is the main object of the cube.
-    o = bpy.context.active_object
+    o = bpy.context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that cube object to not delete it.
@@ -112,7 +112,7 @@ def update_cube(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the cube.
     o.select = True
-    bpy.context.scene.objects.active = o
+    bpy.context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------

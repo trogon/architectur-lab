@@ -58,7 +58,7 @@ def create_plane(self, context):
 
     # we select, and activate, main object for the plane.
     planeobject.select = True
-    bpy.context.scene.objects.active = planeobject
+    bpy.context.view_layer.objects.active = planeobject
 
 
 # ------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ def update_plane_mesh_data(mymesh, width, height):
 # ------------------------------------------------------------------------------
 def update_plane(self, context):
     # When we update, the active object is the main object of the plane.
-    o = bpy.context.active_object
+    o = bpy.context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that plane object to not delete it.
@@ -127,7 +127,7 @@ def update_plane(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the plane.
     o.select = True
-    bpy.context.scene.objects.active = o
+    bpy.context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------

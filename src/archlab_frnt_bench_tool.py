@@ -58,7 +58,7 @@ def create_bench(self, context):
 
     # we select, and activate, main object for the bench.
     benchobject.select = True
-    bpy.context.scene.objects.active = benchobject
+    bpy.context.view_layer.objects.active = benchobject
 
 
 # ------------------------------------------------------------------------------
@@ -97,7 +97,7 @@ def update_bench_mesh_data(mymesh, width, height, depth):
 # ------------------------------------------------------------------------------
 def update_bench(self, context):
     # When we update, the active object is the main object of the bench.
-    o = bpy.context.active_object
+    o = bpy.context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that bench object to not delete it.
@@ -115,7 +115,7 @@ def update_bench(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the bench.
     o.select = True
-    bpy.context.scene.objects.active = o
+    bpy.context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------

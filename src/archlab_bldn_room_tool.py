@@ -69,7 +69,7 @@ def create_room(self, context):
 
     # we select, and activate, main object for the room.
     roomobject.select = True
-    bpy.context.scene.objects.active = roomobject
+    bpy.context.view_layer.objects.active = roomobject
 
 
 # ------------------------------------------------------------------------------
@@ -196,7 +196,7 @@ def update_room_mesh_data(mymesh, height, walls, has_floor, has_ceiling):
 # ------------------------------------------------------------------------------
 def update_room(self, context):
     # When we update, the active object is the main object of the room.
-    o = bpy.context.active_object
+    o = bpy.context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that room object to not delete it.
@@ -214,7 +214,7 @@ def update_room(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the room.
     o.select = True
-    bpy.context.scene.objects.active = o
+    bpy.context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------

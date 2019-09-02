@@ -75,7 +75,7 @@ def create_shelve(self, context):
 
     # we select, and activate, main object for the shelve.
     shelveobject.select = True
-    bpy.context.scene.objects.active = shelveobject
+    bpy.context.view_layer.objects.active = shelveobject
 
 
 # ------------------------------------------------------------------------------
@@ -188,8 +188,8 @@ def update_shelve_armature_data(myarmatureobj, myarmature, width, height, depth,
     posz = height / 2 + basethick
     thickdiff = (thickness / 2) + 0.001
 
-    prev_o = bpy.context.scene.objects.active
-    bpy.context.scene.objects.active = myarmatureobj
+    prev_o = bpy.context.view_layer.objects.active
+    bpy.context.view_layer.objects.active = myarmatureobj
     myarmatureobj.select = True
     bpy.ops.object.editmode_toggle()
 
@@ -198,7 +198,7 @@ def update_shelve_armature_data(myarmatureobj, myarmature, width, height, depth,
     doorbone.tail = (-posx + thickdiff, -posy + thickdiff, posz)
 
     bpy.ops.object.editmode_toggle()
-    bpy.context.scene.objects.active = prev_o
+    bpy.context.view_layer.objects.active = prev_o
 
     doorbone = myarmatureobj.pose.bones[0]
     doorbone.rotation_mode = 'XYZ'
@@ -217,7 +217,7 @@ def update_shelve_armature_data(myarmatureobj, myarmature, width, height, depth,
 # ------------------------------------------------------------------------------
 def update_shelve(self, context):
     # When we update, the active object is the main object of the shelve.
-    o = bpy.context.active_object
+    o = bpy.context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that shelve object to not delete it.
@@ -235,7 +235,7 @@ def update_shelve(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the shelve.
     o.select = True
-    bpy.context.scene.objects.active = o
+    bpy.context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------

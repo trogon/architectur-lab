@@ -53,7 +53,7 @@ def log_write(level, text_to_write):
 # True = faces to inside
 # --------------------------------------------------------------------
 def set_normals(myobject, direction=False):
-    bpy.context.scene.objects.active = myobject
+    bpy.context.view_layer.objects.active = myobject
     # go edit mode
     bpy.ops.object.mode_set(mode='EDIT')
     # select all faces
@@ -74,8 +74,8 @@ def set_smooth(myobject):
             o.select = False
 
     myobject.select = True
-    bpy.context.scene.objects.active = myobject
-    if bpy.context.scene.objects.active.name == myobject.name:
+    bpy.context.view_layer.objects.active = myobject
+    if bpy.context.view_layer.objects.active.name == myobject.name:
         bpy.ops.object.shade_smooth()
 
 
@@ -83,7 +83,7 @@ def set_smooth(myobject):
 # Remove doubles
 # --------------------------------------------------------------------
 def remove_doubles(myobject):
-    bpy.context.scene.objects.active = myobject
+    bpy.context.view_layer.objects.active = myobject
     # go edit mode
     bpy.ops.object.mode_set(mode='EDIT')
     # select all faces

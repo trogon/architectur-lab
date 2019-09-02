@@ -57,7 +57,7 @@ def create_wall(self, context):
 
     # we select, and activate, main object for the wall.
     wallobject.select = True
-    bpy.context.scene.objects.active = wallobject
+    bpy.context.view_layer.objects.active = wallobject
 
 
 # ------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ def update_wall_mesh_data(mymesh, width, height):
 # ------------------------------------------------------------------------------
 def update_wall(self, context):
     # When we update, the active object is the main object of the wall.
-    o = bpy.context.active_object
+    o = bpy.context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that wall object to not delete it.
@@ -133,7 +133,7 @@ def update_wall(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the wall.
     o.select = True
-    bpy.context.scene.objects.active = o
+    bpy.context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------

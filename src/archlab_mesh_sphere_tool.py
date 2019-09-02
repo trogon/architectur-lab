@@ -71,7 +71,7 @@ def create_sphere(self, context):
 
     # we select, and activate, main object for the sphere.
     sphereobject.select = True
-    bpy.context.scene.objects.active = sphereobject
+    bpy.context.view_layer.objects.active = sphereobject
 
 
 # ------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ def update_sphere_mesh_data(mymesh, radius, type, segments, rings, subdivisions)
 # ------------------------------------------------------------------------------
 def update_sphere(self, context):
     # When we update, the active object is the main object of the sphere.
-    o = bpy.context.active_object
+    o = bpy.context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that sphere object to not delete it.
@@ -130,7 +130,7 @@ def update_sphere(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the sphere.
     o.select = True
-    bpy.context.scene.objects.active = o
+    bpy.context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------

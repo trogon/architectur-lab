@@ -71,7 +71,7 @@ def create_plate(self, context):
 
     # we select, and activate, main object for the plate.
     plateobject.select = True
-    bpy.context.scene.objects.active = plateobject
+    bpy.context.view_layer.objects.active = plateobject
 
 
 # ------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ def update_plate_mesh_data(mymesh, diameter, height, segments, type):
 # ------------------------------------------------------------------------------
 def update_plate(self, context):
     # When we update, the active object is the main object of the plate.
-    o = bpy.context.active_object
+    o = bpy.context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that plate object to not delete it.
@@ -134,7 +134,7 @@ def update_plate(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the plate.
     o.select = True
-    bpy.context.scene.objects.active = o
+    bpy.context.view_layer.objects.active = o
 
 
 # ------------------------------------------------------------------------------

@@ -65,7 +65,7 @@ def create_glass(self, context):
 
     # we select, and activate, main object for the glass.
     glassobject.select = True
-    bpy.context.scene.objects.active = glassobject
+    bpy.context.view_layer.objects.active = glassobject
 
 
 # ------------------------------------------------------------------------------
@@ -105,7 +105,7 @@ def update_glass_mesh_data(mymesh, diameter, height, segments):
 # ------------------------------------------------------------------------------
 def update_glass(self, context):
     # When we update, the active object is the main object of the glass.
-    o = bpy.context.active_object
+    o = bpy.context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that glass object to not delete it.
@@ -123,7 +123,7 @@ def update_glass(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the glass.
     o.select = True
-    bpy.context.scene.objects.active = o
+    bpy.context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------

@@ -68,7 +68,7 @@ def create_stairs(self, context):
 
     # we select, and activate, main object for the stairs.
     stairsobject.select = True
-    bpy.context.scene.objects.active = stairsobject
+    bpy.context.view_layer.objects.active = stairsobject
 
 
 # ------------------------------------------------------------------------------
@@ -123,7 +123,7 @@ def update_stairs_mesh_data(mymesh, width, unit_count, unit_run, unit_raise):
 # ------------------------------------------------------------------------------
 def update_stairs(self, context):
     # When we update, the active object is the main object of the stairs.
-    o = bpy.context.active_object
+    o = bpy.context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that stairs object to not delete it.
@@ -141,7 +141,7 @@ def update_stairs(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the stairs.
     o.select = True
-    bpy.context.scene.objects.active = o
+    bpy.context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------

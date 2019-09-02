@@ -70,7 +70,7 @@ def create_circle(self, context):
 
     # we select, and activate, main object for the circle.
     circleobject.select = True
-    bpy.context.scene.objects.active = circleobject
+    bpy.context.view_layer.objects.active = circleobject
 
 
 # ------------------------------------------------------------------------------
@@ -129,7 +129,7 @@ def update_circle_mesh_data(mymesh, radius, vertices, fill_type, trunc_val):
 # ------------------------------------------------------------------------------
 def update_circle(self, context):
     # When we update, the active object is the main object of the circle.
-    o = bpy.context.active_object
+    o = bpy.context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that circle object to not delete it.
@@ -147,7 +147,7 @@ def update_circle(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the circle.
     o.select = True
-    bpy.context.scene.objects.active = o
+    bpy.context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------
