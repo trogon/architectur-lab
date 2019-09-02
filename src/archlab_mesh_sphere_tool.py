@@ -46,7 +46,7 @@ from .archlab_utils_mesh_generator import *
 def create_sphere(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh for sphere
     spheremesh = bpy.data.meshes.new("Sphere")
@@ -70,7 +70,7 @@ def create_sphere(self, context):
     shape_sphere_mesh(sphereobject, spheremesh)
 
     # we select, and activate, main object for the sphere.
-    sphereobject.select = True
+    sphereobject.select_set(True)
     bpy.context.view_layer.objects.active = sphereobject
 
 
@@ -88,8 +88,8 @@ def shape_sphere_mesh(mysphere, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mysphere.name:
-            o.select = False
+        if o.select_get() is True and o.name != mysphere.name:
+            o.select_set(False)
 
 
 # ------------------------------------------------------------------------------
@@ -116,12 +116,12 @@ def update_sphere(self, context):
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that sphere object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the sphere:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_sphere_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -129,7 +129,7 @@ def update_sphere(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the sphere.
-    o.select = True
+    o.select_set(True)
     bpy.context.view_layer.objects.active = o
 
 

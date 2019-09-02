@@ -39,7 +39,7 @@ from .archlab_utils import *
 def create_shelve(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create shelve object and mesh
     shelvemesh = bpy.data.meshes.new("Shelve")
@@ -74,7 +74,7 @@ def create_shelve(self, context):
         shape_shelve_armature(shelveobject, shelvearmatureobject, shelvearmature)
 
     # we select, and activate, main object for the shelve.
-    shelveobject.select = True
+    shelveobject.select_set(True)
     bpy.context.view_layer.objects.active = shelveobject
 
 
@@ -113,8 +113,8 @@ def shape_shelve_mesh(myshelve, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != myshelve.name:
-            o.select = False
+        if o.select_get() is True and o.name != myshelve.name:
+            o.select_set(False)
 
 
 # ------------------------------------------------------------------------------
@@ -190,7 +190,7 @@ def update_shelve_armature_data(myarmatureobj, myarmature, width, height, depth,
 
     prev_o = bpy.context.view_layer.objects.active
     bpy.context.view_layer.objects.active = myarmatureobj
-    myarmatureobj.select = True
+    myarmatureobj.select_set(True)
     bpy.ops.object.editmode_toggle()
 
     doorbone = myarmature.edit_bones.new('Shelve Door')
@@ -221,12 +221,12 @@ def update_shelve(self, context):
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that shelve object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the shelve:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_shelve_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -234,7 +234,7 @@ def update_shelve(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the shelve.
-    o.select = True
+    o.select_set(True)
     bpy.context.view_layer.objects.active = o
 
 

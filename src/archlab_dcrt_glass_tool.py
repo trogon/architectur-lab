@@ -41,7 +41,7 @@ from .archlab_utils_mesh_generator import *
 def create_glass(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh
     glassmesh = bpy.data.meshes.new("Glass")
@@ -64,7 +64,7 @@ def create_glass(self, context):
     set_material(glassobject, mat.name)
 
     # we select, and activate, main object for the glass.
-    glassobject.select = True
+    glassobject.select_set(True)
     bpy.context.view_layer.objects.active = glassobject
 
 
@@ -82,8 +82,8 @@ def shape_glass_mesh(myglass, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != myglass.name:
-            o.select = False
+        if o.select_get() is True and o.name != myglass.name:
+            o.select_set(False)
 
 
 # ------------------------------------------------------------------------------
@@ -109,12 +109,12 @@ def update_glass(self, context):
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that glass object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the glass:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_glass_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -122,7 +122,7 @@ def update_glass(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the glass.
-    o.select = True
+    o.select_set(True)
     bpy.context.view_layer.objects.active = o
 
 

@@ -40,7 +40,7 @@ from .archlab_utils_mesh_generator import *
 def create_cube(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh for cube
     cubemesh = bpy.data.meshes.new("Cube")
@@ -57,7 +57,7 @@ def create_cube(self, context):
     shape_cube_mesh(cubeobject, cubemesh)
 
     # we select, and activate, main object for the cube.
-    cubeobject.select = True
+    cubeobject.select_set(True)
     bpy.context.view_layer.objects.active = cubeobject
 
 
@@ -75,8 +75,8 @@ def shape_cube_mesh(mycube, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mycube.name:
-            o.select = False
+        if o.select_get() is True and o.name != mycube.name:
+            o.select_set(False)
 
 
 # ------------------------------------------------------------------------------
@@ -98,12 +98,12 @@ def update_cube(self, context):
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that cube object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the cube:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_cube_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -111,7 +111,7 @@ def update_cube(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the cube.
-    o.select = True
+    o.select_set(True)
     bpy.context.view_layer.objects.active = o
 
 

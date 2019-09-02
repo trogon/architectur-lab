@@ -39,7 +39,7 @@ from .archlab_utils import *
 def create_stairs(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh for stairs
     stairsmesh = bpy.data.meshes.new("Stairs")
@@ -67,7 +67,7 @@ def create_stairs(self, context):
     shape_stairs_mesh(stairsobject, stairsmesh)
 
     # we select, and activate, main object for the stairs.
-    stairsobject.select = True
+    stairsobject.select_set(True)
     bpy.context.view_layer.objects.active = stairsobject
 
 
@@ -85,8 +85,8 @@ def shape_stairs_mesh(mystairs, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mystairs.name:
-            o.select = False
+        if o.select_get() is True and o.name != mystairs.name:
+            o.select_set(False)
 
 
 # ------------------------------------------------------------------------------
@@ -127,12 +127,12 @@ def update_stairs(self, context):
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that stairs object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the stairs:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_stairs_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -140,7 +140,7 @@ def update_stairs(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the stairs.
-    o.select = True
+    o.select_set(True)
     bpy.context.view_layer.objects.active = o
 
 

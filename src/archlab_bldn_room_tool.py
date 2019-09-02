@@ -45,7 +45,7 @@ from .archlab_utils import *
 def create_room(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh for room
     roommesh = bpy.data.meshes.new("Room")
@@ -68,7 +68,7 @@ def create_room(self, context):
     shape_room_mesh(roomobject, roommesh)
 
     # we select, and activate, main object for the room.
-    roomobject.select = True
+    roomobject.select_set(True)
     bpy.context.view_layer.objects.active = roomobject
 
 
@@ -98,8 +98,8 @@ def shape_room_mesh(myroom, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != myroom.name:
-            o.select = False
+        if o.select_get() is True and o.name != myroom.name:
+            o.select_set(False)
 
 
 # ------------------------------------------------------------------------------
@@ -200,12 +200,12 @@ def update_room(self, context):
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that room object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the room:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_room_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -213,7 +213,7 @@ def update_room(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the room.
-    o.select = True
+    o.select_set(True)
     bpy.context.view_layer.objects.active = o
 
 

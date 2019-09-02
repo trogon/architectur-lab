@@ -70,10 +70,10 @@ def set_normals(myobject, direction=False):
 def set_smooth(myobject):
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True:
-            o.select = False
+        if o.select_get() is True:
+            o.select_set(False)
 
-    myobject.select = True
+    myobject.select_set(True)
     bpy.context.view_layer.objects.active = myobject
     if bpy.context.view_layer.objects.active.name == myobject.name:
         bpy.ops.object.shade_smooth()
