@@ -51,7 +51,7 @@ def create_sphere(self, context):
     # we create main object and mesh for sphere
     spheremesh = bpy.data.meshes.new("Sphere")
     sphereobject = bpy.data.objects.new("Sphere", spheremesh)
-    sphereobject.location = bpy.context.scene.cursor_location
+    sphereobject.location = bpy.context.scene.cursor.location
     bpy.context.scene.objects.link(sphereobject)
     sphereobject.ArchLabSphereGenerator.add()
 

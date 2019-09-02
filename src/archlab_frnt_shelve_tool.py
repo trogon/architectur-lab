@@ -44,7 +44,7 @@ def create_shelve(self, context):
     # we create shelve object and mesh
     shelvemesh = bpy.data.meshes.new("Shelve")
     shelveobject = bpy.data.objects.new("Shelve", shelvemesh)
-    shelveobject.location = bpy.context.scene.cursor_location
+    shelveobject.location = bpy.context.scene.cursor.location
     bpy.context.scene.objects.link(shelveobject)
     shelveobject.ArchLabShelveGenerator.add()
 
@@ -66,7 +66,7 @@ def create_shelve(self, context):
         # we create main object and mesh for shelve
         shelvearmature = bpy.data.armatures.new("Shelve Armature")
         shelvearmatureobject = bpy.data.objects.new("Shelve Armature", shelvearmature)
-        shelvearmatureobject.location = bpy.context.scene.cursor_location
+        shelvearmatureobject.location = bpy.context.scene.cursor.location
         shelvearmatureobject.parent = shelveobject
         bpy.context.scene.objects.link(shelvearmatureobject)
 

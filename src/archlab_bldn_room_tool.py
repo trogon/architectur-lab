@@ -50,7 +50,7 @@ def create_room(self, context):
     # we create main object and mesh for room
     roommesh = bpy.data.meshes.new("Room")
     roomobject = bpy.data.objects.new("Room", roommesh)
-    roomobject.location = bpy.context.scene.cursor_location
+    roomobject.location = bpy.context.scene.cursor.location
     bpy.context.scene.objects.link(roomobject)
     roomobject.ArchLabRoomGenerator.add()
 

@@ -45,7 +45,7 @@ def create_plane(self, context):
     # we create main object and mesh for plane
     planemesh = bpy.data.meshes.new("Plane")
     planeobject = bpy.data.objects.new("Plane", planemesh)
-    planeobject.location = bpy.context.scene.cursor_location
+    planeobject.location = bpy.context.scene.cursor.location
     bpy.context.scene.objects.link(planeobject)
     planeobject.ArchLabPlaneGenerator.add()
 

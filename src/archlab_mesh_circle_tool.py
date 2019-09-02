@@ -50,7 +50,7 @@ def create_circle(self, context):
     # we create main object and mesh for circle
     circlemesh = bpy.data.meshes.new("Circle")
     circleobject = bpy.data.objects.new("Circle", circlemesh)
-    circleobject.location = bpy.context.scene.cursor_location
+    circleobject.location = bpy.context.scene.cursor.location
     bpy.context.scene.objects.link(circleobject)
     circleobject.ArchLabCircleGenerator.add()
 

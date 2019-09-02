@@ -51,7 +51,7 @@ def create_plate(self, context):
     # we create main object and mesh
     platemesh = bpy.data.meshes.new("Plate")
     plateobject = bpy.data.objects.new("Plate", platemesh)
-    plateobject.location = bpy.context.scene.cursor_location
+    plateobject.location = bpy.context.scene.cursor.location
     bpy.context.scene.objects.link(plateobject)
     plateobject.ArchLabPlateGenerator.add()
 
