@@ -69,7 +69,7 @@ bl_info = {
 # ----------------------------------------------
 # Import modules
 # ----------------------------------------------
-if "bpy" in locals():
+if "archlab_modules" in locals():
     import importlib
     importlib.reload(archlab_bldn_room_tool)
     importlib.reload(archlab_bldn_stairs_tool)
@@ -99,7 +99,7 @@ else:
 
     print("archlab: Imported multifiles")
 
-modules = [
+archlab_modules = [
     archlab_bldn_room_tool.ArchLabRoom,
     archlab_bldn_room_tool.ArchLabRoomGeneratorPanel,
     archlab_bldn_stairs_tool.ArchLabStairs,
@@ -198,7 +198,7 @@ class ArchLabMeshCustomMenuAdd(Menu):
             "VIEW3D_MT_archlab_mesh_furnitures_add",
             text="Furnitures", icon="GROUP")
 
-modules.extend([
+archlab_modules.extend([
     ArchLabMeshCustomMenuAdd,
     ArchLabMeshFurnituresAdd,
     ArchLabMeshDecorationsAdd,
@@ -218,7 +218,7 @@ def ArchLabMeshMenu_func(self, context):
 # Register all operators and panels
 # --------------------------------------------------------------
 def register():
-    for module_class in modules:
+    for module_class in archlab_modules:
         bpy.utils.register_class(module_class)
     VIEW3D_MT_mesh_add.append(ArchLabMeshMenu_func)
 
@@ -227,7 +227,7 @@ def register():
 # Unregister all operators and panels
 # --------------------------------------------------------------
 def unregister():
-    for module_class in modules:
+    for module_class in archlab_modules:
         bpy.utils.unregister_class(module_class)
     VIEW3D_MT_mesh_add.remove(ArchLabMeshMenu_func)
 
