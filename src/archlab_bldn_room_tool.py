@@ -391,7 +391,7 @@ class ArchLabRoomGeneratorPanel(Panel):
 
         layout = self.layout
         if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             room = o.ArchLabRoomGenerator[0]
             row = layout.row()
@@ -404,7 +404,7 @@ class ArchLabRoomGeneratorPanel(Panel):
             row.prop(room, 'room_wall_count')
             for wt in range(len(room.room_walls)):
                 box = layout.box()
-                label = box.label('Wall %i' % (wt+1))
+                label = box.label(text='Wall %i' % (wt+1))
                 row = box.row()
                 row.prop(room.room_walls[wt], 'wall_width')
                 row = box.row()
@@ -447,7 +447,7 @@ class ArchLabRoom(Operator):
             row.prop(self, 'room_wall_count')
             for wt in range(len(self.room_walls)):
                 box = layout.box()
-                label = box.label('Wall %i' % (wt+1))
+                label = box.label(text='Wall %i' % (wt+1))
                 row = box.row()
                 row.prop(self.room_walls[wt], 'wall_width')
                 row = box.row()
@@ -457,7 +457,7 @@ class ArchLabRoom(Operator):
         else:
             row = layout.row()
             row.label(
-                "Warning: Operator does not work in local view mode",
+                text="Warning: Operator does not work in local view mode",
                 icon='ERROR'
             )
 

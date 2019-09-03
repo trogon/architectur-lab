@@ -432,7 +432,7 @@ class ArchLabShelveGeneratorPanel(Panel):
 
         layout = self.layout
         if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             shelve = o.ArchLabShelveGenerator[0]
             row = layout.row()
@@ -481,7 +481,7 @@ class ArchLabShelve(Operator):
             row.prop(self, 'shelve_armature')
         else:
             row = layout.row()
-            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
+            row.label(text="Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute

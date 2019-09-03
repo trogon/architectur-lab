@@ -268,7 +268,7 @@ class ArchLabPlateGeneratorPanel(Panel):
 
         layout = self.layout
         if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             plate = o.ArchLabPlateGenerator[0]
             row = layout.row()
@@ -314,7 +314,7 @@ class ArchLabPlate(Operator):
             row.prop(self, 'plate_segments')
         else:
             row = layout.row()
-            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
+            row.label(text="Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
