@@ -143,7 +143,7 @@ def update_room_mesh_data(mymesh, height, walls, has_floor, has_ceiling):
             sinwa = sin(wall.wall_angle)
             crosswdp = (wdp[0], wdp[1], 0.0)
             if not sinwa == 0:  # angle = 0
-                h1 = -lastpnorm * wdepth
+                h1 = lastpnorm * -wdepth
                 h2 = pnorm * lastdepth
                 crosswdp = (h1 + h2) / sinwa
             myvertices.extend([
@@ -357,7 +357,7 @@ class ArchLabRoomGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_room_generator"
     bl_label = "Room"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------

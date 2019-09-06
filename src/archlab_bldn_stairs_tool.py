@@ -252,7 +252,7 @@ class ArchLabStairsGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_stairs_generator"
     bl_label = "Stairs"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------

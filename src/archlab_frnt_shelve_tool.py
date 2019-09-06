@@ -396,7 +396,7 @@ class ArchLabShelveGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_shelve_generator"
     bl_label = "Shelve"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------

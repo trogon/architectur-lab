@@ -167,7 +167,7 @@ class ArchLabBenchGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_bench_generator"
     bl_label = "Bench"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------
