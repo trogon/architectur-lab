@@ -39,13 +39,13 @@ from .archlab_utils import *
 def create_shelve(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create shelve object and mesh
     shelvemesh = bpy.data.meshes.new("Shelve")
     shelveobject = bpy.data.objects.new("Shelve", shelvemesh)
-    shelveobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(shelveobject)
+    shelveobject.location = context.scene.cursor.location
+    context.collection.objects.link(shelveobject)
     shelveobject.ArchLabShelveGenerator.add()
 
     shelveobject.ArchLabShelveGenerator[0].shelve_height = \
@@ -66,16 +66,16 @@ def create_shelve(self, context):
         # we create main object and mesh for shelve
         shelvearmature = bpy.data.armatures.new("Shelve Armature")
         shelvearmatureobject = bpy.data.objects.new("Shelve Armature", shelvearmature)
-        shelvearmatureobject.location = bpy.context.scene.cursor_location
+        shelvearmatureobject.location = context.scene.cursor.location
         shelvearmatureobject.parent = shelveobject
-        bpy.context.scene.objects.link(shelvearmatureobject)
+        context.collection.objects.link(shelvearmatureobject)
 
         # we shape the armature.
         shape_shelve_armature(shelveobject, shelvearmatureobject, shelvearmature)
 
     # we select, and activate, main object for the shelve.
-    shelveobject.select = True
-    bpy.context.scene.objects.active = shelveobject
+    shelveobject.select_set(True)
+    context.view_layer.objects.active = shelveobject
 
 
 # ------------------------------------------------------------------------------
@@ -113,8 +113,8 @@ def shape_shelve_mesh(myshelve, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != myshelve.name:
-            o.select = False
+        if o.select_get() is True and o.name != myshelve.name:
+            o.select_set(False)
 
 
 # ------------------------------------------------------------------------------
@@ -188,9 +188,9 @@ def update_shelve_armature_data(myarmatureobj, myarmature, width, height, depth,
     posz = height / 2 + basethick
     thickdiff = (thickness / 2) + 0.001
 
-    prev_o = bpy.context.scene.objects.active
-    bpy.context.scene.objects.active = myarmatureobj
-    myarmatureobj.select = True
+    prev_o = bpy.context.view_layer.objects.active
+    bpy.context.view_layer.objects.active = myarmatureobj
+    myarmatureobj.select_set(True)
     bpy.ops.object.editmode_toggle()
 
     doorbone = myarmature.edit_bones.new('Shelve Door')
@@ -198,7 +198,7 @@ def update_shelve_armature_data(myarmatureobj, myarmature, width, height, depth,
     doorbone.tail = (-posx + thickdiff, -posy + thickdiff, posz)
 
     bpy.ops.object.editmode_toggle()
-    bpy.context.scene.objects.active = prev_o
+    bpy.context.view_layer.objects.active = prev_o
 
     doorbone = myarmatureobj.pose.bones[0]
     doorbone.rotation_mode = 'XYZ'
@@ -217,16 +217,16 @@ def update_shelve_armature_data(myarmatureobj, myarmature, width, height, depth,
 # ------------------------------------------------------------------------------
 def update_shelve(self, context):
     # When we update, the active object is the main object of the shelve.
-    o = bpy.context.active_object
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that shelve object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the shelve:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_shelve_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -234,8 +234,8 @@ def update_shelve(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the shelve.
-    o.select = True
-    bpy.context.scene.objects.active = o
+    o.select_set(True)
+    context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------
@@ -396,7 +396,7 @@ class ArchLabShelveGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_shelve_generator"
     bl_label = "Shelve"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------
@@ -431,8 +431,8 @@ class ArchLabShelveGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+        if context.mode == 'EDIT_MESH':
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             shelve = o.ArchLabShelveGenerator[0]
             row = layout.row()
@@ -467,7 +467,7 @@ class ArchLabShelve(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'shelve_width')
@@ -481,14 +481,14 @@ class ArchLabShelve(Operator):
             row.prop(self, 'shelve_armature')
         else:
             row = layout.row()
-            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
+            row.label(text="Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_shelve(self, context)
                 return {'FINISHED'}

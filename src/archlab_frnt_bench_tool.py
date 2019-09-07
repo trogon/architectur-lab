@@ -40,13 +40,13 @@ from .archlab_utils_mesh_generator import *
 def create_bench(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh for bench
     benchmesh = bpy.data.meshes.new("Bench")
     benchobject = bpy.data.objects.new("Bench", benchmesh)
-    benchobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(benchobject)
+    benchobject.location = context.scene.cursor.location
+    context.collection.objects.link(benchobject)
     benchobject.ArchLabBenchGenerator.add()
 
     benchobject.ArchLabBenchGenerator[0].bench_height = self.bench_height
@@ -57,8 +57,8 @@ def create_bench(self, context):
     shape_bench_mesh(benchobject, benchmesh)
 
     # we select, and activate, main object for the bench.
-    benchobject.select = True
-    bpy.context.scene.objects.active = benchobject
+    benchobject.select_set(True)
+    context.view_layer.objects.active = benchobject
 
 
 # ------------------------------------------------------------------------------
@@ -75,8 +75,8 @@ def shape_bench_mesh(mybench, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mybench.name:
-            o.select = False
+        if o.select_get() is True and o.name != mybench.name:
+            o.select_set(False)
 
 
 # ------------------------------------------------------------------------------
@@ -97,16 +97,16 @@ def update_bench_mesh_data(mymesh, width, height, depth):
 # ------------------------------------------------------------------------------
 def update_bench(self, context):
     # When we update, the active object is the main object of the bench.
-    o = bpy.context.active_object
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that bench object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the bench:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_bench_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -114,8 +114,8 @@ def update_bench(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the bench.
-    o.select = True
-    bpy.context.scene.objects.active = o
+    o.select_set(True)
+    context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------
@@ -167,7 +167,7 @@ class ArchLabBenchGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_bench_generator"
     bl_label = "Bench"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------
@@ -200,8 +200,8 @@ class ArchLabBenchGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+        if context.mode == 'EDIT_MESH':
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             bench = o.ArchLabBenchGenerator[0]
             row = layout.row()
@@ -232,7 +232,7 @@ class ArchLabBench(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'bench_width')
@@ -242,14 +242,14 @@ class ArchLabBench(Operator):
             row.prop(self, 'bench_depth')
         else:
             row = layout.row()
-            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
+            row.label(text="Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_bench(self, context)
                 return {'FINISHED'}

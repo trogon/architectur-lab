@@ -44,7 +44,7 @@ from bpy.types import (
     AddonPreferences,
     Menu,
     Scene,
-    INFO_MT_mesh_add,
+    VIEW3D_MT_mesh_add,
     WindowManager,
 )
 
@@ -54,14 +54,14 @@ from bpy.types import (
 # ----------------------------------------------
 bl_info = {
     "name": "Architecture Lab",
-    "author": "Insma Software - Maciej Klemarczyk (mklemarczyk)",
+    "author": "Maciej Klemarczyk (mklemarczyk), Trogon Studios (trogon)",
     "location": "View3D > Add > Mesh > ArchLab",
-    "version": (1, 1, 0),
-    "blender": (2, 7, 9),
+    "version": (2, 0, 0),
+    "blender": (2, 80, 0),
     "description": "Creates rooms, doors, windows, and other architecture "
                    "objects",
-    "wiki_url": "https://github.com/insma/ArchitectureLab/wiki",
-    "tracker_url": "https://github.com/insma/ArchitectureLab/issues",
+    "wiki_url": "https://github.com/trogon/ArchitectureLab/wiki",
+    "tracker_url": "https://github.com/trogon/ArchitectureLab/issues",
     "category": "Add Mesh"
 }
 
@@ -69,7 +69,7 @@ bl_info = {
 # ----------------------------------------------
 # Import modules
 # ----------------------------------------------
-if "bpy" in locals():
+if "archlab_modules" in locals():
     import importlib
     importlib.reload(archlab_bldn_room_tool)
     importlib.reload(archlab_bldn_stairs_tool)
@@ -99,7 +99,7 @@ else:
 
     print("archlab: Imported multifiles")
 
-modules = [
+archlab_modules = [
     archlab_bldn_room_tool.ArchLabRoom,
     archlab_bldn_room_tool.ArchLabRoomGeneratorPanel,
     archlab_bldn_stairs_tool.ArchLabStairs,
@@ -130,7 +130,7 @@ modules = [
 # Furnitures menu
 # ----------------------------------------------------------
 class ArchLabMeshFurnituresAdd(Menu):
-    bl_idname = "INFO_MT_archlab_mesh_furnitures_add"
+    bl_idname = "VIEW3D_MT_archlab_mesh_furnitures_add"
     bl_label = "Furnitures"
 
     def draw(self, context):
@@ -142,7 +142,7 @@ class ArchLabMeshFurnituresAdd(Menu):
 # Decorations menu
 # ----------------------------------------------------------
 class ArchLabMeshDecorationsAdd(Menu):
-    bl_idname = "INFO_MT_archlab_mesh_decorations_add"
+    bl_idname = "VIEW3D_MT_archlab_mesh_decorations_add"
     bl_label = "Decorations"
 
     def draw(self, context):
@@ -154,7 +154,7 @@ class ArchLabMeshDecorationsAdd(Menu):
 # Primitives menu
 # ----------------------------------------------------------
 class ArchLabMeshPrimitivesAdd(Menu):
-    bl_idname = "INFO_MT_archlab_mesh_primitives_add"
+    bl_idname = "VIEW3D_MT_archlab_mesh_primitives_add"
     bl_label = "Primitives"
 
     def draw(self, context):
@@ -179,7 +179,7 @@ class ArchLabMeshPrimitivesAdd(Menu):
 # ArchLab menu
 # ----------------------------------------------------------
 class ArchLabMeshCustomMenuAdd(Menu):
-    bl_idname = "INFO_MT_archlab_mesh_custom_menu_add"
+    bl_idname = "VIEW3D_MT_archlab_mesh_custom_menu_add"
     bl_label = "ArchLab"
 
     def draw(self, context):
@@ -189,16 +189,16 @@ class ArchLabMeshCustomMenuAdd(Menu):
         self.layout.operator("mesh.archlab_wall", text="Add Wall")
         self.layout.separator()
         self.layout.menu(
-            "INFO_MT_archlab_mesh_primitives_add",
+            "VIEW3D_MT_archlab_mesh_primitives_add",
             text="Primitives", icon="GROUP")
         self.layout.menu(
-            "INFO_MT_archlab_mesh_decorations_add",
+            "VIEW3D_MT_archlab_mesh_decorations_add",
             text="Decorations", icon="GROUP")
         self.layout.menu(
-            "INFO_MT_archlab_mesh_furnitures_add",
+            "VIEW3D_MT_archlab_mesh_furnitures_add",
             text="Furnitures", icon="GROUP")
 
-modules.extend([
+archlab_modules.extend([
     ArchLabMeshCustomMenuAdd,
     ArchLabMeshFurnituresAdd,
     ArchLabMeshDecorationsAdd,
@@ -211,25 +211,25 @@ modules.extend([
 # --------------------------------------------------------------
 # Define menu
 def ArchLabMeshMenu_func(self, context):
-    self.layout.menu("INFO_MT_archlab_mesh_custom_menu_add", icon="GROUP")
+    self.layout.menu("VIEW3D_MT_archlab_mesh_custom_menu_add", icon="GROUP")
 
 
 # --------------------------------------------------------------
 # Register all operators and panels
 # --------------------------------------------------------------
 def register():
-    for module_class in modules:
+    for module_class in archlab_modules:
         bpy.utils.register_class(module_class)
-    INFO_MT_mesh_add.append(ArchLabMeshMenu_func)
+    VIEW3D_MT_mesh_add.append(ArchLabMeshMenu_func)
 
 
 # --------------------------------------------------------------
 # Unregister all operators and panels
 # --------------------------------------------------------------
 def unregister():
-    for module_class in modules:
+    for module_class in archlab_modules:
         bpy.utils.unregister_class(module_class)
-    INFO_MT_mesh_add.remove(ArchLabMeshMenu_func)
+    VIEW3D_MT_mesh_add.remove(ArchLabMeshMenu_func)
 
 
 # --------------------------------------------------------------

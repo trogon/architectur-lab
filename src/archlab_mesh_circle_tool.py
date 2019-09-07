@@ -45,13 +45,13 @@ from .archlab_utils_mesh_generator import *
 def create_circle(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh for circle
     circlemesh = bpy.data.meshes.new("Circle")
     circleobject = bpy.data.objects.new("Circle", circlemesh)
-    circleobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(circleobject)
+    circleobject.location = context.scene.cursor.location
+    context.collection.objects.link(circleobject)
     circleobject.ArchLabCircleGenerator.add()
 
     circleobject.ArchLabCircleGenerator[0].circle_radius = \
@@ -69,8 +69,8 @@ def create_circle(self, context):
     shape_circle_mesh(circleobject, circlemesh)
 
     # we select, and activate, main object for the circle.
-    circleobject.select = True
-    bpy.context.scene.objects.active = circleobject
+    circleobject.select_set(True)
+    context.view_layer.objects.active = circleobject
 
 
 # ------------------------------------------------------------------------------
@@ -102,8 +102,8 @@ def shape_circle_mesh(mycircle, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mycircle.name:
-            o.select = False
+        if o.select_get() is True and o.name != mycircle.name:
+            o.select_set(False)
 
 
 # ------------------------------------------------------------------------------
@@ -129,16 +129,16 @@ def update_circle_mesh_data(mymesh, radius, vertices, fill_type, trunc_val):
 # ------------------------------------------------------------------------------
 def update_circle(self, context):
     # When we update, the active object is the main object of the circle.
-    o = bpy.context.active_object
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that circle object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the circle:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_circle_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -146,8 +146,8 @@ def update_circle(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the circle.
-    o.select = True
-    bpy.context.scene.objects.active = o
+    o.select_set(True)
+    context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------
@@ -258,7 +258,7 @@ class ArchLabCircleGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_circle_generator"
     bl_label = "Circle"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------
@@ -291,8 +291,8 @@ class ArchLabCircleGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+        if context.mode == 'EDIT_MESH':
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             circle = o.ArchLabCircleGenerator[0]
             row = layout.row()
@@ -330,7 +330,7 @@ class ArchLabCircle(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'circle_quality')
@@ -345,14 +345,14 @@ class ArchLabCircle(Operator):
                 row.prop(self, 'circle_truncation')
         else:
             row = layout.row()
-            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
+            row.label(text="Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_circle(self, context)
                 return {'FINISHED'}

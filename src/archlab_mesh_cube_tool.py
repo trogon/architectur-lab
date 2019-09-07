@@ -40,13 +40,13 @@ from .archlab_utils_mesh_generator import *
 def create_cube(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh for cube
     cubemesh = bpy.data.meshes.new("Cube")
     cubeobject = bpy.data.objects.new("Cube", cubemesh)
-    cubeobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(cubeobject)
+    cubeobject.location = context.scene.cursor.location
+    context.collection.objects.link(cubeobject)
     cubeobject.ArchLabCubeGenerator.add()
 
     cubeobject.ArchLabCubeGenerator[0].cube_height = self.cube_height
@@ -57,8 +57,8 @@ def create_cube(self, context):
     shape_cube_mesh(cubeobject, cubemesh)
 
     # we select, and activate, main object for the cube.
-    cubeobject.select = True
-    bpy.context.scene.objects.active = cubeobject
+    cubeobject.select_set(True)
+    context.view_layer.objects.active = cubeobject
 
 
 # ------------------------------------------------------------------------------
@@ -75,8 +75,8 @@ def shape_cube_mesh(mycube, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mycube.name:
-            o.select = False
+        if o.select_get() is True and o.name != mycube.name:
+            o.select_set(False)
 
 
 # ------------------------------------------------------------------------------
@@ -94,16 +94,16 @@ def update_cube_mesh_data(mymesh, width, height, depth):
 # ------------------------------------------------------------------------------
 def update_cube(self, context):
     # When we update, the active object is the main object of the cube.
-    o = bpy.context.active_object
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that cube object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the cube:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_cube_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -111,8 +111,8 @@ def update_cube(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the cube.
-    o.select = True
-    bpy.context.scene.objects.active = o
+    o.select_set(True)
+    context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------
@@ -164,7 +164,7 @@ class ArchLabCubeGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_cube_generator"
     bl_label = "Cube"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------
@@ -197,8 +197,8 @@ class ArchLabCubeGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+        if context.mode == 'EDIT_MESH':
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             cube = o.ArchLabCubeGenerator[0]
             row = layout.row()
@@ -229,7 +229,7 @@ class ArchLabCube(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'cube_width')
@@ -239,14 +239,14 @@ class ArchLabCube(Operator):
             row.prop(self, 'cube_depth')
         else:
             row = layout.row()
-            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
+            row.label(text="Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_cube(self, context)
                 return {'FINISHED'}

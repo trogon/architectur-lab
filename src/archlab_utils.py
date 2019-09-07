@@ -53,7 +53,7 @@ def log_write(level, text_to_write):
 # True = faces to inside
 # --------------------------------------------------------------------
 def set_normals(myobject, direction=False):
-    bpy.context.scene.objects.active = myobject
+    bpy.context.view_layer.objects.active = myobject
     # go edit mode
     bpy.ops.object.mode_set(mode='EDIT')
     # select all faces
@@ -70,12 +70,12 @@ def set_normals(myobject, direction=False):
 def set_smooth(myobject):
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True:
-            o.select = False
+        if o.select_get() is True:
+            o.select_set(False)
 
-    myobject.select = True
-    bpy.context.scene.objects.active = myobject
-    if bpy.context.scene.objects.active.name == myobject.name:
+    myobject.select_set(True)
+    bpy.context.view_layer.objects.active = myobject
+    if bpy.context.view_layer.objects.active.name == myobject.name:
         bpy.ops.object.shade_smooth()
 
 
@@ -83,7 +83,7 @@ def set_smooth(myobject):
 # Remove doubles
 # --------------------------------------------------------------------
 def remove_doubles(myobject):
-    bpy.context.scene.objects.active = myobject
+    bpy.context.view_layer.objects.active = myobject
     # go edit mode
     bpy.ops.object.mode_set(mode='EDIT')
     # select all faces
@@ -176,7 +176,7 @@ def rotate_point2d(posx, posy, angle):
     sina1 = sin(rada1)
     mat1 = Matrix([[cosa1, -sina1],
                    [sina1, cosa1]])
-    v2 = mat1 * v1
+    v2 = mat1 @ v1
     return v2
 
 
