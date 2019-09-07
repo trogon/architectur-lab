@@ -220,7 +220,9 @@ class ArchLabSphereGeneratorPanel(Panel):
             return False
         if 'ArchLabSphereGenerator' not in o:
             return False
-        if act_op is not None and act_op.bl_idname.endswith('archlab_sphere'):
+        if act_op is not None and act_op.bl_idname.endswith('archlab_uvsphere'):
+            return False
+        if act_op is not None and act_op.bl_idname.endswith('archlab_icosphere'):
             return False
         else:
             return True
