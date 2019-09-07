@@ -1,18 +1,18 @@
 # ##### BEGIN MIT LICENSE BLOCK #####
 # MIT License
-# 
-# Copyright (c) 2018 Insma Software
-# 
+#
+# Copyright (c) 2018-2019 Maciej Klemarczyk, Trogon Studios
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,14 +23,22 @@
 # ##### END MIT LICENSE BLOCK #####
 
 # ----------------------------------------------------------
-# Author: Maciej Klemarczyk (mklemarczyk)
+# Author: Maciej Klemarczyk (github: mklemarczyk)
+# Publisher: Trogon Studios (github: trogon)
 # ----------------------------------------------------------
+
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import EnumProperty, IntProperty, FloatProperty, CollectionProperty
+from bpy.props import (
+    EnumProperty,
+    IntProperty,
+    FloatProperty,
+    CollectionProperty
+)
 from .archlab_utils import *
 from .archlab_utils_material_data import *
 from .archlab_utils_mesh_generator import *
+
 
 # ------------------------------------------------------------------------------
 # Create main object for the plate.
@@ -38,13 +46,13 @@ from .archlab_utils_mesh_generator import *
 def create_plate(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh
     platemesh = bpy.data.meshes.new("Plate")
     plateobject = bpy.data.objects.new("Plate", platemesh)
-    plateobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(plateobject)
+    plateobject.location = context.scene.cursor.location
+    context.collection.objects.link(plateobject)
     plateobject.ArchLabPlateGenerator.add()
 
     plateobject.ArchLabPlateGenerator[0].plate_diameter = self.plate_diameter
@@ -62,8 +70,9 @@ def create_plate(self, context):
     set_material(plateobject, mat.name)
 
     # we select, and activate, main object for the plate.
-    plateobject.select = True
-    bpy.context.scene.objects.active = plateobject
+    plateobject.select_set(True)
+    context.view_layer.objects.active = plateobject
+
 
 # ------------------------------------------------------------------------------
 # Shapes mesh the plate mesh
@@ -79,8 +88,9 @@ def shape_plate_mesh(myplate, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != myplate.name:
-            o.select = False
+        if o.select_get() is True and o.name != myplate.name:
+            o.select_set(False)
+
 
 # ------------------------------------------------------------------------------
 # Creates plate mesh data.
@@ -100,21 +110,22 @@ def update_plate_mesh_data(mymesh, diameter, height, segments, type):
     mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
 
+
 # ------------------------------------------------------------------------------
 # Update plate mesh.
 # ------------------------------------------------------------------------------
 def update_plate(self, context):
     # When we update, the active object is the main object of the plate.
-    o = bpy.context.active_object
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that plate object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the plate:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_plate_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -122,8 +133,9 @@ def update_plate(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the plate.
-    o.select = True
-    bpy.context.scene.objects.active = o
+    o.select_set(True)
+    context.view_layer.objects.active = o
+
 
 # ------------------------------------------------------------------------------
 # Update plate mesh and sizes based on new kind.
@@ -131,6 +143,7 @@ def update_plate(self, context):
 def update_plate_kind(self, context):
     update_plate_size(self, context)
     update_plate(self, context)
+
 
 # ------------------------------------------------------------------------------
 # Update plate sizes based on new kind.
@@ -162,40 +175,44 @@ def update_plate_size(self, context):
 # -----------------------------------------------------
 def plate_diameter_property(callback=None):
     return FloatProperty(
-            name='Diameter',
-            soft_min=0.001,
-            default=0.21, precision=3, unit = 'LENGTH',
-            description='Plate diameter', update=callback,
-            )
+        name='Diameter',
+        soft_min=0.001,
+        default=0.21, precision=3, unit='LENGTH',
+        description='Plate diameter', update=callback,
+    )
+
 
 def plate_height_property(callback=None):
     return FloatProperty(
-            name='Height',
-            soft_min=0.001,
-            default=0.03, precision=3, unit = 'LENGTH',
-            description='Plate height', update=callback,
-            )
+        name='Height',
+        soft_min=0.001,
+        default=0.03, precision=3, unit='LENGTH',
+        description='Plate height', update=callback,
+    )
+
 
 def plate_segments_property(callback=None):
     return IntProperty(
-            name='Segments',
-            min=3, max=1000,
-            default=16,
-            description='Plate segments amount', update=callback,
-            )
+        name='Segments',
+        min=3, max=1000,
+        default=16,
+        description='Plate segments amount', update=callback,
+    )
+
 
 def plate_type_property(defaultitem='Plate01', callback=None):
     return EnumProperty(
-            items=(
-                ('Plate01', 'Plate', ''),
-                ('DinnerPlate01', 'Dinner Plate', ''),
-                ('DeepPlate01', 'Deep Plate', ''),
-                ('SidePlate01', 'Side Plate', ''),
-                ),
-            name='Kind',
-            default=defaultitem,
-            description='Plate kind', update=callback,
-            )
+        items=(
+            ('Plate01', 'Plate', ''),
+            ('DinnerPlate01', 'Dinner Plate', ''),
+            ('DeepPlate01', 'Deep Plate', ''),
+            ('SidePlate01', 'Side Plate', ''),
+        ),
+        name='Kind',
+        default=defaultitem,
+        description='Plate kind', update=callback,
+    )
+
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a plates.
@@ -209,6 +226,7 @@ class ArchLabPlateProperties(PropertyGroup):
 bpy.utils.register_class(ArchLabPlateProperties)
 Object.ArchLabPlateGenerator = CollectionProperty(type=ArchLabPlateProperties)
 
+
 # ------------------------------------------------------------------
 # Define panel class to modify plates.
 # ------------------------------------------------------------------
@@ -216,7 +234,7 @@ class ArchLabPlateGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_plate_generator"
     bl_label = "Plate"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------
@@ -240,7 +258,8 @@ class ArchLabPlateGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabPlateGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        #  'ArchLabPlateGenerator', this panel is not created.
         try:
             if 'ArchLabPlateGenerator' not in o:
                 return
@@ -248,8 +267,8 @@ class ArchLabPlateGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+        if context.mode == 'EDIT_MESH':
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             plate = o.ArchLabPlateGenerator[0]
             row = layout.row()
@@ -260,6 +279,7 @@ class ArchLabPlateGeneratorPanel(Panel):
             row.prop(plate, 'plate_height')
             row = layout.row()
             row.prop(plate, 'plate_segments')
+
 
 # ------------------------------------------------------------------
 # Define operator class to create plates
@@ -282,7 +302,7 @@ class ArchLabPlate(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'plate_type')
@@ -294,14 +314,14 @@ class ArchLabPlate(Operator):
             row.prop(self, 'plate_segments')
         else:
             row = layout.row()
-            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
+            row.label(text="Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_plate(self, context)
                 return {'FINISHED'}

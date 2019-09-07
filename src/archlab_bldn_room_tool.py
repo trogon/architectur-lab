@@ -1,18 +1,18 @@
 # ##### BEGIN MIT LICENSE BLOCK #####
 # MIT License
-# 
-# Copyright (c) 2018 Insma Software
-# 
+#
+# Copyright (c) 2018-2019 Maciej Klemarczyk, Trogon Studios
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,13 +23,21 @@
 # ##### END MIT LICENSE BLOCK #####
 
 # ----------------------------------------------------------
-# Author: Maciej Klemarczyk (mklemarczyk)
+# Author: Maciej Klemarczyk (github: mklemarczyk)
+# Publisher: Trogon Studios (github: trogon)
 # ----------------------------------------------------------
+
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import BoolProperty, IntProperty, FloatProperty, CollectionProperty
+from bpy.props import (
+    BoolProperty,
+    IntProperty,
+    FloatProperty,
+    CollectionProperty
+)
 from math import sin
 from .archlab_utils import *
+
 
 # ------------------------------------------------------------------------------
 # Create main object for the room.
@@ -37,13 +45,13 @@ from .archlab_utils import *
 def create_room(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh for room
     roommesh = bpy.data.meshes.new("Room")
     roomobject = bpy.data.objects.new("Room", roommesh)
-    roomobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(roomobject)
+    roomobject.location = context.scene.cursor.location
+    context.collection.objects.link(roomobject)
     roomobject.ArchLabRoomGenerator.add()
 
     roomobject.ArchLabRoomGenerator[0].room_height = self.room_height
@@ -60,11 +68,12 @@ def create_room(self, context):
     shape_room_mesh(roomobject, roommesh)
 
     # we select, and activate, main object for the room.
-    roomobject.select = True
-    bpy.context.scene.objects.active = roomobject
+    roomobject.select_set(True)
+    context.view_layer.objects.active = roomobject
+
 
 # ------------------------------------------------------------------------------
-# Shapes mesh and creates modifier solidify (the modifier, only the first time).
+# Shapes mesh and creates modifier solidify (the modifier, only the first time)
 # ------------------------------------------------------------------------------
 def shape_room_mesh(myroom, tmp_mesh, update=False):
     rp = myroom.ArchLabRoomGenerator[0]  # "rp" means "room properties".
@@ -85,12 +94,13 @@ def shape_room_mesh(myroom, tmp_mesh, update=False):
     myroom.data = tmp_mesh
 
     remove_doubles(myroom)
-    #set_normals(myroom)
+    # set_normals(myroom)
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != myroom.name:
-            o.select = False
+        if o.select_get() is True and o.name != myroom.name:
+            o.select_set(False)
+
 
 # ------------------------------------------------------------------------------
 # Creates room mesh data.
@@ -111,9 +121,9 @@ def update_room_mesh_data(mymesh, height, walls, has_floor, has_ceiling):
             lastp[1] + pnorm[1] * wall.wall_width,
             lastp[2] + pnorm[2] * wall.wall_width
         ]
-        wdepth = wall.wall_depth /2
+        wdepth = wall.wall_depth / 2
         wdp = (-pnorm[1] * wdepth, pnorm[0] * wdepth, 0.0)
-        if myvertices is None: # First wall
+        if myvertices is None:  # First wall
             myvertices = [
                 (-wdp[0], -wdp[1], 0.0),
                 (-wdp[0], -wdp[1], height),
@@ -124,16 +134,16 @@ def update_room_mesh_data(mymesh, height, walls, has_floor, has_ceiling):
                 [0, 1, 3, 2]
             ])
             myfaces.extend([
-                [lastwi * 4 + 0, lastwi * 4 + 2, lastwi * 4 + 6, lastwi * 4 + 4], # bottom
-                [lastwi * 4 + 0, lastwi * 4 + 4, lastwi * 4 + 5, lastwi * 4 + 1], # outer
-                [lastwi * 4 + 1, lastwi * 4 + 5, lastwi * 4 + 7, lastwi * 4 + 3], # top
-                [lastwi * 4 + 2, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 6]  # inner
+                [lastwi * 4 + 0, lastwi * 4 + 2, lastwi * 4 + 6, lastwi * 4 + 4],  # bottom
+                [lastwi * 4 + 0, lastwi * 4 + 4, lastwi * 4 + 5, lastwi * 4 + 1],  # outer
+                [lastwi * 4 + 1, lastwi * 4 + 5, lastwi * 4 + 7, lastwi * 4 + 3],  # top
+                [lastwi * 4 + 2, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 6]   # inner
             ])
-        else: # Wall not first
+        else:  # Wall not first
             sinwa = sin(wall.wall_angle)
             crosswdp = (wdp[0], wdp[1], 0.0)
-            if not sinwa == 0: # angle = 0
-                h1 = -lastpnorm * wdepth
+            if not sinwa == 0:  # angle = 0
+                h1 = lastpnorm * -wdepth
                 h2 = pnorm * lastdepth
                 crosswdp = (h1 + h2) / sinwa
             myvertices.extend([
@@ -143,12 +153,12 @@ def update_room_mesh_data(mymesh, height, walls, has_floor, has_ceiling):
                 (lastp[0]+crosswdp[0], lastp[1]+crosswdp[1], height)
             ])
             myfaces.extend([
-                [lastwi * 4 + 0, lastwi * 4 + 2, lastwi * 4 + 6, lastwi * 4 + 4], # bottom
-                [lastwi * 4 + 0, lastwi * 4 + 4, lastwi * 4 + 5, lastwi * 4 + 1], # outer
-                [lastwi * 4 + 1, lastwi * 4 + 5, lastwi * 4 + 7, lastwi * 4 + 3], # top
-                [lastwi * 4 + 2, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 6]  # inner
+                [lastwi * 4 + 0, lastwi * 4 + 2, lastwi * 4 + 6, lastwi * 4 + 4],  # bottom
+                [lastwi * 4 + 0, lastwi * 4 + 4, lastwi * 4 + 5, lastwi * 4 + 1],  # outer
+                [lastwi * 4 + 1, lastwi * 4 + 5, lastwi * 4 + 7, lastwi * 4 + 3],  # top
+                [lastwi * 4 + 2, lastwi * 4 + 3, lastwi * 4 + 7, lastwi * 4 + 6]   # inner
             ])
-        if lwalls == lastwi +1: #Last wall
+        if lwalls == lastwi + 1:  # Last wall
             myvertices.extend([
                 (p1[0]-wdp[0], p1[1]-wdp[1], 0.0),
                 (p1[0]-wdp[0], p1[1]-wdp[1], height),
@@ -180,21 +190,22 @@ def update_room_mesh_data(mymesh, height, walls, has_floor, has_ceiling):
     mymesh.from_pydata(myvertices, [], myfaces)
     mymesh.update(calc_edges=True)
 
+
 # ------------------------------------------------------------------------------
 # Update room mesh.
 # ------------------------------------------------------------------------------
 def update_room(self, context):
     # When we update, the active object is the main object of the room.
-    o = bpy.context.active_object
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that room object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the room:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_room_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -202,8 +213,9 @@ def update_room(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the room.
-    o.select = True
-    bpy.context.scene.objects.active = o
+    o.select_set(True)
+    context.view_layer.objects.active = o
+
 
 # -----------------------------------------------------
 # Verify if solidify exist
@@ -222,6 +234,7 @@ def is_solidify(myobject):
     except AttributeError:
         return False
 
+
 # -----------------------------------------------------
 # Move Solidify to Top
 # -----------------------------------------------------
@@ -239,33 +252,37 @@ def movetotopsolidify(myobject):
     except AttributeError:
         return
 
+
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
 def wall_width_property(callback=None):
     return FloatProperty(
-            name='Width',
-            soft_min=0.001,
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Wall width', update=callback,
-            )
+        name='Width',
+        soft_min=0.001,
+        default=1.0, precision=3, unit='LENGTH',
+        description='Wall width', update=callback,
+    )
+
 
 def wall_depth_property(callback=None):
     return FloatProperty(
-            name='Thickness',
-            soft_min=0.001,
-            default=0.025, precision=4, unit = 'LENGTH',
-            description='Thickness of the walls', update=callback,
-            )
+        name='Thickness',
+        soft_min=0.001,
+        default=0.025, precision=4, unit='LENGTH',
+        description='Thickness of the walls', update=callback,
+    )
+
 
 def wall_angle_property(callback=None):
     return FloatProperty(
-            name='Angle',
-            soft_min=-2.79232, soft_max=2.79232,
-            default=3.14159/2, precision=3, step=50,
-            description='Angle of this wall with previous', update=callback,
-            subtype='ANGLE',
-            )
+        name='Angle',
+        soft_min=-2.79232, soft_max=2.79232,
+        default=3.14159/2, precision=3, step=50,
+        description='Angle of this wall with previous', update=callback,
+        subtype='ANGLE',
+    )
+
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a walls.
@@ -275,41 +292,47 @@ class ArchLabWallProperties(PropertyGroup):
     wall_depth = wall_depth_property(callback=update_room)
     wall_angle = wall_angle_property(callback=update_room)
 
+
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
 def room_height_property(callback=None):
     return FloatProperty(
-            name='Height',
-            soft_min=0.001,
-            default=2.5, precision=3, unit = 'LENGTH',
-            description='Room height', update=callback,
-            )
+        name='Height',
+        soft_min=0.001,
+        default=2.5, precision=3, unit='LENGTH',
+        description='Room height', update=callback,
+    )
+
 
 def room_wall_count_property(callback=None):
     return IntProperty(
-            name='Wall count',
-            min=1, soft_max=1000,
-            default=1,
-            description='Number of walls in the room', update=callback,
-            )
+        name='Wall count',
+        min=1, soft_max=1000,
+        default=1,
+        description='Number of walls in the room', update=callback,
+    )
+
 
 def room_floor_property(callback=None):
     return BoolProperty(
-            name='Floor',
-            default=True,
-            description='Generates floor for the room', update=callback,
-            )
+        name='Floor',
+        default=True,
+        description='Generates floor for the room', update=callback,
+    )
+
 
 def room_ceiling_property(callback=None):
     return BoolProperty(
-            name='Ceiling',
-            default=False,
-            description='Generates ceiling for the room', update=callback,
-            )
+        name='Ceiling',
+        default=False,
+        description='Generates ceiling for the room', update=callback,
+    )
+
 
 def room_walls_property(callback=None):
     return CollectionProperty(type=ArchLabWallProperties)
+
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a rooms.
@@ -326,6 +349,7 @@ bpy.utils.register_class(ArchLabWallProperties)
 bpy.utils.register_class(ArchLabRoomProperties)
 Object.ArchLabRoomGenerator = CollectionProperty(type=ArchLabRoomProperties)
 
+
 # ------------------------------------------------------------------
 # Define panel class to modify rooms.
 # ------------------------------------------------------------------
@@ -333,7 +357,7 @@ class ArchLabRoomGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_room_generator"
     bl_label = "Room"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------
@@ -357,7 +381,8 @@ class ArchLabRoomGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabRoomGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        #  'ArchLabRoomGenerator', this panel is not created.
         try:
             if 'ArchLabRoomGenerator' not in o:
                 return
@@ -365,8 +390,8 @@ class ArchLabRoomGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+        if context.mode == 'EDIT_MESH':
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             room = o.ArchLabRoomGenerator[0]
             row = layout.row()
@@ -379,13 +404,14 @@ class ArchLabRoomGeneratorPanel(Panel):
             row.prop(room, 'room_wall_count')
             for wt in range(len(room.room_walls)):
                 box = layout.box()
-                label = box.label('Wall %i' % (wt+1))
+                label = box.label(text='Wall %i' % (wt+1))
                 row = box.row()
                 row.prop(room.room_walls[wt], 'wall_width')
                 row = box.row()
                 row.prop(room.room_walls[wt], 'wall_depth')
                 row = box.row()
                 row.prop(room.room_walls[wt], 'wall_angle')
+
 
 # ------------------------------------------------------------------
 # Define operator class to create rooms
@@ -409,7 +435,7 @@ class ArchLabRoom(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'room_height')
@@ -421,7 +447,7 @@ class ArchLabRoom(Operator):
             row.prop(self, 'room_wall_count')
             for wt in range(len(self.room_walls)):
                 box = layout.box()
-                label = box.label('Wall %i' % (wt+1))
+                label = box.label(text='Wall %i' % (wt+1))
                 row = box.row()
                 row.prop(self.room_walls[wt], 'wall_width')
                 row = box.row()
@@ -430,7 +456,10 @@ class ArchLabRoom(Operator):
                 row.prop(self.room_walls[wt], 'wall_angle')
         else:
             row = layout.row()
-            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
+            row.label(
+                text="Warning: Operator does not work in local view mode",
+                icon='ERROR'
+            )
 
     # -----------------------------------------------------
     # Execute
@@ -451,8 +480,8 @@ class ArchLabRoom(Operator):
                 for t in range(-wdif):
                     self.room_walls.remove(prwc)
 
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_room(self, context)
                 return {'FINISHED'}

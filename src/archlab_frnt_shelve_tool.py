@@ -1,18 +1,18 @@
 # ##### BEGIN MIT LICENSE BLOCK #####
 # MIT License
-# 
-# Copyright (c) 2018 Insma Software
-# 
+#
+# Copyright (c) 2018-2019 Maciej Klemarczyk, Trogon Studios
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,12 +23,15 @@
 # ##### END MIT LICENSE BLOCK #####
 
 # ----------------------------------------------------------
-# Author: Maciej Klemarczyk (mklemarczyk)
+# Author: Maciej Klemarczyk (github: mklemarczyk)
+# Publisher: Trogon Studios (github: trogon)
 # ----------------------------------------------------------
+
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import BoolProperty, FloatProperty, CollectionProperty
 from .archlab_utils import *
+
 
 # ------------------------------------------------------------------------------
 # Create main object for the shelve.
@@ -36,20 +39,25 @@ from .archlab_utils import *
 def create_shelve(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create shelve object and mesh
     shelvemesh = bpy.data.meshes.new("Shelve")
     shelveobject = bpy.data.objects.new("Shelve", shelvemesh)
-    shelveobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(shelveobject)
+    shelveobject.location = context.scene.cursor.location
+    context.collection.objects.link(shelveobject)
     shelveobject.ArchLabShelveGenerator.add()
 
-    shelveobject.ArchLabShelveGenerator[0].shelve_height = self.shelve_height
-    shelveobject.ArchLabShelveGenerator[0].shelve_width = self.shelve_width
-    shelveobject.ArchLabShelveGenerator[0].shelve_depth = self.shelve_depth
-    shelveobject.ArchLabShelveGenerator[0].shelve_thickness = self.shelve_thickness
-    shelveobject.ArchLabShelveGenerator[0].shelve_armature = self.shelve_armature
+    shelveobject.ArchLabShelveGenerator[0].shelve_height = \
+        self.shelve_height
+    shelveobject.ArchLabShelveGenerator[0].shelve_width = \
+        self.shelve_width
+    shelveobject.ArchLabShelveGenerator[0].shelve_depth = \
+        self.shelve_depth
+    shelveobject.ArchLabShelveGenerator[0].shelve_thickness = \
+        self.shelve_thickness
+    shelveobject.ArchLabShelveGenerator[0].shelve_armature = \
+        self.shelve_armature
     
     # we shape the mesh.
     shape_shelve_mesh(shelveobject, shelvemesh)
@@ -58,19 +66,20 @@ def create_shelve(self, context):
         # we create main object and mesh for shelve
         shelvearmature = bpy.data.armatures.new("Shelve Armature")
         shelvearmatureobject = bpy.data.objects.new("Shelve Armature", shelvearmature)
-        shelvearmatureobject.location = bpy.context.scene.cursor_location
+        shelvearmatureobject.location = context.scene.cursor.location
         shelvearmatureobject.parent = shelveobject
-        bpy.context.scene.objects.link(shelvearmatureobject)
+        context.collection.objects.link(shelvearmatureobject)
 
         # we shape the armature.
         shape_shelve_armature(shelveobject, shelvearmatureobject, shelvearmature)
 
     # we select, and activate, main object for the shelve.
-    shelveobject.select = True
-    bpy.context.scene.objects.active = shelveobject
+    shelveobject.select_set(True)
+    context.view_layer.objects.active = shelveobject
+
 
 # ------------------------------------------------------------------------------
-# Shapes mesh and creates modifier solidify (the modifier, only the first time).
+# Shapes mesh and creates modifier solidify (the modifier, only the first time)
 # ------------------------------------------------------------------------------
 def shape_shelve_mesh(myshelve, tmp_mesh, update=False):
     sp = myshelve.ArchLabShelveGenerator[0]  # "sp" means "shelve properties".
@@ -104,8 +113,9 @@ def shape_shelve_mesh(myshelve, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != myshelve.name:
-            o.select = False
+        if o.select_get() is True and o.name != myshelve.name:
+            o.select_set(False)
+
 
 # ------------------------------------------------------------------------------
 # Shapes armature and creates modifier armature (the modifier, only the first time).
@@ -130,14 +140,15 @@ def shape_shelve_armature(myshelve, myarmatureobj, myarmature, update=False):
             if mod.type == 'ARMATURE':
                 myshelve.modifiers.remove(mod)
 
+
 # ------------------------------------------------------------------------------
 # Creates shelve mesh data.
 # ------------------------------------------------------------------------------
 def update_shelve_mesh_data(mymesh, width, height, depth, thickness):
-    basethick = thickness /2
-    posx = width /2
-    posy = depth /2
-    posz = height +basethick
+    basethick = thickness / 2
+    posx = width / 2
+    posy = depth / 2
+    posz = height + basethick
 
     myvertices = [
         (-posx, -posy, basethick), (posx, -posy, basethick),
@@ -145,7 +156,7 @@ def update_shelve_mesh_data(mymesh, width, height, depth, thickness):
         (-posx, -posy, posz), (posx, -posy, posz),
         (-posx, posy, posz), (posx, posy, posz)]
 
-    thickdiff = thickness /2 + 0.001
+    thickdiff = (thickness / 2) + 0.001
     myvertices.extend([
         (-posx + thickdiff, -posy + thickdiff, basethick + thickdiff),
         (posx - thickdiff, -posy + thickdiff, basethick + thickdiff),
@@ -166,27 +177,28 @@ def update_shelve_mesh_data(mymesh, width, height, depth, thickness):
     mymesh.from_pydata(myvertices, [], myfaces)
     mymesh.update(calc_edges=True)
 
+
 # ------------------------------------------------------------------------------
 # Creates shelve armature data.
 # ------------------------------------------------------------------------------
 def update_shelve_armature_data(myarmatureobj, myarmature, width, height, depth, thickness):
-    basethick = thickness /2
-    posx = width /2
-    posy = depth /2
-    posz = height /2 +basethick
-    thickdiff = thickness /2 + 0.001
+    basethick = thickness / 2
+    posx = width / 2
+    posy = depth / 2
+    posz = height / 2 + basethick
+    thickdiff = (thickness / 2) + 0.001
 
-    prev_o = bpy.context.scene.objects.active
-    bpy.context.scene.objects.active = myarmatureobj
-    myarmatureobj.select = True
+    prev_o = bpy.context.view_layer.objects.active
+    bpy.context.view_layer.objects.active = myarmatureobj
+    myarmatureobj.select_set(True)
     bpy.ops.object.editmode_toggle()
 
     doorbone = myarmature.edit_bones.new('Shelve Door')
-    doorbone.head = (posx - thickdiff, -posy + thickdiff, posz )
+    doorbone.head = (posx - thickdiff, -posy + thickdiff, posz)
     doorbone.tail = (-posx + thickdiff, -posy + thickdiff, posz)
 
     bpy.ops.object.editmode_toggle()
-    bpy.context.scene.objects.active = prev_o
+    bpy.context.view_layer.objects.active = prev_o
 
     doorbone = myarmatureobj.pose.bones[0]
     doorbone.rotation_mode = 'XYZ'
@@ -199,21 +211,22 @@ def update_shelve_armature_data(myarmatureobj, myarmature, width, height, depth,
     doorbone.lock_scale[1] = True
     doorbone.lock_scale[2] = True
 
+
 # ------------------------------------------------------------------------------
 # Update shelve mesh.
 # ------------------------------------------------------------------------------
 def update_shelve(self, context):
     # When we update, the active object is the main object of the shelve.
-    o = bpy.context.active_object
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that shelve object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the shelve:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_shelve_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -221,8 +234,9 @@ def update_shelve(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the shelve.
-    o.select = True
-    bpy.context.scene.objects.active = o
+    o.select_set(True)
+    context.view_layer.objects.active = o
+
 
 # -----------------------------------------------------
 # Verify if vertex group exist
@@ -241,6 +255,7 @@ def is_vertex_group(myobject, vgname):
     except AttributeError:
         return False
 
+
 # -----------------------------------------------------
 # Verify if armature exist
 # -----------------------------------------------------
@@ -257,6 +272,7 @@ def is_armature(myobject):
         return flag
     except AttributeError:
         return False
+
 
 # -----------------------------------------------------
 # Move Armature to Top
@@ -275,6 +291,7 @@ def movetotoparmature(myobject):
     except AttributeError:
         return
 
+
 # -----------------------------------------------------
 # Verify if solidify exist
 # -----------------------------------------------------
@@ -291,6 +308,7 @@ def is_solidify(myobject):
         return flag
     except AttributeError:
         return False
+
 
 # -----------------------------------------------------
 # Move Solidify to Top
@@ -309,47 +327,53 @@ def movetotopsolidify(myobject):
     except AttributeError:
         return
 
+
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
 def shelve_height_property(callback=None):
     return FloatProperty(
-            name='Height',
-            soft_min=0.001,
-            default=0.65, precision=3, unit = 'LENGTH',
-            description='Shelve height', update=callback,
-            )
+        name='Height',
+        soft_min=0.001,
+        default=0.65, precision=3, unit='LENGTH',
+        description='Shelve height', update=callback,
+    )
+
 
 def shelve_width_property(callback=None):
     return FloatProperty(
-            name='Width',
-            soft_min=0.001,
-            default=0.60, precision=3, unit = 'LENGTH',
-            description='Shelve width', update=callback,
-            )
+        name='Width',
+        soft_min=0.001,
+        default=0.60, precision=3, unit='LENGTH',
+        description='Shelve width', update=callback,
+    )
+
 
 def shelve_depth_property(callback=None):
     return FloatProperty(
-            name='Depth',
-            soft_min=0.001,
-            default=0.40, precision=3, unit = 'LENGTH',
-            description='Shelve depth', update=callback,
-            )
+        name='Depth',
+        soft_min=0.001,
+        default=0.40, precision=3, unit='LENGTH',
+        description='Shelve depth', update=callback,
+    )
+
 
 def shelve_thickness_property(callback=None):
     return FloatProperty(
-            name='Thickness',
-            soft_min=0.001,
-            default=0.015, precision=4, unit = 'LENGTH',
-            description='Thickness of the shelve', update=callback,
-            )
+        name='Thickness',
+        soft_min=0.001,
+        default=0.015, precision=4, unit='LENGTH',
+        description='Thickness of the shelve', update=callback,
+    )
+
 
 def shelve_armature_property(callback=None):
     return BoolProperty(
-            name='Armature',
-            default=False,
-            description='Create armature for the shelve door', update=callback,
-            )
+        name='Armature',
+        default=False,
+        description='Create armature for the shelve door', update=callback,
+    )
+
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a shelves.
@@ -364,6 +388,7 @@ class ArchLabShelveProperties(PropertyGroup):
 bpy.utils.register_class(ArchLabShelveProperties)
 Object.ArchLabShelveGenerator = CollectionProperty(type=ArchLabShelveProperties)
 
+
 # ------------------------------------------------------------------
 # Define panel class to modify shelves.
 # ------------------------------------------------------------------
@@ -371,7 +396,7 @@ class ArchLabShelveGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_shelve_generator"
     bl_label = "Shelve"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------
@@ -397,7 +422,8 @@ class ArchLabShelveGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabShelveGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        #  'ArchLabShelveGenerator', this panel is not created.
         try:
             if 'ArchLabShelveGenerator' not in o:
                 return
@@ -405,8 +431,8 @@ class ArchLabShelveGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+        if context.mode == 'EDIT_MESH':
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             shelve = o.ArchLabShelveGenerator[0]
             row = layout.row()
@@ -417,6 +443,7 @@ class ArchLabShelveGeneratorPanel(Panel):
             row.prop(shelve, 'shelve_depth')
             row = layout.row()
             row.prop(shelve, 'shelve_thickness')
+
 
 # ------------------------------------------------------------------
 # Define operator class to create shelves
@@ -440,7 +467,7 @@ class ArchLabShelve(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'shelve_width')
@@ -454,14 +481,14 @@ class ArchLabShelve(Operator):
             row.prop(self, 'shelve_armature')
         else:
             row = layout.row()
-            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
+            row.label(text="Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_shelve(self, context)
                 return {'FINISHED'}

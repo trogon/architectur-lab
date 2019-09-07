@@ -1,18 +1,18 @@
 # ##### BEGIN MIT LICENSE BLOCK #####
 # MIT License
-# 
-# Copyright (c) 2018 Insma Software
-# 
+#
+# Copyright (c) 2018-2019 Maciej Klemarczyk, Trogon Studios
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,12 +23,15 @@
 # ##### END MIT LICENSE BLOCK #####
 
 # ----------------------------------------------------------
-# Author: Maciej Klemarczyk (mklemarczyk)
+# Author: Maciej Klemarczyk (github: mklemarczyk)
+# Publisher: Trogon Studios (github: trogon)
 # ----------------------------------------------------------
+
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
 from bpy.props import IntProperty, FloatProperty, CollectionProperty
 from .archlab_utils import *
+
 
 # ------------------------------------------------------------------------------
 # Create main object for the stairs.
@@ -36,29 +39,37 @@ from .archlab_utils import *
 def create_stairs(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh for stairs
     stairsmesh = bpy.data.meshes.new("Stairs")
     stairsobject = bpy.data.objects.new("Stairs", stairsmesh)
-    stairsobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(stairsobject)
+    stairsobject.location = context.scene.cursor.location
+    context.collection.objects.link(stairsobject)
     stairsobject.ArchLabStairsGenerator.add()
 
-    stairsobject.ArchLabStairsGenerator[0].stairs_width = self.stairs_width
-    stairsobject.ArchLabStairsGenerator[0].stairs_unit_count = self.stairs_unit_count
-    stairsobject.ArchLabStairsGenerator[0].stairs_unit_run = self.stairs_unit_run
-    stairsobject.ArchLabStairsGenerator[0].stairs_unit_raise = self.stairs_unit_raise
-    stairsobject.ArchLabStairsGenerator[0].stairs_noising = self.stairs_noising
-    stairsobject.ArchLabStairsGenerator[0].stairs_noising_thickness = self.stairs_noising_thickness
-    stairsobject.ArchLabStairsGenerator[0].stairs_tread = self.stairs_tread
+    stairsobject.ArchLabStairsGenerator[0].stairs_width = \
+        self.stairs_width
+    stairsobject.ArchLabStairsGenerator[0].stairs_unit_count = \
+        self.stairs_unit_count
+    stairsobject.ArchLabStairsGenerator[0].stairs_unit_run = \
+        self.stairs_unit_run
+    stairsobject.ArchLabStairsGenerator[0].stairs_unit_raise = \
+        self.stairs_unit_raise
+    stairsobject.ArchLabStairsGenerator[0].stairs_noising = \
+        self.stairs_noising
+    stairsobject.ArchLabStairsGenerator[0].stairs_noising_thickness = \
+        self.stairs_noising_thickness
+    stairsobject.ArchLabStairsGenerator[0].stairs_tread = \
+        self.stairs_tread
 
     # we shape the mesh.
     shape_stairs_mesh(stairsobject, stairsmesh)
 
     # we select, and activate, main object for the stairs.
-    stairsobject.select = True
-    bpy.context.scene.objects.active = stairsobject
+    stairsobject.select_set(True)
+    context.view_layer.objects.active = stairsobject
+
 
 # ------------------------------------------------------------------------------
 # Shapes mesh and creates modifier solidify (the modifier, only the first time).
@@ -74,8 +85,9 @@ def shape_stairs_mesh(mystairs, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mystairs.name:
-            o.select = False
+        if o.select_get() is True and o.name != mystairs.name:
+            o.select_set(False)
+
 
 # ------------------------------------------------------------------------------
 # Creates stairs mesh data.
@@ -105,21 +117,22 @@ def update_stairs_mesh_data(mymesh, width, unit_count, unit_run, unit_raise):
     mymesh.from_pydata(myvertices, [], myfaces)
     mymesh.update(calc_edges=True)
 
+
 # ------------------------------------------------------------------------------
 # Update stairs mesh.
 # ------------------------------------------------------------------------------
 def update_stairs(self, context):
     # When we update, the active object is the main object of the stairs.
-    o = bpy.context.active_object
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that stairs object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the stairs:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_stairs_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -127,67 +140,75 @@ def update_stairs(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the stairs.
-    o.select = True
-    bpy.context.scene.objects.active = o
+    o.select_set(True)
+    context.view_layer.objects.active = o
+
 
 # -----------------------------------------------------
 # Property definition creator
 # -----------------------------------------------------
 def stairs_width_property(callback=None):
     return FloatProperty(
-            name='Width',
-            soft_min=0.35,
-            default=1, precision=3, unit = 'LENGTH',
-            description='Stairs width', update=callback,
-            )
+        name='Width',
+        soft_min=0.35,
+        default=1, precision=3, unit='LENGTH',
+        description='Stairs width', update=callback,
+    )
+
 
 def stairs_unit_count_property(callback=None):
     return IntProperty(
-            name='Unit count',
-            soft_min=3, soft_max=18,
-            default=5,
-            description='Stairs width', update=callback,
-            )
+        name='Unit count',
+        soft_min=3, soft_max=18,
+        default=5,
+        description='Stairs width', update=callback,
+    )
+
 
 def stairs_unit_run_property(callback=None):
     return FloatProperty(
-            name='Unit run',
-            soft_min=0.0,
-            default=0.29, precision=3, unit = 'LENGTH',
-            description='Stairs width', update=callback,
-            )
+        name='Unit run',
+        soft_min=0.0,
+        default=0.29, precision=3, unit='LENGTH',
+        description='Stairs width', update=callback,
+    )
+
 
 def stairs_unit_raise_property(callback=None):
     return FloatProperty(
-            name='Unit raise',
-            soft_min=0.0,
-            default=0.17, precision=3, unit = 'LENGTH',
-            description='Stairs width', update=callback,
-            )
+        name='Unit raise',
+        soft_min=0.0,
+        default=0.17, precision=3, unit='LENGTH',
+        description='Stairs width', update=callback,
+    )
+
 
 def stairs_noising_property(callback=None):
     return FloatProperty(
-            name='Noising',
-            soft_min=0.0,
-            default=0.1, precision=3, unit = 'LENGTH',
-            description='Stairs width', update=callback,
-            )
+        name='Noising',
+        soft_min=0.0,
+        default=0.1, precision=3, unit='LENGTH',
+        description='Stairs width', update=callback,
+    )
+
 
 def stairs_noising_thickness_property(callback=None):
     return FloatProperty(
-            name='Noising thickness',
-            soft_min=0.0,
-            default=0.1, precision=3, unit = 'LENGTH',
-            description='Stairs width', update=callback,
-            )
+        name='Noising thickness',
+        soft_min=0.0,
+        default=0.1, precision=3, unit='LENGTH',
+        description='Stairs width', update=callback,
+    )
+
 
 def stairs_tread_property(callback=None):
     return FloatProperty(
-            name='Tread',
-            soft_min=0.0,
-            default=0.1, precision=3, unit = 'LENGTH',
-            description='Stairs width', update=callback,
-            )
+        name='Tread',
+        soft_min=0.0,
+        default=0.1, precision=3, unit='LENGTH',
+        description='Stairs width', update=callback,
+    )
+
 
 def draw_props(layout, propg):
     row = layout.row()
@@ -199,20 +220,30 @@ def draw_props(layout, propg):
     row = layout.row()
     row.prop(propg, 'stairs_unit_raise')
 
+
 # ------------------------------------------------------------------
 # Define property group class to create or modify a stairss.
 # ------------------------------------------------------------------
 class ArchLabStairsProperties(PropertyGroup):
-    stairs_width = stairs_width_property(callback=update_stairs)
-    stairs_unit_count = stairs_unit_count_property(callback=update_stairs)
-    stairs_unit_run = stairs_unit_run_property(callback=update_stairs)
-    stairs_unit_raise = stairs_unit_raise_property(callback=update_stairs)
-    stairs_noising = stairs_noising_property(callback=update_stairs)
-    stairs_noising_thickness = stairs_noising_thickness_property(callback=update_stairs)
-    stairs_tread = stairs_tread_property(callback=update_stairs)
+    stairs_width = \
+        stairs_width_property(callback=update_stairs)
+    stairs_unit_count = \
+        stairs_unit_count_property(callback=update_stairs)
+    stairs_unit_run = \
+        stairs_unit_run_property(callback=update_stairs)
+    stairs_unit_raise = \
+        stairs_unit_raise_property(callback=update_stairs)
+    stairs_noising = \
+        stairs_noising_property(callback=update_stairs)
+    stairs_noising_thickness = \
+        stairs_noising_thickness_property(callback=update_stairs)
+    stairs_tread = \
+        stairs_tread_property(callback=update_stairs)
 
 bpy.utils.register_class(ArchLabStairsProperties)
-Object.ArchLabStairsGenerator = CollectionProperty(type=ArchLabStairsProperties)
+Object.ArchLabStairsGenerator = \
+    CollectionProperty(type=ArchLabStairsProperties)
+
 
 # ------------------------------------------------------------------
 # Define panel class to modify stairss.
@@ -221,7 +252,7 @@ class ArchLabStairsGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_stairs_generator"
     bl_label = "Stairs"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------
@@ -245,7 +276,8 @@ class ArchLabStairsGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabStairsGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        # 'ArchLabStairsGenerator', this panel is not created.
         try:
             if 'ArchLabStairsGenerator' not in o:
                 return
@@ -253,11 +285,12 @@ class ArchLabStairsGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+        if context.mode == 'EDIT_MESH':
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             stairs = o.ArchLabStairsGenerator[0]
             draw_props(layout, stairs)
+
 
 # ------------------------------------------------------------------
 # Define operator class to create stairss
@@ -283,19 +316,19 @@ class ArchLabStairs(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             draw_props(layout, self)
         else:
             row = layout.row()
-            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
+            row.label(text="Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_stairs(self, context)
                 return {'FINISHED'}

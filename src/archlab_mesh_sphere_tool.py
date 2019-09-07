@@ -1,18 +1,18 @@
 # ##### BEGIN MIT LICENSE BLOCK #####
 # MIT License
-# 
-# Copyright (c) 2018 Insma Software
-# 
+#
+# Copyright (c) 2018-2019 Maciej Klemarczyk, Trogon Studios
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,14 +23,22 @@
 # ##### END MIT LICENSE BLOCK #####
 
 # ----------------------------------------------------------
-# Author: Maciej Klemarczyk (mklemarczyk)
+# Author: Maciej Klemarczyk (github: mklemarczyk)
+# Publisher: Trogon Studios (github: trogon)
 # ----------------------------------------------------------
+
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import EnumProperty, IntProperty, FloatProperty, CollectionProperty
+from bpy.props import (
+    EnumProperty,
+    IntProperty,
+    FloatProperty,
+    CollectionProperty
+)
 from math import sqrt
 from .archlab_utils import *
 from .archlab_utils_mesh_generator import *
+
 
 # ------------------------------------------------------------------------------
 # Create main object for the sphere.
@@ -38,27 +46,33 @@ from .archlab_utils_mesh_generator import *
 def create_sphere(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh for sphere
     spheremesh = bpy.data.meshes.new("Sphere")
     sphereobject = bpy.data.objects.new("Sphere", spheremesh)
-    sphereobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(sphereobject)
+    sphereobject.location = context.scene.cursor.location
+    context.collection.objects.link(sphereobject)
     sphereobject.ArchLabSphereGenerator.add()
 
-    sphereobject.ArchLabSphereGenerator[0].sphere_radius = self.sphere_radius
-    sphereobject.ArchLabSphereGenerator[0].sphere_type = self.sphere_type
-    sphereobject.ArchLabSphereGenerator[0].sphere_segments = self.sphere_segments
-    sphereobject.ArchLabSphereGenerator[0].sphere_rings = self.sphere_rings
-    sphereobject.ArchLabSphereGenerator[0].sphere_subdivisions = self.sphere_subdivisions
+    sphereobject.ArchLabSphereGenerator[0].sphere_radius = \
+        self.sphere_radius
+    sphereobject.ArchLabSphereGenerator[0].sphere_type = \
+        self.sphere_type
+    sphereobject.ArchLabSphereGenerator[0].sphere_segments = \
+        self.sphere_segments
+    sphereobject.ArchLabSphereGenerator[0].sphere_rings = \
+        self.sphere_rings
+    sphereobject.ArchLabSphereGenerator[0].sphere_subdivisions = \
+        self.sphere_subdivisions
 
     # we shape the mesh.
     shape_sphere_mesh(sphereobject, spheremesh)
 
     # we select, and activate, main object for the sphere.
-    sphereobject.select = True
-    bpy.context.scene.objects.active = sphereobject
+    sphereobject.select_set(True)
+    context.view_layer.objects.active = sphereobject
+
 
 # ------------------------------------------------------------------------------
 # Shapes mesh the sphere mesh
@@ -74,36 +88,40 @@ def shape_sphere_mesh(mysphere, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mysphere.name:
-            o.select = False
+        if o.select_get() is True and o.name != mysphere.name:
+            o.select_set(False)
+
 
 # ------------------------------------------------------------------------------
 # Creates sphere mesh data.
 # ------------------------------------------------------------------------------
 def update_sphere_mesh_data(mymesh, radius, type, segments, rings, subdivisions):
     if type == 'UV':
-        (myvertices, myedges, myfaces) = generate_sphere_uv_mesh_data(radius, segments, rings)
+        (myvertices, myedges, myfaces) = \
+            generate_sphere_uv_mesh_data(radius, segments, rings)
     if type == 'ICO':
-        (myvertices, myedges, myfaces) = generate_sphere_ico_mesh_data(radius, subdivisions)
+        (myvertices, myedges, myfaces) = \
+            generate_sphere_ico_mesh_data(radius, subdivisions)
 
     mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
+
 
 # ------------------------------------------------------------------------------
 # Update sphere mesh.
 # ------------------------------------------------------------------------------
 def update_sphere(self, context):
     # When we update, the active object is the main object of the sphere.
-    o = bpy.context.active_object
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that sphere object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the sphere:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_sphere_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -111,8 +129,8 @@ def update_sphere(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the sphere.
-    o.select = True
-    bpy.context.scene.objects.active = o
+    o.select_set(True)
+    context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------
@@ -120,46 +138,51 @@ def update_sphere(self, context):
 # -----------------------------------------------------
 def sphere_radius_property(callback=None):
     return FloatProperty(
-            name='Radius',
-            soft_min=0.001,
-            default=1.0, precision=3, unit = 'LENGTH',
-            description='Sphere radius', update=callback,
-            )
+        name='Radius',
+        soft_min=0.001,
+        default=1.0, precision=3, unit='LENGTH',
+        description='Sphere radius', update=callback,
+    )
 
-def sphere_type_property(defaultitem = 'UV', callback=None):
+
+def sphere_type_property(defaultitem='UV', callback=None):
     return EnumProperty(
-            items=(
-                ('UV', 'UV Sphere', ''),
-                ('ICO', 'Ico Sphere', ''),
-                ),
-            name='Topology type',
-            default=defaultitem,
-            description='Topology of sphere mesh', update=callback,
-            )
+        items=(
+            ('UV', 'UV Sphere', ''),
+            ('ICO', 'Ico Sphere', ''),
+        ),
+        name='Topology type',
+        default=defaultitem,
+        description='Topology of sphere mesh', update=callback,
+    )
+
 
 def sphere_segments_property(callback=None):
     return IntProperty(
-            name='Segments',
-            min=3, max=1000, soft_max=200,
-            default=32,
-            description='UV Sphere segments amount', update=callback,
-            )
+        name='Segments',
+        min=3, max=1000, soft_max=200,
+        default=32,
+        description='UV Sphere segments amount', update=callback,
+    )
+
 
 def sphere_rings_property(callback=None):
     return IntProperty(
-            name='Rings',
-            min=2, max=1000, soft_max=100,
-            default=16,
-            description='UV Sphere rings amount', update=callback,
-            )
+        name='Rings',
+        min=2, max=1000, soft_max=100,
+        default=16,
+        description='UV Sphere rings amount', update=callback,
+    )
+
 
 def sphere_subdivisions_property(callback=None):
     return IntProperty(
-            name='Subdivisions',
-            min=1, max=10, soft_max=8,
-            default=2,
-            description='Ico Sphere subdivisions amount', update=callback,
-            )
+        name='Subdivisions',
+        min=1, max=10, soft_max=8,
+        default=2,
+        description='Ico Sphere subdivisions amount', update=callback,
+    )
+
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a spheres.
@@ -172,7 +195,9 @@ class ArchLabSphereProperties(PropertyGroup):
     sphere_subdivisions = sphere_subdivisions_property(callback=update_sphere)
 
 bpy.utils.register_class(ArchLabSphereProperties)
-Object.ArchLabSphereGenerator = CollectionProperty(type=ArchLabSphereProperties)
+Object.ArchLabSphereGenerator = \
+    CollectionProperty(type=ArchLabSphereProperties)
+
 
 # ------------------------------------------------------------------
 # Define panel class to modify spheres.
@@ -181,7 +206,7 @@ class ArchLabSphereGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_sphere_generator"
     bl_label = "Sphere"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------
@@ -195,7 +220,9 @@ class ArchLabSphereGeneratorPanel(Panel):
             return False
         if 'ArchLabSphereGenerator' not in o:
             return False
-        if act_op is not None and act_op.bl_idname.endswith('archlab_sphere'):
+        if act_op is not None and act_op.bl_idname.endswith('archlab_uvsphere'):
+            return False
+        if act_op is not None and act_op.bl_idname.endswith('archlab_icosphere'):
             return False
         else:
             return True
@@ -205,7 +232,8 @@ class ArchLabSphereGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabSphereGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        #  'ArchLabSphereGenerator', this panel is not created.
         try:
             if 'ArchLabSphereGenerator' not in o:
                 return
@@ -213,8 +241,8 @@ class ArchLabSphereGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+        if context.mode == 'EDIT_MESH':
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             sphere = o.ArchLabSphereGenerator[0]
             row = layout.row()
@@ -230,6 +258,7 @@ class ArchLabSphereGeneratorPanel(Panel):
                 row = layout.row()
                 row.prop(sphere, 'sphere_subdivisions')
 
+
 # ------------------------------------------------------------------
 # Define operator class to create spheres
 # ------------------------------------------------------------------
@@ -243,7 +272,7 @@ class ArchLabSphere(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'sphere_radius')
@@ -259,14 +288,14 @@ class ArchLabSphere(Operator):
                 row.prop(self, 'sphere_subdivisions')
         else:
             row = layout.row()
-            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
+            row.label(text="Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_sphere(self, context)
                 return {'FINISHED'}

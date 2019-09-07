@@ -1,18 +1,18 @@
 # ##### BEGIN MIT LICENSE BLOCK #####
 # MIT License
-# 
-# Copyright (c) 2018 Insma Software
-# 
+#
+# Copyright (c) 2018-2019 Maciej Klemarczyk, Trogon Studios
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,10 +23,12 @@
 # ##### END MIT LICENSE BLOCK #####
 
 # ----------------------------------------------------------
-# Author: Maciej Klemarczyk (mklemarczyk)
+# Author: Maciej Klemarczyk (github: mklemarczyk)
+# Publisher: Trogon Studios (github: trogon)
 # ----------------------------------------------------------
 
 import bpy
+
 
 # --------------------------------------------------------------------
 # Creates new ceramic material
@@ -53,12 +55,14 @@ def meshlib_ceramic_material():
     principled_node.inputs['Transmission Roughness'].default_value = 0.0
     return mat
 
+
 # --------------------------------------------------------------------
 # Creates new cloud material
 # --------------------------------------------------------------------
 def meshlib_cloud_material():
     (mat, principled_node) = create_principled_material(matname='Cloud Material (ArchLib)')
     return mat
+
 
 # --------------------------------------------------------------------
 # Creates new fabric material
@@ -85,6 +89,7 @@ def meshlib_fabric_material():
     principled_node.inputs['Transmission Roughness'].default_value = 0.0
     return mat
 
+
 # --------------------------------------------------------------------
 # Creates new glass material
 # --------------------------------------------------------------------
@@ -109,6 +114,7 @@ def meshlib_glass_material():
     principled_node.inputs['Transmission'].default_value = 1.0
     principled_node.inputs['Transmission Roughness'].default_value = 0.0
     return mat
+
 
 # --------------------------------------------------------------------
 # Creates new matt glass material
@@ -135,12 +141,14 @@ def meshlib_matt_glass_material():
     principled_node.inputs['Transmission Roughness'].default_value = 1.0
     return mat
 
+
 # --------------------------------------------------------------------
 # Creates new metalic material
 # --------------------------------------------------------------------
 def meshlib_metalic_material():
     (mat, principled_node) = create_principled_material(matname='Metalic Material (ArchLib)')
     return mat
+
 
 # --------------------------------------------------------------------
 # Creates new plastic material
@@ -167,6 +175,7 @@ def meshlib_plastic_material():
     principled_node.inputs['Transmission Roughness'].default_value = 0.0
     return mat
 
+
 # --------------------------------------------------------------------
 # Creates new wax material
 # --------------------------------------------------------------------
@@ -191,6 +200,7 @@ def meshlib_wax_material():
     principled_node.inputs['Transmission'].default_value = 0.0
     principled_node.inputs['Transmission Roughness'].default_value = 0.0
     return mat
+
 
 # --------------------------------------------------------------------
 # Creates new principled material

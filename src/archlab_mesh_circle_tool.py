@@ -1,18 +1,18 @@
 # ##### BEGIN MIT LICENSE BLOCK #####
 # MIT License
-# 
-# Copyright (c) 2018 Insma Software
-# 
+#
+# Copyright (c) 2018-2019 Maciej Klemarczyk, Trogon Studios
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,13 +23,21 @@
 # ##### END MIT LICENSE BLOCK #####
 
 # ----------------------------------------------------------
-# Author: Maciej Klemarczyk (mklemarczyk)
+# Author: Maciej Klemarczyk (github: mklemarczyk)
+# Publisher: Trogon Studios (github: trogon)
 # ----------------------------------------------------------
+
 import bpy
 from bpy.types import Operator, PropertyGroup, Object, Panel
-from bpy.props import EnumProperty, IntProperty, FloatProperty, CollectionProperty
+from bpy.props import (
+    EnumProperty,
+    IntProperty,
+    FloatProperty,
+    CollectionProperty
+)
 from .archlab_utils import *
 from .archlab_utils_mesh_generator import *
+
 
 # ------------------------------------------------------------------------------
 # Create main object for the circle.
@@ -37,27 +45,33 @@ from .archlab_utils_mesh_generator import *
 def create_circle(self, context):
     # deselect all objects
     for o in bpy.data.objects:
-        o.select = False
+        o.select_set(False)
 
     # we create main object and mesh for circle
     circlemesh = bpy.data.meshes.new("Circle")
     circleobject = bpy.data.objects.new("Circle", circlemesh)
-    circleobject.location = bpy.context.scene.cursor_location
-    bpy.context.scene.objects.link(circleobject)
+    circleobject.location = context.scene.cursor.location
+    context.collection.objects.link(circleobject)
     circleobject.ArchLabCircleGenerator.add()
 
-    circleobject.ArchLabCircleGenerator[0].circle_radius = self.circle_radius
-    circleobject.ArchLabCircleGenerator[0].circle_quality = self.circle_quality
-    circleobject.ArchLabCircleGenerator[0].circle_fill_type = self.circle_fill_type
-    circleobject.ArchLabCircleGenerator[0].circle_depth = self.circle_depth
-    circleobject.ArchLabCircleGenerator[0].circle_truncation = self.circle_truncation
+    circleobject.ArchLabCircleGenerator[0].circle_radius = \
+        self.circle_radius
+    circleobject.ArchLabCircleGenerator[0].circle_quality = \
+        self.circle_quality
+    circleobject.ArchLabCircleGenerator[0].circle_fill_type = \
+        self.circle_fill_type
+    circleobject.ArchLabCircleGenerator[0].circle_depth = \
+        self.circle_depth
+    circleobject.ArchLabCircleGenerator[0].circle_truncation = \
+        self.circle_truncation
 
     # we shape the mesh.
     shape_circle_mesh(circleobject, circlemesh)
 
     # we select, and activate, main object for the circle.
-    circleobject.select = True
-    bpy.context.scene.objects.active = circleobject
+    circleobject.select_set(True)
+    context.view_layer.objects.active = circleobject
+
 
 # ------------------------------------------------------------------------------
 # Shapes mesh and creates modifier solidify (the modifier, only the first time).
@@ -88,38 +102,43 @@ def shape_circle_mesh(mycircle, tmp_mesh, update=False):
 
     # deactivate others
     for o in bpy.data.objects:
-        if o.select is True and o.name != mycircle.name:
-            o.select = False
+        if o.select_get() is True and o.name != mycircle.name:
+            o.select_set(False)
+
 
 # ------------------------------------------------------------------------------
 # Creates circle mesh data.
 # ------------------------------------------------------------------------------
 def update_circle_mesh_data(mymesh, radius, vertices, fill_type, trunc_val):
     if fill_type == 'NONE':
-        (myvertices, myedges, myfaces) = generate_circle_nofill_mesh_data(radius, vertices)
+        (myvertices, myedges, myfaces) = \
+            generate_circle_nofill_mesh_data(radius, vertices)
     if fill_type == 'NGON':
-        (myvertices, myedges, myfaces) = generate_circle_ngonfill_mesh_data(radius, vertices, trunc_val)
+        (myvertices, myedges, myfaces) = \
+            generate_circle_ngonfill_mesh_data(radius, vertices, trunc_val)
     if fill_type == 'TRIF':
-        (myvertices, myedges, myfaces) = generate_circle_tfanfill_mesh_data(radius, vertices)
+        (myvertices, myedges, myfaces) = \
+            generate_circle_tfanfill_mesh_data(radius, vertices)
 
     mymesh.from_pydata(myvertices, myedges, myfaces)
     mymesh.update(calc_edges=True)
+
 
 # ------------------------------------------------------------------------------
 # Update circle mesh.
 # ------------------------------------------------------------------------------
 def update_circle(self, context):
     # When we update, the active object is the main object of the circle.
-    o = bpy.context.active_object
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that circle object to not delete it.
-    o.select = False
+    o.select_set(False)
     # and we create a new mesh for the circle:
     tmp_mesh = bpy.data.meshes.new("temp")
     # deselect all objects
     for obj in bpy.data.objects:
-        obj.select = False
+        obj.select_set(False)
     # Finally we shape the main mesh again,
     shape_circle_mesh(o, tmp_mesh, True)
     o.data = tmp_mesh
@@ -127,8 +146,9 @@ def update_circle(self, context):
     bpy.data.meshes.remove(oldmesh)
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the circle.
-    o.select = True
-    bpy.context.scene.objects.active = o
+    o.select_set(True)
+    context.view_layer.objects.active = o
+
 
 # -----------------------------------------------------
 # Verify if solidify exist
@@ -146,6 +166,7 @@ def is_solidify(myobject):
         return flag
     except AttributeError:
         return False
+
 
 # -----------------------------------------------------
 # Move Solidify to Top
@@ -170,46 +191,51 @@ def movetotopsolidify(myobject):
 # -----------------------------------------------------
 def circle_radius_property(callback=None):
     return FloatProperty(
-            name='Radius',
-            soft_min=0.001,
-            default=1.0, precision=3, unit='LENGTH',
-            description='Circle radius', update=callback,
-            )
+        name='Radius',
+        soft_min=0.001,
+        default=1.0, precision=3, unit='LENGTH',
+        description='Circle radius', update=callback,
+    )
+
 
 def circle_quality_property(callback=None):
     return IntProperty(
-            name='Vertices',
-            min=3, max=1000,
-            default=32,
-            description='Circle vertices', update=callback,
-            )
+        name='Vertices',
+        min=3, max=1000,
+        default=32,
+        description='Circle vertices', update=callback,
+    )
+
 
 def circle_depth_property(callback=None):
     return FloatProperty(
-            name='Thickness',
-            soft_min=0.0,
-            default=0.0, precision=4, unit='LENGTH',
-            description='Thickness of the circle', update=callback,
-            )
+        name='Thickness',
+        soft_min=0.0,
+        default=0.0, precision=4, unit='LENGTH',
+        description='Thickness of the circle', update=callback,
+    )
+
 
 def circle_fill_type_property(callback=None):
     return EnumProperty(
-            items=(
-                ('TRIF', 'Triangle Fan', ''),
-                ('NGON', 'Ngon', ''),
-                ('NONE', 'Nothing', ''),
-                ),
-            name='Fill type',
-            description='Topology of circle face', update=callback,
-            )
+        items=(
+            ('TRIF', 'Triangle Fan', ''),
+            ('NGON', 'Ngon', ''),
+            ('NONE', 'Nothing', ''),
+        ),
+        name='Fill type',
+        description='Topology of circle face', update=callback,
+    )
+
 
 def circle_truncation_property(callback=None):
     return FloatProperty(
-            name='Truncation',
-            min=0.0, max=1.0,
-            default=0.0, precision=4,
-            description='Truncation of the circle', update=callback,
-            )
+        name='Truncation',
+        min=0.0, max=1.0,
+        default=0.0, precision=4,
+        description='Truncation of the circle', update=callback,
+    )
+
 
 # ------------------------------------------------------------------
 # Define property group class to create or modify a circles.
@@ -224,6 +250,7 @@ class ArchLabCircleProperties(PropertyGroup):
 bpy.utils.register_class(ArchLabCircleProperties)
 Object.ArchLabCircleGenerator = CollectionProperty(type=ArchLabCircleProperties)
 
+
 # ------------------------------------------------------------------
 # Define panel class to modify circles.
 # ------------------------------------------------------------------
@@ -231,7 +258,7 @@ class ArchLabCircleGeneratorPanel(Panel):
     bl_idname = "OBJECT_PT_circle_generator"
     bl_label = "Circle"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = "UI"
     bl_category = 'ArchLab'
 
     # -----------------------------------------------------
@@ -255,7 +282,8 @@ class ArchLabCircleGeneratorPanel(Panel):
     # -----------------------------------------------------
     def draw(self, context):
         o = context.object
-        # If the selected object didn't be created with the group 'ArchLabCircleGenerator', this panel is not created.
+        # If the selected object didn't be created with the group
+        #  'ArchLabCircleGenerator', this panel is not created.
         try:
             if 'ArchLabCircleGenerator' not in o:
                 return
@@ -263,8 +291,8 @@ class ArchLabCircleGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
-            layout.label('Warning: Operator does not work in edit mode.', icon='ERROR')
+        if context.mode == 'EDIT_MESH':
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             circle = o.ArchLabCircleGenerator[0]
             row = layout.row()
@@ -278,6 +306,7 @@ class ArchLabCircleGeneratorPanel(Panel):
             if circle.circle_fill_type == 'NGON':
                 row = layout.row()
                 row.prop(circle, 'circle_truncation')
+
 
 # ------------------------------------------------------------------
 # Define operator class to create circles
@@ -301,7 +330,7 @@ class ArchLabCircle(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'circle_quality')
@@ -316,14 +345,14 @@ class ArchLabCircle(Operator):
                 row.prop(self, 'circle_truncation')
         else:
             row = layout.row()
-            row.label("Warning: Operator does not work in local view mode", icon='ERROR')
+            row.label(text="Warning: Operator does not work in local view mode", icon='ERROR')
 
     # -----------------------------------------------------
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_circle(self, context)
                 return {'FINISHED'}
