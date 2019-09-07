@@ -46,7 +46,7 @@ def create_cube(self, context):
     cubemesh = bpy.data.meshes.new("Cube")
     cubeobject = bpy.data.objects.new("Cube", cubemesh)
     cubeobject.location = bpy.context.scene.cursor.location
-    bpy.context.scene.objects.link(cubeobject)
+    bpy.context.collection.objects.link(cubeobject)
     cubeobject.ArchLabCubeGenerator.add()
 
     cubeobject.ArchLabCubeGenerator[0].cube_height = self.cube_height

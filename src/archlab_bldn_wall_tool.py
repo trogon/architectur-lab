@@ -45,7 +45,7 @@ def create_wall(self, context):
     wallmesh = bpy.data.meshes.new("Wall")
     wallobject = bpy.data.objects.new("Wall", wallmesh)
     wallobject.location = bpy.context.scene.cursor.location
-    bpy.context.scene.objects.link(wallobject)
+    bpy.context.collection.objects.link(wallobject)
     wallobject.ArchLabWallGenerator.add()
 
     wallobject.ArchLabWallGenerator[0].wall_height = self.wall_height

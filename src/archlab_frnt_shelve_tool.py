@@ -45,7 +45,7 @@ def create_shelve(self, context):
     shelvemesh = bpy.data.meshes.new("Shelve")
     shelveobject = bpy.data.objects.new("Shelve", shelvemesh)
     shelveobject.location = bpy.context.scene.cursor.location
-    bpy.context.scene.objects.link(shelveobject)
+    bpy.context.collection.objects.link(shelveobject)
     shelveobject.ArchLabShelveGenerator.add()
 
     shelveobject.ArchLabShelveGenerator[0].shelve_height = \
@@ -68,7 +68,7 @@ def create_shelve(self, context):
         shelvearmatureobject = bpy.data.objects.new("Shelve Armature", shelvearmature)
         shelvearmatureobject.location = bpy.context.scene.cursor.location
         shelvearmatureobject.parent = shelveobject
-        bpy.context.scene.objects.link(shelvearmatureobject)
+        bpy.context.collection.objects.link(shelvearmatureobject)
 
         # we shape the armature.
         shape_shelve_armature(shelveobject, shelvearmatureobject, shelvearmature)

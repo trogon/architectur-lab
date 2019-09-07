@@ -45,7 +45,7 @@ def create_stairs(self, context):
     stairsmesh = bpy.data.meshes.new("Stairs")
     stairsobject = bpy.data.objects.new("Stairs", stairsmesh)
     stairsobject.location = bpy.context.scene.cursor.location
-    bpy.context.scene.objects.link(stairsobject)
+    bpy.context.collection.objects.link(stairsobject)
     stairsobject.ArchLabStairsGenerator.add()
 
     stairsobject.ArchLabStairsGenerator[0].stairs_width = \

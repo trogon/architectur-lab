@@ -46,7 +46,7 @@ def create_bench(self, context):
     benchmesh = bpy.data.meshes.new("Bench")
     benchobject = bpy.data.objects.new("Bench", benchmesh)
     benchobject.location = bpy.context.scene.cursor.location
-    bpy.context.scene.objects.link(benchobject)
+    bpy.context.collection.objects.link(benchobject)
     benchobject.ArchLabBenchGenerator.add()
 
     benchobject.ArchLabBenchGenerator[0].bench_height = self.bench_height

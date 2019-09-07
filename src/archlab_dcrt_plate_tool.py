@@ -52,7 +52,7 @@ def create_plate(self, context):
     platemesh = bpy.data.meshes.new("Plate")
     plateobject = bpy.data.objects.new("Plate", platemesh)
     plateobject.location = bpy.context.scene.cursor.location
-    bpy.context.scene.objects.link(plateobject)
+    bpy.context.collection.objects.link(plateobject)
     plateobject.ArchLabPlateGenerator.add()
 
     plateobject.ArchLabPlateGenerator[0].plate_diameter = self.plate_diameter

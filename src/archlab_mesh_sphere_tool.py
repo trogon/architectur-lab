@@ -52,7 +52,7 @@ def create_sphere(self, context):
     spheremesh = bpy.data.meshes.new("Sphere")
     sphereobject = bpy.data.objects.new("Sphere", spheremesh)
     sphereobject.location = bpy.context.scene.cursor.location
-    bpy.context.scene.objects.link(sphereobject)
+    bpy.context.collection.objects.link(sphereobject)
     sphereobject.ArchLabSphereGenerator.add()
 
     sphereobject.ArchLabSphereGenerator[0].sphere_radius = \

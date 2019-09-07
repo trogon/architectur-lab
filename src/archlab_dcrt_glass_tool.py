@@ -47,7 +47,7 @@ def create_glass(self, context):
     glassmesh = bpy.data.meshes.new("Glass")
     glassobject = bpy.data.objects.new("Glass", glassmesh)
     glassobject.location = bpy.context.scene.cursor.location
-    bpy.context.scene.objects.link(glassobject)
+    bpy.context.collection.objects.link(glassobject)
     glassobject.ArchLabGlassGenerator.add()
 
     glassobject.ArchLabGlassGenerator[0].glass_diameter = self.glass_diameter

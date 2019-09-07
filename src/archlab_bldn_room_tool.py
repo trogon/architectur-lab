@@ -51,7 +51,7 @@ def create_room(self, context):
     roommesh = bpy.data.meshes.new("Room")
     roomobject = bpy.data.objects.new("Room", roommesh)
     roomobject.location = bpy.context.scene.cursor.location
-    bpy.context.scene.objects.link(roomobject)
+    bpy.context.collection.objects.link(roomobject)
     roomobject.ArchLabRoomGenerator.add()
 
     roomobject.ArchLabRoomGenerator[0].room_height = self.room_height
