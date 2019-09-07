@@ -54,14 +54,14 @@ from bpy.types import (
 # ----------------------------------------------
 bl_info = {
     "name": "Architecture Lab",
-    "author": "Insma Software - Maciej Klemarczyk (mklemarczyk)",
+    "author": "Maciej Klemarczyk (mklemarczyk), Trogon Studios (trogon)",
     "location": "View3D > Add > Mesh > ArchLab",
     "version": (2, 0, 0),
     "blender": (2, 80, 0),
     "description": "Creates rooms, doors, windows, and other architecture "
                    "objects",
-    "wiki_url": "https://github.com/insma/ArchitectureLab/wiki",
-    "tracker_url": "https://github.com/insma/ArchitectureLab/issues",
+    "wiki_url": "https://github.com/trogon/ArchitectureLab/wiki",
+    "tracker_url": "https://github.com/trogon/ArchitectureLab/issues",
     "category": "Add Mesh"
 }
 
