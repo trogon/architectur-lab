@@ -51,8 +51,8 @@ def create_plate(self, context):
     # we create main object and mesh
     platemesh = bpy.data.meshes.new("Plate")
     plateobject = bpy.data.objects.new("Plate", platemesh)
-    plateobject.location = bpy.context.scene.cursor.location
-    bpy.context.collection.objects.link(plateobject)
+    plateobject.location = context.scene.cursor.location
+    context.collection.objects.link(plateobject)
     plateobject.ArchLabPlateGenerator.add()
 
     plateobject.ArchLabPlateGenerator[0].plate_diameter = self.plate_diameter
@@ -71,7 +71,7 @@ def create_plate(self, context):
 
     # we select, and activate, main object for the plate.
     plateobject.select_set(True)
-    bpy.context.view_layer.objects.active = plateobject
+    context.view_layer.objects.active = plateobject
 
 
 # ------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ def update_plate_mesh_data(mymesh, diameter, height, segments, type):
 # ------------------------------------------------------------------------------
 def update_plate(self, context):
     # When we update, the active object is the main object of the plate.
-    o = bpy.context.view_layer.objects.active
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that plate object to not delete it.
@@ -134,7 +134,7 @@ def update_plate(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the plate.
     o.select_set(True)
-    bpy.context.view_layer.objects.active = o
+    context.view_layer.objects.active = o
 
 
 # ------------------------------------------------------------------------------
@@ -267,7 +267,7 @@ class ArchLabPlateGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
+        if context.mode == 'EDIT_MESH':
             layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             plate = o.ArchLabPlateGenerator[0]
@@ -302,7 +302,7 @@ class ArchLabPlate(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'plate_type')
@@ -320,8 +320,8 @@ class ArchLabPlate(Operator):
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_plate(self, context)
                 return {'FINISHED'}

@@ -45,8 +45,8 @@ def create_cube(self, context):
     # we create main object and mesh for cube
     cubemesh = bpy.data.meshes.new("Cube")
     cubeobject = bpy.data.objects.new("Cube", cubemesh)
-    cubeobject.location = bpy.context.scene.cursor.location
-    bpy.context.collection.objects.link(cubeobject)
+    cubeobject.location = context.scene.cursor.location
+    context.collection.objects.link(cubeobject)
     cubeobject.ArchLabCubeGenerator.add()
 
     cubeobject.ArchLabCubeGenerator[0].cube_height = self.cube_height
@@ -58,7 +58,7 @@ def create_cube(self, context):
 
     # we select, and activate, main object for the cube.
     cubeobject.select_set(True)
-    bpy.context.view_layer.objects.active = cubeobject
+    context.view_layer.objects.active = cubeobject
 
 
 # ------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ def update_cube_mesh_data(mymesh, width, height, depth):
 # ------------------------------------------------------------------------------
 def update_cube(self, context):
     # When we update, the active object is the main object of the cube.
-    o = bpy.context.view_layer.objects.active
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that cube object to not delete it.
@@ -112,7 +112,7 @@ def update_cube(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the cube.
     o.select_set(True)
-    bpy.context.view_layer.objects.active = o
+    context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------
@@ -197,7 +197,7 @@ class ArchLabCubeGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
+        if context.mode == 'EDIT_MESH':
             layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             cube = o.ArchLabCubeGenerator[0]
@@ -229,7 +229,7 @@ class ArchLabCube(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'cube_width')
@@ -245,8 +245,8 @@ class ArchLabCube(Operator):
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_cube(self, context)
                 return {'FINISHED'}

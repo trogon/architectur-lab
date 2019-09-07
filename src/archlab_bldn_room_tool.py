@@ -50,8 +50,8 @@ def create_room(self, context):
     # we create main object and mesh for room
     roommesh = bpy.data.meshes.new("Room")
     roomobject = bpy.data.objects.new("Room", roommesh)
-    roomobject.location = bpy.context.scene.cursor.location
-    bpy.context.collection.objects.link(roomobject)
+    roomobject.location = context.scene.cursor.location
+    context.collection.objects.link(roomobject)
     roomobject.ArchLabRoomGenerator.add()
 
     roomobject.ArchLabRoomGenerator[0].room_height = self.room_height
@@ -69,7 +69,7 @@ def create_room(self, context):
 
     # we select, and activate, main object for the room.
     roomobject.select_set(True)
-    bpy.context.view_layer.objects.active = roomobject
+    context.view_layer.objects.active = roomobject
 
 
 # ------------------------------------------------------------------------------
@@ -196,7 +196,7 @@ def update_room_mesh_data(mymesh, height, walls, has_floor, has_ceiling):
 # ------------------------------------------------------------------------------
 def update_room(self, context):
     # When we update, the active object is the main object of the room.
-    o = bpy.context.view_layer.objects.active
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that room object to not delete it.
@@ -214,7 +214,7 @@ def update_room(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the room.
     o.select_set(True)
-    bpy.context.view_layer.objects.active = o
+    context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------
@@ -390,7 +390,7 @@ class ArchLabRoomGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
+        if context.mode == 'EDIT_MESH':
             layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             room = o.ArchLabRoomGenerator[0]
@@ -435,7 +435,7 @@ class ArchLabRoom(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'room_height')
@@ -480,8 +480,8 @@ class ArchLabRoom(Operator):
                 for t in range(-wdif):
                     self.room_walls.remove(prwc)
 
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_room(self, context)
                 return {'FINISHED'}

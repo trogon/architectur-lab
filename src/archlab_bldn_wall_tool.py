@@ -44,8 +44,8 @@ def create_wall(self, context):
     # we create main object and mesh for wall
     wallmesh = bpy.data.meshes.new("Wall")
     wallobject = bpy.data.objects.new("Wall", wallmesh)
-    wallobject.location = bpy.context.scene.cursor.location
-    bpy.context.collection.objects.link(wallobject)
+    wallobject.location = context.scene.cursor.location
+    context.collection.objects.link(wallobject)
     wallobject.ArchLabWallGenerator.add()
 
     wallobject.ArchLabWallGenerator[0].wall_height = self.wall_height
@@ -57,7 +57,7 @@ def create_wall(self, context):
 
     # we select, and activate, main object for the wall.
     wallobject.select_set(True)
-    bpy.context.view_layer.objects.active = wallobject
+    context.view_layer.objects.active = wallobject
 
 
 # ------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ def update_wall_mesh_data(mymesh, width, height):
 # ------------------------------------------------------------------------------
 def update_wall(self, context):
     # When we update, the active object is the main object of the wall.
-    o = bpy.context.view_layer.objects.active
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that wall object to not delete it.
@@ -133,7 +133,7 @@ def update_wall(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the wall.
     o.select_set(True)
-    bpy.context.view_layer.objects.active = o
+    context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------
@@ -254,7 +254,7 @@ class ArchLabWallGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
+        if context.mode == 'EDIT_MESH':
             layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             wall = o.ArchLabWallGenerator[0]
@@ -286,7 +286,7 @@ class ArchLabWall(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'wall_width')
@@ -302,8 +302,8 @@ class ArchLabWall(Operator):
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_wall(self, context)
                 return {'FINISHED'}

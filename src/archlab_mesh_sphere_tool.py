@@ -51,8 +51,8 @@ def create_sphere(self, context):
     # we create main object and mesh for sphere
     spheremesh = bpy.data.meshes.new("Sphere")
     sphereobject = bpy.data.objects.new("Sphere", spheremesh)
-    sphereobject.location = bpy.context.scene.cursor.location
-    bpy.context.collection.objects.link(sphereobject)
+    sphereobject.location = context.scene.cursor.location
+    context.collection.objects.link(sphereobject)
     sphereobject.ArchLabSphereGenerator.add()
 
     sphereobject.ArchLabSphereGenerator[0].sphere_radius = \
@@ -71,7 +71,7 @@ def create_sphere(self, context):
 
     # we select, and activate, main object for the sphere.
     sphereobject.select_set(True)
-    bpy.context.view_layer.objects.active = sphereobject
+    context.view_layer.objects.active = sphereobject
 
 
 # ------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ def update_sphere_mesh_data(mymesh, radius, type, segments, rings, subdivisions)
 # ------------------------------------------------------------------------------
 def update_sphere(self, context):
     # When we update, the active object is the main object of the sphere.
-    o = bpy.context.view_layer.objects.active
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that sphere object to not delete it.
@@ -130,7 +130,7 @@ def update_sphere(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the sphere.
     o.select_set(True)
-    bpy.context.view_layer.objects.active = o
+    context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------
@@ -241,7 +241,7 @@ class ArchLabSphereGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
+        if context.mode == 'EDIT_MESH':
             layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             sphere = o.ArchLabSphereGenerator[0]
@@ -272,7 +272,7 @@ class ArchLabSphere(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'sphere_radius')
@@ -294,8 +294,8 @@ class ArchLabSphere(Operator):
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_sphere(self, context)
                 return {'FINISHED'}

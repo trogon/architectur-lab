@@ -46,8 +46,8 @@ def create_glass(self, context):
     # we create main object and mesh
     glassmesh = bpy.data.meshes.new("Glass")
     glassobject = bpy.data.objects.new("Glass", glassmesh)
-    glassobject.location = bpy.context.scene.cursor.location
-    bpy.context.collection.objects.link(glassobject)
+    glassobject.location = context.scene.cursor.location
+    context.collection.objects.link(glassobject)
     glassobject.ArchLabGlassGenerator.add()
 
     glassobject.ArchLabGlassGenerator[0].glass_diameter = self.glass_diameter
@@ -65,7 +65,7 @@ def create_glass(self, context):
 
     # we select, and activate, main object for the glass.
     glassobject.select_set(True)
-    bpy.context.view_layer.objects.active = glassobject
+    context.view_layer.objects.active = glassobject
 
 
 # ------------------------------------------------------------------------------
@@ -105,7 +105,7 @@ def update_glass_mesh_data(mymesh, diameter, height, segments):
 # ------------------------------------------------------------------------------
 def update_glass(self, context):
     # When we update, the active object is the main object of the glass.
-    o = bpy.context.view_layer.objects.active
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that glass object to not delete it.
@@ -123,7 +123,7 @@ def update_glass(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the glass.
     o.select_set(True)
-    bpy.context.view_layer.objects.active = o
+    context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------
@@ -208,7 +208,7 @@ class ArchLabGlassGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
+        if context.mode == 'EDIT_MESH':
             layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             glass = o.ArchLabGlassGenerator[0]
@@ -240,7 +240,7 @@ class ArchLabGlass(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             row = layout.row()
             row.prop(self, 'glass_diameter')
@@ -256,8 +256,8 @@ class ArchLabGlass(Operator):
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_glass(self, context)
                 return {'FINISHED'}

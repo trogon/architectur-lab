@@ -44,8 +44,8 @@ def create_stairs(self, context):
     # we create main object and mesh for stairs
     stairsmesh = bpy.data.meshes.new("Stairs")
     stairsobject = bpy.data.objects.new("Stairs", stairsmesh)
-    stairsobject.location = bpy.context.scene.cursor.location
-    bpy.context.collection.objects.link(stairsobject)
+    stairsobject.location = context.scene.cursor.location
+    context.collection.objects.link(stairsobject)
     stairsobject.ArchLabStairsGenerator.add()
 
     stairsobject.ArchLabStairsGenerator[0].stairs_width = \
@@ -68,7 +68,7 @@ def create_stairs(self, context):
 
     # we select, and activate, main object for the stairs.
     stairsobject.select_set(True)
-    bpy.context.view_layer.objects.active = stairsobject
+    context.view_layer.objects.active = stairsobject
 
 
 # ------------------------------------------------------------------------------
@@ -123,7 +123,7 @@ def update_stairs_mesh_data(mymesh, width, unit_count, unit_run, unit_raise):
 # ------------------------------------------------------------------------------
 def update_stairs(self, context):
     # When we update, the active object is the main object of the stairs.
-    o = bpy.context.view_layer.objects.active
+    o = context.view_layer.objects.active
     oldmesh = o.data
     oldname = o.data.name
     # Now we deselect that stairs object to not delete it.
@@ -141,7 +141,7 @@ def update_stairs(self, context):
     tmp_mesh.name = oldname
     # and select, and activate, the main object of the stairs.
     o.select_set(True)
-    bpy.context.view_layer.objects.active = o
+    context.view_layer.objects.active = o
 
 
 # -----------------------------------------------------
@@ -285,7 +285,7 @@ class ArchLabStairsGeneratorPanel(Panel):
             return
 
         layout = self.layout
-        if bpy.context.mode == 'EDIT_MESH':
+        if context.mode == 'EDIT_MESH':
             layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
         else:
             stairs = o.ArchLabStairsGenerator[0]
@@ -316,7 +316,7 @@ class ArchLabStairs(Operator):
     # -----------------------------------------------------
     def draw(self, context):
         layout = self.layout
-        space = bpy.context.space_data
+        space = context.space_data
         if not space.local_view:
             draw_props(layout, self)
         else:
@@ -327,8 +327,8 @@ class ArchLabStairs(Operator):
     # Execute
     # -----------------------------------------------------
     def execute(self, context):
-        if bpy.context.mode == "OBJECT":
-            space = bpy.context.space_data
+        if context.mode == "OBJECT":
+            space = context.space_data
             if not space.local_view:
                 create_stairs(self, context)
                 return {'FINISHED'}
