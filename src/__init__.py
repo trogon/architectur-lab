@@ -211,6 +211,8 @@ class ArchLabCreatePanel(Panel):
         act_op = context.active_operator
         if context.mode == 'EDIT_MESH':
             return False
+        elif context.mode == 'POSE':
+            return False
         else:
             return True
 
