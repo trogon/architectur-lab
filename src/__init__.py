@@ -32,20 +32,10 @@
 # ----------------------------------------------
 import bpy
 
-from bpy.props import (
-    BoolProperty,
-    FloatVectorProperty,
-    IntProperty,
-    FloatProperty,
-    StringProperty,
-)
-
 from bpy.types import (
-    AddonPreferences,
     Menu,
-    Scene,
-    VIEW3D_MT_mesh_add,
-    WindowManager,
+    Panel,
+    VIEW3D_MT_mesh_add
 )
 
 
@@ -134,8 +124,9 @@ class ArchLabMeshFurnituresAdd(Menu):
     bl_label = "Furnitures"
 
     def draw(self, context):
-        self.layout.operator("mesh.archlab_bench", text="Add Bench")
-        self.layout.operator("mesh.archlab_shelve", text="Add Shelve")
+        layout = self.layout
+        layout.operator("mesh.archlab_bench", text="Add Bench")
+        layout.operator("mesh.archlab_shelve", text="Add Shelve")
 
 
 # ----------------------------------------------------------
@@ -146,8 +137,9 @@ class ArchLabMeshDecorationsAdd(Menu):
     bl_label = "Decorations"
 
     def draw(self, context):
-        self.layout.operator("mesh.archlab_glass", text="Add Glass")
-        self.layout.operator("mesh.archlab_plate", text="Add Plate")
+        layout = self.layout
+        layout.operator("mesh.archlab_glass", text="Add Glass")
+        layout.operator("mesh.archlab_plate", text="Add Plate")
 
 
 # ----------------------------------------------------------
@@ -158,19 +150,20 @@ class ArchLabMeshPrimitivesAdd(Menu):
     bl_label = "Primitives"
 
     def draw(self, context):
-        self.layout.operator(
+        layout = self.layout
+        layout.operator(
             "mesh.archlab_plane",
             text="Add Plane", icon="MESH_PLANE")
-        self.layout.operator(
+        layout.operator(
             "mesh.archlab_cube",
             text="Add Cube", icon="MESH_CUBE")
-        self.layout.operator(
+        layout.operator(
             "mesh.archlab_circle",
             text="Add Circle", icon="MESH_CIRCLE")
-        self.layout.operator(
+        layout.operator(
             "mesh.archlab_uvsphere",
             text="Add UV Sphere", icon="MESH_UVSPHERE")
-        self.layout.operator(
+        layout.operator(
             "mesh.archlab_icosphere",
             text="Add Ico Sphere", icon="MESH_ICOSPHERE")
 
@@ -183,26 +176,83 @@ class ArchLabMeshCustomMenuAdd(Menu):
     bl_label = "ArchLab"
 
     def draw(self, context):
-        self.layout.operator_context = 'INVOKE_REGION_WIN'
-        self.layout.operator("mesh.archlab_room", text="Add Room")
-        self.layout.operator("mesh.archlab_stairs", text="Add Stairs")
-        self.layout.operator("mesh.archlab_wall", text="Add Wall")
-        self.layout.separator()
-        self.layout.menu(
+        layout = self.layout
+        layout.operator_context = 'INVOKE_REGION_WIN'
+        layout.operator("mesh.archlab_room", text="Add Room")
+        layout.operator("mesh.archlab_stairs", text="Add Stairs")
+        layout.operator("mesh.archlab_wall", text="Add Wall")
+        layout.separator()
+        layout.menu(
             "VIEW3D_MT_archlab_mesh_primitives_add",
             text="Primitives", icon="GROUP")
-        self.layout.menu(
+        layout.menu(
             "VIEW3D_MT_archlab_mesh_decorations_add",
             text="Decorations", icon="GROUP")
-        self.layout.menu(
+        layout.menu(
             "VIEW3D_MT_archlab_mesh_furnitures_add",
             text="Furnitures", icon="GROUP")
+
+
+# ------------------------------------------------------------------
+# Define panel class to create ArchLab objects.
+# ------------------------------------------------------------------
+class ArchLabCreatePanel(Panel):
+    bl_idname = "VIEW3D_PT_archlab_create"
+    bl_label = "Create"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = "UI"
+    bl_category = 'ArchLab'
+
+   # -----------------------------------------------------
+    # Verify if visible
+    # -----------------------------------------------------
+    @classmethod
+    def poll(cls, context):
+        act_op = context.active_operator
+        if context.mode == 'EDIT_MESH':
+            return False
+        else:
+            return True
+
+    # -----------------------------------------------------
+    # Draw (create UI interface)
+    # -----------------------------------------------------
+    def draw(self, context):
+        layout = self.layout
+        if context.mode == 'EDIT_MESH':
+            layout.label(text='Warning: Operator does not work in edit mode.', icon='ERROR')
+        else:
+            column = layout.column(align=True)
+            column.label(text='Construction mesh:')
+            column.operator("mesh.archlab_room", text="Room")
+            column.operator("mesh.archlab_stairs", text="Stairs")
+            column.operator("mesh.archlab_wall", text="Wall")
+
+            column = layout.column(align=True)
+            column.label(text='Furnitures:')
+            column.operator("mesh.archlab_bench", text="Bench")
+            column.operator("mesh.archlab_shelve", text="Shelve")
+
+            column = layout.column(align=True)
+            column.label(text='Decorations:')
+            column.operator("mesh.archlab_glass", text="Glass")
+            column.operator("mesh.archlab_plate", text="Plate")
+
+            column = layout.column(align=True)
+            column.label(text='Primitives:')
+            column.operator("mesh.archlab_plane", text="Plane", icon="MESH_PLANE")
+            column.operator("mesh.archlab_cube", text="Cube", icon="MESH_CUBE")
+            column.operator("mesh.archlab_circle", text="Circle", icon="MESH_CIRCLE")
+            column.operator("mesh.archlab_uvsphere", text="UV Sphere", icon="MESH_UVSPHERE")
+            column.operator("mesh.archlab_icosphere", text="Ico Sphere", icon="MESH_ICOSPHERE")
+
 
 archlab_modules.extend([
     ArchLabMeshCustomMenuAdd,
     ArchLabMeshFurnituresAdd,
     ArchLabMeshDecorationsAdd,
-    ArchLabMeshPrimitivesAdd
+    ArchLabMeshPrimitivesAdd,
+    ArchLabCreatePanel
 ])
 
 
